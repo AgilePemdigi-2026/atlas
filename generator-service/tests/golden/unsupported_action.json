@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Unsupported action",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "When", "action": "hover", "by": "id", "target": "menu"}
+      ]
+    }
+  ]
+}

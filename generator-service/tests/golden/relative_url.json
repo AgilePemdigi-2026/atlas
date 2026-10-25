@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Relative URL",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "/login"}
+      ]
+    }
+  ]
+}

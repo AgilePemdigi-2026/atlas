@@ -1,0 +1,6 @@
+{
+  "code": "invalid_url",
+  "message": "URL must be an absolute http or https URL.",
+  "step_index": 1,
+  "field": "scenarios[0].steps[0].value"
+}

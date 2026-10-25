@@ -1,0 +1,18 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Membuka halaman",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "When", "action": "click", "by": "css", "target": "#start"}
+      ]
+    },
+    {
+      "scenario": "Melihat sapaan",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/greeting"},
+        {"stage": "Then", "action": "assert_text", "value": "Selamat datang"}
+      ]
+    }
+  ]
+}

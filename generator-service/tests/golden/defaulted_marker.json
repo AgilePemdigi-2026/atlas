@@ -1,0 +1,14 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Defaulted values",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/register"},
+        {"stage": "When", "action": "fill", "by": "id", "target": "email", "value": "someone@example.test", "defaulted": true},
+        {"stage": "When", "action": "select", "by": "id", "target": "country", "value": "ID", "defaulted": true},
+        {"stage": "When", "action": "click", "by": "id", "target": "submit"},
+        {"stage": "Then", "action": "assert_text", "value": "Akun dibuat", "defaulted": true}
+      ]
+    }
+  ]
+}

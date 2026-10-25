@@ -1,0 +1,6 @@
+{
+  "code": "missing_field",
+  "message": "Field 'target' is required for action 'click'.",
+  "step_index": 2,
+  "field": "scenarios[0].steps[1].target"
+}

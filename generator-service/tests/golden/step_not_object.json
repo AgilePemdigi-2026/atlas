@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Step not object",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        "click the button"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Failing assertion",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "__BASE_URL__/index.html"},
+        {"stage": "Then", "action": "assert_text", "value": "Teks yang tidak ada di halaman ini"}
+      ]
+    }
+  ]
+}

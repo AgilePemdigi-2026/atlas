@@ -1,0 +1,6 @@
+{
+  "code": "unsupported_locator",
+  "message": "Unsupported locator 'class_name'.",
+  "step_index": 2,
+  "field": "scenarios[0].steps[1].by"
+}

@@ -1,0 +1,16 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Second scenario has no navigation",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    },
+    {
+      "scenario": "Starts with click",
+      "steps": [
+        {"stage": "When", "action": "click", "by": "id", "target": "next"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "   ",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    }
+  ]
+}

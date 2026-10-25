@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Hanya membuka halaman",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    }
+  ]
+}

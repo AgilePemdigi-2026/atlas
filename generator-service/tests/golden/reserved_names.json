@@ -1,0 +1,28 @@
+{
+  "scenarios": [
+    {
+      "scenario": "wait_for",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    },
+    {
+      "scenario": "driver",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    },
+    {
+      "scenario": "print",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    },
+    {
+      "scenario": "Select",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    }
+  ]
+}

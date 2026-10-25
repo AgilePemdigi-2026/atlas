@@ -1,0 +1,13 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Multiple navigates",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "When", "action": "click", "by": "link_text", "target": "Products"},
+        {"stage": "When", "action": "navigate", "value": "https://example.test/cart"},
+        {"stage": "Then", "action": "assert_url", "value": "https://example.test/cart"}
+      ]
+    }
+  ]
+}

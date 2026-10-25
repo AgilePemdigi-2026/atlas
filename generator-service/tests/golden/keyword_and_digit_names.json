@@ -1,0 +1,16 @@
+{
+  "scenarios": [
+    {
+      "scenario": "class",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    },
+    {
+      "scenario": "123 login",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"}
+      ]
+    }
+  ]
+}

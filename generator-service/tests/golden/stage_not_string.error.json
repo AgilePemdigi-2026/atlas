@@ -1,0 +1,6 @@
+{
+  "code": "invalid_input",
+  "message": "Field 'stage' must be Given, When, or Then.",
+  "step_index": 1,
+  "field": "scenarios[0].steps[0].stage"
+}

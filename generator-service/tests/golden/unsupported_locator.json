@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Unsupported locator",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "When", "action": "click", "by": "class_name", "target": "button"}
+      ]
+    }
+  ]
+}

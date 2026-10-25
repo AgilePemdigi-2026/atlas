@@ -1,0 +1,6 @@
+{
+  "code": "missing_field",
+  "message": "Field 'value' must be a non-empty string.",
+  "step_index": 2,
+  "field": "scenarios[0].steps[1].value"
+}

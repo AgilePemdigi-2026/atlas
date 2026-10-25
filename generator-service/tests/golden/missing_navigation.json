@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "No navigation",
+      "steps": [
+        {"stage": "When", "action": "click", "by": "id", "target": "next"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "code": "missing_navigation",
+  "message": "The first step of each scenario must be 'navigate'.",
+  "step_index": 1,
+  "field": "scenarios[1].steps[0].action"
+}

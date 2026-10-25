@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Login\nberhasil\r\nsekarang",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/login"}
+      ]
+    }
+  ]
+}

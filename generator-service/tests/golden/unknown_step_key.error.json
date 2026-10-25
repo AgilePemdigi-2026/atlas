@@ -1,0 +1,6 @@
+{
+  "code": "invalid_input",
+  "message": "Field 'selector' is not allowed for action 'click'.",
+  "step_index": 2,
+  "field": "scenarios[0].steps[1].selector"
+}

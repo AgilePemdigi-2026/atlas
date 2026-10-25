@@ -1,0 +1,25 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Login berhasil",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/login"},
+        {"stage": "When", "action": "click", "by": "id", "target": "submit"}
+      ]
+    },
+    {
+      "scenario": "Login berhasil",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/login"},
+        {"stage": "When", "action": "click", "by": "id", "target": "cancel"}
+      ]
+    },
+    {
+      "scenario": "Login berhasil",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/login"},
+        {"stage": "When", "action": "click", "by": "id", "target": "reset"}
+      ]
+    }
+  ]
+}

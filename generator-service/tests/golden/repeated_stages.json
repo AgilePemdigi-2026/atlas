@@ -1,0 +1,15 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Repeated stages",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "Given", "action": "click", "by": "id", "target": "first"},
+        {"stage": "When", "action": "fill", "by": "name", "target": "q", "value": "atlas"},
+        {"stage": "When", "action": "click", "by": "xpath", "target": "//button[@type='submit']"},
+        {"stage": "Then", "action": "assert_url", "value": "https://example.test/results"},
+        {"stage": "Then", "action": "assert_text", "value": "3 results"}
+      ]
+    }
+  ]
+}

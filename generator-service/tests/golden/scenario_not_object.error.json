@@ -1,0 +1,6 @@
+{
+  "code": "invalid_input",
+  "message": "Each scenario must be a JSON object.",
+  "step_index": null,
+  "field": "scenarios[0]"
+}

@@ -1,0 +1,6 @@
+{
+  "code": "unsupported_action",
+  "message": "Unsupported action 'hover'.",
+  "step_index": 2,
+  "field": "scenarios[0].steps[1].action"
+}

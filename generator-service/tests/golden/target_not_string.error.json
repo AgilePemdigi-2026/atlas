@@ -1,0 +1,6 @@
+{
+  "code": "invalid_input",
+  "message": "Field 'target' must be a string.",
+  "step_index": 2,
+  "field": "scenarios[0].steps[1].target"
+}

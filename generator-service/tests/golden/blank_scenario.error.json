@@ -1,0 +1,6 @@
+{
+  "code": "invalid_input",
+  "message": "Field 'scenario' must be a non-empty string.",
+  "step_index": null,
+  "field": "scenarios[0].scenario"
+}

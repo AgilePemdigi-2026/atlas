@@ -1,0 +1,11 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Missing target",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "When", "action": "click", "by": "id"}
+      ]
+    }
+  ]
+}

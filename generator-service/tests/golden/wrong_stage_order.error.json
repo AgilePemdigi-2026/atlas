@@ -1,0 +1,6 @@
+{
+  "code": "invalid_stage_order",
+  "message": "Stages must follow Given, When, Then order.",
+  "step_index": 3,
+  "field": "scenarios[0].steps[2].stage"
+}

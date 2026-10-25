@@ -1,0 +1,15 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Happy path",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "__BASE_URL__/index.html"},
+        {"stage": "When", "action": "fill", "by": "id", "target": "q", "value": "atlas"},
+        {"stage": "When", "action": "select", "by": "id", "target": "role", "value": "admin"},
+        {"stage": "When", "action": "click", "by": "id", "target": "submit"},
+        {"stage": "Then", "action": "assert_url", "value": "__BASE_URL__/dashboard.html?q=atlas&role=admin"},
+        {"stage": "Then", "action": "assert_text", "value": "Selamat datang"}
+      ]
+    }
+  ]
+}

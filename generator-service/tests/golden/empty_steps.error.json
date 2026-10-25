@@ -1,0 +1,6 @@
+{
+  "code": "empty_steps",
+  "message": "Each scenario needs at least one step.",
+  "step_index": null,
+  "field": "scenarios[0].steps"
+}

@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Javascript URL",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "javascript:alert(1)"}
+      ]
+    }
+  ]
+}

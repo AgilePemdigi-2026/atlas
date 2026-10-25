@@ -1,0 +1,12 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Wrong stage order",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/"},
+        {"stage": "Then", "action": "assert_text", "value": "Home"},
+        {"stage": "When", "action": "click", "by": "id", "target": "next"}
+      ]
+    }
+  ]
+}

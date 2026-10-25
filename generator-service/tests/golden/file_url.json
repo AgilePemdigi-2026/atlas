@@ -1,0 +1,10 @@
+{
+  "scenarios": [
+    {
+      "scenario": "File URL",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "file:///etc/passwd"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "code": "empty_scenarios",
+  "message": "At least one scenario is required.",
+  "step_index": null,
+  "field": "scenarios"
+}

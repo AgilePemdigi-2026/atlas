@@ -1,0 +1,13 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Special values",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/search?q=a%20b&lang=id"},
+        {"stage": "When", "action": "fill", "by": "css", "target": "input[name='q']", "value": "He said \"hi\" \\ and 'bye'"},
+        {"stage": "When", "action": "fill", "by": "partial_link_text", "target": "Ünïcode", "value": "日本語のテキスト"},
+        {"stage": "Then", "action": "assert_text", "value": "Baris 1\nBaris 2"}
+      ]
+    }
+  ]
+}

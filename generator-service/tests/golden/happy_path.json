@@ -1,0 +1,15 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Login berhasil",
+      "steps": [
+        {"stage": "Given", "action": "navigate", "value": "https://example.test/login"},
+        {"stage": "When", "action": "fill", "by": "id", "target": "email", "value": "user@example.test"},
+        {"stage": "When", "action": "select", "by": "id", "target": "role", "value": "admin"},
+        {"stage": "When", "action": "click", "by": "id", "target": "submit"},
+        {"stage": "Then", "action": "assert_url", "value": "https://example.test/dashboard"},
+        {"stage": "Then", "action": "assert_text", "value": "Welcome"}
+      ]
+    }
+  ]
+}
