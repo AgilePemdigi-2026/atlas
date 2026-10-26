@@ -5,10 +5,10 @@ import json
 from pathlib import Path
 
 import pytest
+from support import GOLDEN_DIR
 
-from converter import convert
-
-GOLDEN_DIR = Path(__file__).parent / "golden"
+from testgen.codegen.selenium_generator import generate_script
+from testgen.errors import ConversionError
 
 
 def _cases() -> list[pytest.ParameterSet]:
@@ -37,16 +37,15 @@ def _cases() -> list[pytest.ParameterSet]:
 def test_golden(input_path: Path, expected_path: Path) -> None:
     payload = json.loads(input_path.read_text(encoding="utf-8"))
 
-    result = convert(payload)
-
     if expected_path.suffix == ".py":
-        assert result.status == "success", result.error
-        assert result.script == expected_path.read_text(encoding="utf-8")
-        assert ast.parse(result.script) is not None
+        script = generate_script(payload)
+        assert script == expected_path.read_text(encoding="utf-8")
+        assert ast.parse(script) is not None
         return
 
-    assert result.status == "error"
-    assert result.script is None
-    assert result.error.to_dict() == json.loads(
+    with pytest.raises(ConversionError) as excinfo:
+        generate_script(payload)
+
+    assert excinfo.value.to_dict() == json.loads(
         expected_path.read_text(encoding="utf-8")
     )
