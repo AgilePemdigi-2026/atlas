@@ -1,4 +1,4 @@
-"""Regenerate golden expectations from the current converter.
+"""Regenerate golden expectations from the current generator.
 
 Review the diff before committing: this overwrites expected scripts and errors.
 """
@@ -6,14 +6,12 @@ Review the diff before committing: this overwrites expected scripts and errors.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
-GOLDEN_DIR = Path(__file__).parent / "golden"
+from testgen.codegen.selenium_generator import generate_script
+from testgen.errors import ConversionError
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
-from converter import convert
+GOLDEN_DIR = Path(__file__).parent / "fixtures" / "golden"
 
 
 def main() -> int:
@@ -22,17 +20,18 @@ def main() -> int:
             continue
 
         payload = json.loads(path.read_text(encoding="utf-8"))
-        result = convert(payload)
 
-        if result.status == "success":
-            path.with_suffix(".py").write_text(result.script, encoding="utf-8")
-            stale = path.with_name(f"{path.stem}.error.json")
-        else:
+        try:
+            script = generate_script(payload)
+        except ConversionError as error:
             path.with_name(f"{path.stem}.error.json").write_text(
-                json.dumps(result.error.to_dict(), ensure_ascii=False, indent=2) + "\n",
+                json.dumps(error.to_dict(), ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
             stale = path.with_suffix(".py")
+        else:
+            path.with_suffix(".py").write_text(script, encoding="utf-8")
+            stale = path.with_name(f"{path.stem}.error.json")
 
         if stale.exists():
             stale.unlink()
