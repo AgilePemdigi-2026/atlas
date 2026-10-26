@@ -1,0 +1,25 @@
+import os
+
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select, WebDriverWait
+
+WAIT_TIMEOUT = 10
+PAGE_LOAD_TIMEOUT = 30
+
+
+def wait_for(driver, by, target):
+    return WebDriverWait(driver, WAIT_TIMEOUT).until(
+        EC.visibility_of_element_located((by, target))
+    )
+
+
+def assert_condition(condition, scenario, action, expected):
+    try:
+        condition()
+    except TimeoutException:
+        raise AssertionError(
+            f"{scenario}: {action} expected {expected!r}"
+        ) from None

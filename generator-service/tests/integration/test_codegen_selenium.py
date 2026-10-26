@@ -9,7 +9,7 @@ from types import ModuleType
 import pytest
 from support import load_scenario, scenario_cases
 
-from converter import convert
+from testgen.codegen.selenium_generator import generate_script
 
 
 def _scenario_functions(script: str) -> list[str]:
@@ -50,12 +50,7 @@ def test_scenario_executes(
     tmp_path: Path,
 ) -> None:
     payload = load_scenario(input_path, base_url)
-    result = convert(payload)
-
-    assert result.status == "success", result.error
-
-    script = result.script
-    assert script is not None
+    script = generate_script(payload)
 
     functions = _scenario_functions(script)
     function_name = functions[scenario_index]
