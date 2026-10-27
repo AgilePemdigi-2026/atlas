@@ -1,8 +1,8 @@
 # generator-service
 
-Python service for ATLAS. Feature 12 (rule-based Selenium script generator) is
-implemented. DOM extraction (F9), LLM extraction (F10), validation (F11), and
-the API/error-handling layer (F13) are one-line placeholders.
+Python service for ATLAS. Feature 10 (LLM extraction over Kenari) and feature 12
+(rule-based Selenium script generator) are implemented. DOM extraction (F9),
+validation (F11), and the error-handling layer (F13) are one-line placeholders.
 
 ## Layout
 
@@ -141,6 +141,37 @@ subclass. `to_dict()` returns exactly:
 - `step_index`: 1-based, `null` for scenario/global errors
 - `field`: fully qualified, e.g. `scenarios[0].steps[2].target`
 
+## F10: LLM extraction (Kenari)
+
+`POST /v1/generate` runs one extraction attempt: user story + cleaned DOM ->
+structured `{"scenarios": [...]}` shaped for the F12 converter. Laravel is the
+only caller (header `X-Service-Key`); the service never touches PostgreSQL and
+is never called by the browser.
+
+```json
+{
+  "user_story": "As a user I want to login.",
+  "acceptance_criteria": "Given ... When ... Then ...",
+  "base_url": "https://target.example.com",
+  "scenarios": [{"name": "Login Success", "scenario_url": "https://target.example.com/login"}],
+  "auth_profile": {"login_url": "https://target.example.com/login", "credentials": {}},
+  "dom": "<optional pre-cleaned snapshot>"
+}
+```
+
+DOM tiers (F9 stopgap, stdlib only — no JS render, no auto-login): fetch the
+target page live and strip non-visual elements, else use the caller snapshot,
+else run minimal with every guess marked `defaulted: true`. The response always
+reports `meta.dom_source` (`live`/`snapshot`/`minimal`) so callers know how much
+to trust the output. Env (values stay out of the repo): `KENARI_API_KEY`,
+`LLM_BASE_URL` (default `https://kenari.id/v1`), `LLM_MODEL` (default
+`gpt-6-luna`), `SERVICE_API_KEY`, `LLM_TIMEOUT=30`, `MAX_RETRIES=3`.
+
+One attempt, no retry (retry is F11's job), defensive parse only (full
+validation is F11's job). F12 revalidates downstream and rejects bad JSON with
+`ConversionError`; F10 envelopes carry the same `{code, message, step_index,
+field}` shape so F13 maps one format.
+
 ## Tests
 
 - `tests/unit/test_codegen_golden.py` parametrizes over
@@ -151,6 +182,10 @@ subclass. `to_dict()` returns exactly:
   fixture against a local HTTP server.
 - `tests/integration/test_generated_script.py` runs whole generated scripts and
   asserts exit codes.
+- `tests/unit/test_llm_extraction.py` covers DOM cleaning, the three DOM
+  tiers, Kenari client errors, and the F10->F12 handoff (all mocked, no network).
+- `tests/unit/test_f10_transport.py` covers auth gating and the
+  `POST /v1/generate` envelope over FastAPI's test client.
 - `tests/unit/test_package.py` checks the package version.
 
 Regenerate expectations only after reviewing the diff:
@@ -164,9 +199,11 @@ git diff tests/fixtures/golden
 
 These files are intentionally one-line placeholders until their feature lands:
 
-- `main.py`, `config.py`, `api/`, `schemas/`, `pipeline/`, `dom/`, `llm/`,
-  `validation/`
-- `Dockerfile` and `.env.example`
+- `pipeline/`, `dom/`, `validation/`
+- `Dockerfile`
+
+F10 owns `config.py`, `main.py`, `api/`, `schemas/`, and `llm/`; F13 owns only
+the user-facing error copy.
 
 The FastAPI app does not boot yet. Do not add behavior there without the
 corresponding feature work (F7-F13).

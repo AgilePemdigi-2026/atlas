@@ -1,1 +1,3 @@
-"""F13 API routes package (placeholder)."""
+"""F10 API routes."""
+
+__all__: list[str] = []
