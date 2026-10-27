@@ -8,6 +8,7 @@ import pytest
 FIXTURES = Path(__file__).parent / "fixtures"
 APP_DIR = FIXTURES / "app"
 SCENARIO_DIR = FIXTURES / "scenarios"
+GOLDEN_DIR = FIXTURES / "golden"
 
 
 def load_scenario(path: Path, base_url: str) -> dict:
