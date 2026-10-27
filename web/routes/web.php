@@ -13,7 +13,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 
     // Lupa password
-   Route::view('/forgot-password', 'auth.resetPassword')->name('password.request');
+   Route::view('/forgot-password', 'auth.reset-password')->name('password.request');
 Route::post('/forgot-password', fn () => back()->with('status', 'Link reset sudah dikirim (placeholder).'))->name('password.email');
 });
 
