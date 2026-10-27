@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        {{-- ============ 01 / HOW IT WORKS ============ --}}
+        {{--  01 / HOW IT WORKS  --}}
         <section id="process" class="relative z-10 flex flex-col gap-7 px-6 py-12 min-[1100px]:px-[104px] min-[1100px]:py-16">
             <div class="font-typewriter text-sm/[1.55] font-semibold text-[#5FBB49]">01 / HOW IT WORKS</div>
             <h2 class="font-display text-[28px]/[1.2] font-bold tracking-[-.02em] text-[#202638] min-[1100px]:text-4xl/[1.2] dark:text-white">From Requirements to Automated Testing</h2>
@@ -81,7 +81,7 @@
             </div>
         </section>
 
-        {{-- ============ 02 / WHAT ATLAS OFFERS ============ --}}
+        {{--  02 / WHAT ATLAS OFFERS  --}}
         <section id="features" class="relative z-10 border-y border-[#ECEEF4] bg-[radial-gradient(ellipse_at_8%_18%,rgba(85,197,74,.08),transparent_30%),radial-gradient(ellipse_at_92%_82%,rgba(77,79,210,.08),transparent_32%)] bg-[#F8FAF8] px-6 py-20 min-[1100px]:py-[100px] dark:border-slate-800 dark:bg-night dark:bg-none">
             <div class="mx-auto flex max-w-[1180px] flex-col items-center gap-14">
                 <div class="flex max-w-[700px] flex-col items-center gap-4 text-center">
@@ -109,7 +109,7 @@
             </div>
         </section>
 
-        {{-- ============ 03 / SEE IT IN ACTION ============ --}}
+        {{--  03 / SEE IT IN ACTION      --}}
         <section id="preview" class="relative z-10 overflow-x-clip px-6 py-16 min-[1100px]:py-[88px]">
     @include('partials.preview-art')
             <div class="relative z-10 mx-auto flex max-w-[1180px] flex-col gap-10">
@@ -157,7 +157,7 @@
             </div>
         </section>
 
-        {{-- ============ CTA ============ --}}
+        {{--  CTA  --}}
         <div id="signup" class="relative overflow-hidden bg-[radial-gradient(ellipse_at_15%_20%,rgba(85,197,74,.28),transparent_35%),radial-gradient(ellipse_at_88%_75%,rgba(100,102,235,.34),transparent_38%),linear-gradient(125deg,#152134,#17243A_52%,#252452)] px-6 py-20 text-center min-[1100px]:py-[88px]">
             <div aria-hidden="true" class="absolute -bottom-32 -left-16 size-[330px] rounded-full border border-[#77DA6F]/25"></div>
             <div class="relative mx-auto flex max-w-[780px] flex-col items-center gap-5">
@@ -173,7 +173,7 @@
     </main>
     </div>
 
-    {{-- ============ FOOTER ============ --}}
+    {{--  FOOTER  --}}
     <footer class="flex flex-col items-center gap-3 bg-[#F7F8FA] px-6 py-8 text-center font-sans text-xs text-[#626C80] dark:bg-abyss dark:text-slate-400">
         <p>© {{ date('Y') }} ATLAS. Semua hak dilindungi.</p>
         <p>ATLAS: Automated Test case generation via LLM-Assisted Selenium scripting.</p>
