@@ -1,65 +1,73 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('title', 'Login – ATLAS')
 
-@section('content')
-    <main class="flex flex-col items-center gap-10 bg-surface px-6 py-12 min-[1100px]:flex-row min-[1100px]:gap-[100px] min-[1100px]:px-40 min-[1100px]:py-20 dark:bg-abyss">
-        <section class="flex w-full min-w-0 flex-col gap-7 min-[1100px]:w-[500px] min-[1100px]:shrink-0">
-            <div class="grid size-11 place-items-center">
-                <x-story-icon />
+@section('intro')
+    <h1 class="font-display text-[40px]/[1.05] font-medium tracking-[-.04em] text-[#171B17] min-[900px]:text-[48px]/[1.05] dark:text-white">Welcome back</h1>
+    <p class="mt-3 text-sm/[1.5] text-[#637064] dark:text-slate-400">Sign in to continue where you left off.</p>
+@endsection
+
+@section('form')
+    @php
+        $fields = [
+            ['name' => 'email', 'label' => 'Email address', 'type' => 'email', 'placeholder' => 'you@company.com', 'autocomplete' => 'email',
+             'icon' => '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>'],
+            ['name' => 'password', 'label' => 'Password', 'type' => 'password', 'placeholder' => 'Enter your password', 'autocomplete' => 'current-password', 'toggle' => true,
+             'icon' => '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'],
+        ];
+    @endphp
+
+    <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-3.5">
+        @csrf
+
+        @if (session('status'))
+            <div class="rounded-[11px] border border-green-200 bg-green-50 px-3 py-2 text-[13px] text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">{{ session('status') }}</div>
+        @endif
+
+        @foreach ($fields as $field)
+            <div class="flex flex-col gap-1.5">
+                <label for="{{ $field['name'] }}" class="text-[11px]/[1.5] font-semibold text-[#283329] dark:text-slate-200">{{ $field['label'] }}</label>
+                <div class="relative">
+                    <svg class="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-[#38714D] dark:text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $field['icon'] !!}</svg>
+                    <input
+                        id="{{ $field['name'] }}"
+                        name="{{ $field['name'] }}"
+                        type="{{ $field['type'] }}"
+                        value="{{ $field['type'] === 'password' ? '' : old($field['name']) }}"
+                        placeholder="{{ $field['placeholder'] }}"
+                        autocomplete="{{ $field['autocomplete'] }}"
+                        required
+                        class="auth-input @if (!empty($field['toggle'])) pr-11 @endif @error($field['name']) border-red-500 @enderror"
+                    >
+                    @if (!empty($field['toggle']))
+                        <button type="button" aria-label="Tampilkan atau sembunyikan password"
+                            onclick="const i = document.getElementById('{{ $field['name'] }}'); i.type = i.type === 'password' ? 'text' : 'password'"
+                            class="absolute top-1/2 right-3 grid size-8 -translate-y-1/2 place-items-center text-[#38714D] dark:text-emerald-300">
+                            <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    @endif
+                </div>
+                @error($field['name'])
+                    <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
             </div>
-            <h1 class="text-[32px]/[1.2] text-body min-[1100px]:text-[44px]/[1.2] dark:text-white">Ubah User-Story Anda menjadi Automated Test Case</h1>
+        @endforeach
 
-            <div class="flex flex-col gap-4 rounded-[10px] bg-night p-7">
-                <div class="font-mono text-[13px]/[1.55] text-[#9AD9BD]">
-                    <div>Given I am on the "/login" page</div>
-                    <div>And I fill in "Email" with "ristulop@gmail.com"</div>
-                    <div>And I fill in "Password" with "ristulristul"</div>
-                    <div>When I press the "Login" button</div>
-                    <div>Then I should be redirected to the "/" page</div>
-                </div>
-                <div class="font-mono text-xs/[1.55] text-[#94A4BE]">user story → Selenium (Automated Test Case)</div>
-            </div>
-        </section>
+        <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 text-[11px] text-[#647066] dark:text-slate-400">
+                <input type="checkbox" name="remember" class="size-4 rounded border-[#B9CBB7] accent-[#30A956]">
+                Keep me signed in
+            </label>
+            <a href="{{ route('password.request') }}" class="text-[11px] font-semibold text-[#258C40] dark:text-emerald-300">Forgot password?</a>
+        </div>
 
-        <section class="w-full min-w-0 rounded-[10px] border border-line bg-white p-8 min-[1100px]:w-[460px] min-[1100px]:shrink-0 dark:border-slate-700 dark:bg-night">
-            <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-6">
-                @csrf
+        <button type="submit" class="relative mt-1 flex h-[50px] w-full items-center justify-center rounded-[11px] bg-[linear-gradient(100deg,#30A956,#5CC247)] text-sm font-semibold text-white shadow-[0_8px_18px_rgba(49,148,60,.26)] hover:opacity-95">
+            Sign in
+            <span class="absolute right-5 text-xl" aria-hidden="true">→</span>
+        </button>
+    </form>
 
-                <div class="flex flex-col gap-3">
-                    <h2 class="text-[32px]/[1.2] text-body dark:text-white">Selamat datang kembali.</h2>
-                    <p class="text-sm/[1.55] text-subtle dark:text-slate-400">Login untuk melanjutkan pekerjaan Anda di Console.</p>
-                </div>
-
-                @if (session('status'))
-                    <div class="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-[13px] text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">{{ session('status') }}</div>
-                @endif
-
-                <div class="flex flex-col gap-2">
-                    <label for="email" class="text-sm/[1.55] font-semibold text-body dark:text-slate-200">Email</label>
-                    <input id="email" name="email" type="email" value="{{ old('email') }}" placeholder="ristulop@example.com" autocomplete="email" required autofocus
-                        class="h-11 w-full rounded-md border bg-white px-3 text-[13px] text-body outline-none placeholder:text-subtle/60 focus:border-accent focus:ring-2 focus:ring-accent/30 dark:bg-abyss dark:text-white @error('email') border-red-500 @else border-line dark:border-slate-600 @enderror">
-                    @error('email')
-                        <p class="text-xs/[1.55] text-red-600 dark:text-red-400">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label for="password" class="text-sm/[1.55] font-semibold text-body dark:text-slate-200">Password</label>
-                    <input id="password" name="password" type="password" placeholder="••••••••••••" autocomplete="current-password" required
-                        class="h-11 w-full rounded-md border border-line bg-white px-3 text-[13px] text-body outline-none placeholder:text-subtle/60 focus:border-accent focus:ring-2 focus:ring-accent/30 dark:border-slate-600 dark:bg-abyss dark:text-white">
-                </div>
-
-                <div class="text-right">
-                    <a href="#" class="text-[13px] font-medium text-accent dark:text-indigo-300">Lupa Password</a>
-                </div>
-
-                <button type="submit" class="h-11 w-full rounded-md bg-accent text-sm font-semibold text-white hover:opacity-90">Login</button>
-
-                <p class="text-center text-[13px] text-subtle dark:text-slate-400">
-                    Belum punya akun? <a href="{{ route('register') }}" class="font-semibold text-accent dark:text-indigo-300">Register</a>
-                </p>
-            </form>
-        </section>
-    </main>
+    <p class="mt-6 text-center text-xs text-[#7B837C] dark:text-slate-400">
+        New to ATLAS? <a href="{{ route('register') }}" class="font-bold text-[#14843A] dark:text-emerald-300">Create an account</a>
+    </p>
 @endsection

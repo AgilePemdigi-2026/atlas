@@ -21,13 +21,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="overflow-x-hidden bg-white font-sans text-body antialiased dark:bg-abyss dark:text-slate-200">
-    @include('partials.header')
-
-    <div class="relative mx-auto max-w-[1440px]">
+    @hasSection('bare')
         @yield('content')
-    </div>
+    @else
+        @include('partials.header')
 
-    @include('partials.footer')
+        <div class="relative mx-auto max-w-[1440px]">
+            @yield('content')
+        </div>
+
+        @include('partials.footer')
+    @endif
 
     <button type="button" id="theme-toggle" aria-label="Ganti mode terang atau gelap"
         class="fixed bottom-4 left-4 z-30 grid size-10 place-items-center rounded-full border border-line bg-white text-body shadow-md hover:bg-surface dark:border-slate-600 dark:bg-night dark:text-slate-200 dark:hover:bg-slate-800">
