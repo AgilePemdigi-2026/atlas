@@ -43,9 +43,84 @@
                     </div>
                 </div>
 
-                <div role="tabpanel" id="panel-history" data-panel="history" aria-labelledby="tab-history" class="p-7">
+                <div role="tabpanel" id="panel-history" data-panel="history" aria-labelledby="tab-history" class="flex flex-col gap-6 p-7">
                     {{-- Tahap 4: Test History --}}
-                    <p class="text-sm text-subtle dark:text-slate-400">Isi tab Test History dipasang di tahap 4.</p>
+                    @php
+                        $statusStyles = [
+                            'completed' => ['label' => 'Completed', 'badge' => 'bg-[#EDF8F2] text-[#23765B] dark:bg-emerald-900/30 dark:text-emerald-300', 'dot' => 'bg-[#23765B] dark:bg-emerald-300'],
+                            'pending' => ['label' => 'Pending', 'badge' => 'bg-[#FFF7E6] text-[#9A6700] dark:bg-amber-900/30 dark:text-amber-300', 'dot' => 'bg-[#9A6700] dark:bg-amber-300'],
+                            'failed' => ['label' => 'Failed', 'badge' => 'bg-[#FFF1F2] text-[#BA3D4A] dark:bg-red-950/40 dark:text-red-300', 'dot' => 'bg-[#BA3D4A] dark:bg-red-300'],
+                        ];
+
+                        $pageBase = 'grid size-11 place-items-center rounded-md border text-[13px]';
+                        $pageLink = $pageBase . ' border-line bg-white text-subtle hover:bg-surface dark:border-slate-600 dark:bg-transparent dark:text-slate-300 dark:hover:bg-white/5';
+                        $pageOff = $pageBase . ' border-line bg-white text-subtle opacity-40 dark:border-slate-600 dark:bg-transparent dark:text-slate-300';
+                        $pageOn = $pageBase . ' border-accent bg-accent text-white';
+
+                        $current = $testCases->currentPage();
+                        $pageUrls = $testCases->getUrlRange(max(1, $current - 2), min($testCases->lastPage(), $current + 2));
+                    @endphp
+
+                    <div class="flex flex-col gap-2">
+                        <h2 class="text-2xl/[1.2] text-body dark:text-white">Test History</h2>
+                        <p class="text-sm/[1.55] text-subtle dark:text-slate-400">Riwayat hasil generate skrip Anda. Completed berarti skrip berhasil dibuat, bukan hasil eksekusi pengujian.</p>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-md border border-line dark:border-slate-700">
+                        <div class="min-w-[560px]">
+                            <div class="flex items-start gap-6 bg-surface p-4 text-xs/[1.55] font-semibold text-body dark:bg-abyss dark:text-slate-100">
+                                <div class="min-w-0 flex-1">Test-case name</div>
+                                <div class="w-[110px] flex-none">Status</div>
+                                <div class="w-[210px] flex-none">Dibuat</div>
+                            </div>
+
+                            @forelse ($testCases as $case)
+                                @php $style = $statusStyles[$case->status->value]; @endphp
+                                <div class="flex items-center gap-6 border-t border-line p-4 dark:border-slate-700">
+                                    <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+                                        <p class="text-sm/[1.55] font-semibold break-words text-body dark:text-white">{{ $case->name }}</p>
+                                        <p class="truncate text-xs/[1.55] text-subtle dark:text-slate-400">{{ $case->scenarios_count }} skenario{{ $case->base_url ? ' · ' . $case->base_url : '' }}</p>
+                                    </div>
+                                    <div class="w-[110px] flex-none">
+                                        <span class="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium {{ $style['badge'] }}">
+                                            <span class="size-[5px] rounded-full {{ $style['dot'] }}"></span>{{ $style['label'] }}
+                                        </span>
+                                    </div>
+                                    <div class="w-[210px] flex-none font-mono text-[11px]/[1.55] text-subtle dark:text-slate-400">{{ $case->created_at->timezone('Asia/Jakarta')->locale('id')->translatedFormat('d M Y · H.i') }}</div>
+                                </div>
+                            @empty
+                                <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Belum ada riwayat test case.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    @if ($testCases->total() > 0)
+                        <div class="flex flex-col gap-3 min-[700px]:flex-row min-[700px]:items-center min-[700px]:justify-between">
+                            <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Menampilkan {{ $testCases->firstItem() }}–{{ $testCases->lastItem() }} dari {{ $testCases->total() }} hasil</p>
+
+                            <nav aria-label="Halaman riwayat" class="flex gap-2">
+                                @if ($testCases->onFirstPage())
+                                    <span class="{{ $pageOff }}" aria-disabled="true">‹</span>
+                                @else
+                                    <a href="{{ $testCases->previousPageUrl() }}" aria-label="Halaman sebelumnya" class="{{ $pageLink }}">‹</a>
+                                @endif
+
+                                @foreach ($pageUrls as $page => $url)
+                                    @if ($page === $current)
+                                        <span class="{{ $pageOn }}" aria-current="page">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}" aria-label="Halaman {{ $page }}" class="{{ $pageLink }}">{{ $page }}</a>
+                                    @endif
+                                @endforeach
+
+                                @if ($testCases->hasMorePages())
+                                    <a href="{{ $testCases->nextPageUrl() }}" aria-label="Halaman berikutnya" class="{{ $pageLink }}">›</a>
+                                @else
+                                    <span class="{{ $pageOff }}" aria-disabled="true">›</span>
+                                @endif
+                            </nav>
+                        </div>
+                    @endif
                 </div>
 
                 <div role="tabpanel" id="panel-settings" data-panel="settings" aria-labelledby="tab-settings" class="flex flex-col gap-7 p-8" hidden>
@@ -174,7 +249,7 @@
             @if (session('status') || $errors->any())
                 initial = 'settings'; // setelah simpan atau error validasi, tetap di tab Settings
             @endif
-            if (document.querySelector('[data-tab="' + initial + '"]')) show(initial);
+          
         })();
     </script>
 @endsection
