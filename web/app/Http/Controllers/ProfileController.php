@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TestCase;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,20 @@ class ProfileController extends Controller
 {
     public function show(Request $request): View
     {
-        return view('profile', ['user' => $request->user()]);
+        $user = $request->user();
+
+        $testCases = TestCase::query()
+            ->whereHas('collection', fn ($query) => $query->where('user_id', $user->user_id))
+            ->withCount('scenarios')
+            ->latest()
+            ->orderByDesc('test_case_id')
+            ->paginate(6)
+            ->fragment('history');
+
+        return view('profile', [
+            'user' => $user,
+            'testCases' => $testCases,
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
