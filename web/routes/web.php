@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ConsoleController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
@@ -25,4 +26,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::middleware('auth')->group(function () {
     Route::get('/console', ConsoleController::class)->name('console');
     Route::resource('collections', CollectionController::class)->only(['store', 'update', 'destroy']);
+});
+
+// F17 & F18 - Profile
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
