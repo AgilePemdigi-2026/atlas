@@ -1,1 +1,1 @@
-"""F11 validation package (placeholder)."""
+"""F11 validation package."""

@@ -38,12 +38,12 @@
             <section class="min-w-0 flex-1 overflow-hidden rounded-lg border border-line bg-white dark:border-slate-700 dark:bg-night">
                 <div class="px-7">
                     <div role="tablist" aria-label="Profile" class="flex gap-7 overflow-x-auto border-b border-line dark:border-slate-700">
-                        <button type="button" role="tab" id="tab-history" data-tab="history" aria-controls="panel-history" aria-selected="true" class="{{ $tabClass }}">Test History</button>
-                        <button type="button" role="tab" id="tab-settings" data-tab="settings" aria-controls="panel-settings" aria-selected="false" class="{{ $tabClass }}">Settings</button>
+                        <button type="button" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="true" class="{{ $tabClass }}">Test History</button>
+                        <button type="button" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" class="{{ $tabClass }}">Settings</button>
                     </div>
                 </div>
 
-                <div role="tabpanel" id="panel-history" data-panel="history" aria-labelledby="tab-history" class="flex flex-col gap-6 p-7">
+                <div role="tabpanel" id="panel-history" aria-labelledby="tab-history" class="flex flex-col gap-6 p-7">
                     {{-- Tahap 4: Test History --}}
                     @php
                         $statusStyles = [
@@ -123,7 +123,7 @@
                     @endif
                 </div>
 
-                <div role="tabpanel" id="panel-settings" data-panel="settings" aria-labelledby="tab-settings" class="flex flex-col gap-7 p-8" hidden>
+                <div role="tabpanel" id="panel-settings" aria-labelledby="tab-settings" class="flex flex-col gap-7 p-8" hidden>
                     @php
                         $inputClass = 'h-11 w-full rounded-md border bg-white px-3 text-[13px] text-body outline-none focus:border-accent focus:ring-2 focus:ring-accent/25 dark:bg-abyss dark:text-white';
 
@@ -227,29 +227,22 @@
     </div>
 
     <script>
-        (function () {
-            var tabs = document.querySelectorAll('[role="tab"]');
-            var panels = document.querySelectorAll('[role="tabpanel"]');
-
-            function show(name) {
-                tabs.forEach(function (tab) {
-                    tab.setAttribute('aria-selected', tab.dataset.tab === name ? 'true' : 'false');
-                });
-                panels.forEach(function (panel) {
-                    panel.hidden = panel.dataset.panel !== name;
-                });
-            }
-
-            tabs.forEach(function (tab) {
-                tab.addEventListener('click', function () { show(tab.dataset.tab); });
-            });
-
-            // /profile#settings langsung membuka tab Settings
+        // Tab switching lives in resources/js/app.js; wait for the module to attach.
+        document.addEventListener('DOMContentLoaded', function () {
             var initial = location.hash.slice(1);
             @if (session('status') || $errors->any())
                 initial = 'settings'; // setelah simpan atau error validasi, tetap di tab Settings
             @endif
-          
-        })();
+
+            if (initial !== 'history' && initial !== 'settings') {
+                return;
+            }
+
+            var tab = document.getElementById('tab-' + initial);
+
+            if (tab) {
+                tab.click();
+            }
+        });
     </script>
 @endsection

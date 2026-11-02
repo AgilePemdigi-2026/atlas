@@ -140,3 +140,29 @@ test('the draft stores the acceptance criteria for the generate step', function 
     expect(TestCase::query()->sole()->acceptance_criteria)
         ->toBe("Skenario: Login berhasil\nGiven saya di halaman login");
 });
+
+test('a failed re-generate marks the previous script failed instead of leaving it current', function () {
+    $user = User::factory()->create();
+    $testCase = generationSetup($user);
+
+    Http::preventStrayRequests();
+    Http::fakeSequence('*/v1/generate')
+        ->push(okResponse())
+        ->push([
+            'status' => 'error',
+            'data' => null,
+            'meta' => ['attempts' => 1],
+            'error' => ['code' => 'llm_unavailable', 'message' => 'provider down'],
+        ], 502);
+
+    $this->actingAs($user)->post(route('test-cases.scenario-urls.generate', $testCase), generatePayload($testCase));
+
+    expect($testCase->fresh()->llmOutput->generatedScript->status->value)->toBe('completed');
+
+    $this->actingAs($user)->post(route('test-cases.scenario-urls.generate', $testCase), generatePayload($testCase));
+
+    $testCase->refresh();
+
+    expect($testCase->status->value)->toBe('failed')
+        ->and($testCase->llmOutput->generatedScript->status->value)->toBe('failed');
+});

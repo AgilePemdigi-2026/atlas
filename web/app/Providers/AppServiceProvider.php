@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer(['partials.header', 'partials.footer', 'landing'], function (ViewContract $view): void {
-            $routes = ['docs' => 'Docs'];
+            $routes = [];
 
             if (Auth::check()) {
                 $routes['profile'] = 'Profile';
