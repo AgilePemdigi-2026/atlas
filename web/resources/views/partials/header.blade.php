@@ -15,6 +15,15 @@
         @foreach ($menu as $item)
             <a href="{{ $item['href'] }}" class="rounded-md px-3 py-2 text-[#595959] transition hover:bg-[#E9FFE4] hover:text-[#0E2D07] min-[1100px]:px-5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">{{ $item['label'] }}</a>
         @endforeach
-        <a href="{{ $loginHref }}" class="ml-1 rounded-md border border-[#E4FFDE] bg-[#E9FFE4] px-4 py-2 font-semibold text-[#0E2D07] shadow-[1px_2px_10px_rgba(0,0,0,.13)] transition hover:brightness-95 min-[1100px]:ml-2 min-[1100px]:px-6 dark:border-emerald-400/30 dark:bg-emerald-400/15 dark:text-emerald-200">Log in</a>
+        @guest
+            <a href="{{ route('login') }}" class="ml-1 rounded-md border border-[#E4FFDE] bg-[#E9FFE4] px-4 py-2 font-semibold text-[#0E2D07] shadow-[1px_2px_10px_rgba(0,0,0,.13)] transition hover:brightness-95 min-[1100px]:ml-2 min-[1100px]:px-6 dark:border-emerald-400/30 dark:bg-emerald-400/15 dark:text-emerald-200">Log in</a>
+        @endguest
+
+        @auth
+            <form method="POST" action="{{ route('logout') }}" class="ml-1 min-[1100px]:ml-2">
+                @csrf
+                <button type="submit" class="rounded-md border border-[#BA3D4A] bg-[#BA3D4A] px-4 py-2 font-semibold text-white shadow-[1px_2px_10px_rgba(0,0,0,.13)] transition hover:brightness-95 min-[1100px]:px-6 dark:border-red-600 dark:bg-red-600 dark:text-white">Log out</button>
+            </form>
+        @endauth
     </nav>
 </header>   
