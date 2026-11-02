@@ -18,6 +18,9 @@ class ConsoleController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('console', ['collections' => $collections]);
+        return view('console', [
+            'collections' => $collections,
+            'activeCollectionId' => $request->integer('collection') ?: null,
+        ]);
     }
 }

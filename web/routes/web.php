@@ -5,6 +5,7 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ConsoleController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TestCaseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
@@ -26,6 +27,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::middleware('auth')->group(function () {
     Route::get('/console', ConsoleController::class)->name('console');
     Route::resource('collections', CollectionController::class)->only(['store', 'update', 'destroy']);
+
+    // F6 & F8 - Test case draft and scenario URLs
+    Route::post('/test-cases', [TestCaseController::class, 'store'])->name('test-cases.store');
+    Route::get('/test-cases/{test_case}/scenario-urls', [TestCaseController::class, 'scenarioUrls'])->name('test-cases.scenario-urls');
 });
 
 // F17 & F18 - Profile
