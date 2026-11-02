@@ -26,6 +26,14 @@
     --color-abyss: #0b1020;
 }
 
+@layer base {
+    button:not(:disabled),
+    summary,
+    label:has(> input[type='checkbox']:not(:disabled)) {
+        cursor: pointer;
+    }
+}
+
 @layer components {
     .auth-bg {
         background:
