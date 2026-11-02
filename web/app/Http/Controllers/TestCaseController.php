@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TestCaseStatus;
 use App\Models\Scenario;
 use App\Models\TestCase;
 use App\Services\Generator\GenerateRequest;
@@ -139,6 +140,17 @@ class TestCaseController extends Controller
 
         $testCase->load('scenarios', 'llmOutput.generatedScript');
 
-        return view('test-cases.show', ['testCase' => $testCase]);
+        $meta = $testCase->llmOutput?->output;
+
+        return view('test-cases.show', [
+            'testCase' => $testCase,
+            'script' => $testCase->llmOutput?->generatedScript?->content,
+            'meta' => is_array($meta) ? $meta : null,
+            'statusCopy' => match ($testCase->status) {
+                TestCaseStatus::Pending => 'Menunggu generate.',
+                TestCaseStatus::Completed => 'Generate selesai.',
+                TestCaseStatus::Failed => 'Generate gagal.',
+            },
+        ]);
     }
 }
