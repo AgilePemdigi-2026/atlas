@@ -116,6 +116,41 @@ def test_generate_llm_error_stays_in_envelope() -> None:
     assert response.json()["error"]["code"] == "llm_unavailable"
 
 
+def test_generate_includes_generated_script() -> None:
+    response = _client(_transport()).post(
+        "/v1/generate",
+        json={"user_story": "As a user I want to login."},
+        headers={"X-Service-Key": "svc"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert "from selenium import webdriver" in body["data"]["script"]
+    assert "def login" in body["data"]["script"]
+
+
+def test_generate_codegen_failure_is_enveloped(monkeypatch) -> None:
+    from testgen.api.routes import generate as generate_module
+    from testgen.errors import ConversionError
+
+    def boom(payload: object) -> str:
+        raise ConversionError(code="missing_navigation", message="No navigation step.")
+
+    monkeypatch.setattr(generate_module, "generate_script", boom)
+
+    response = _client(_transport()).post(
+        "/v1/generate",
+        json={"user_story": "As a user I want to login."},
+        headers={"X-Service-Key": "svc"},
+    )
+
+    assert response.status_code == 502
+    body = response.json()
+    assert body["status"] == "error"
+    assert body["error"]["code"] == "missing_navigation"
+
+
 def test_settings_defaults_match_team_decision() -> None:
     settings = Settings()
 
