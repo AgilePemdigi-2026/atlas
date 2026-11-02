@@ -1,4 +1,4 @@
-@props(['collections'])
+@props(['collections', 'selected' => null])
 
 <aside class="flex w-full flex-none flex-col gap-6 border-b border-line bg-surface p-5 min-[900px]:w-[236px] min-[900px]:border-r min-[900px]:border-b-0 dark:border-slate-700 dark:bg-night">
     <h2 class="text-sm/[1.55] font-semibold text-body dark:text-slate-100">Test Scenario</h2>
@@ -9,7 +9,7 @@
 
     <div class="flex flex-col gap-4">
         @forelse ($collections as $collection)
-            <details class="group flex flex-col gap-2" {{ $loop->first ? 'open' : '' }}>
+            <details class="group flex flex-col gap-2" {{ ($selected ? $selected->collection_id == $collection->getKey() : $loop->first) ? 'open' : '' }}>
                 <summary class="flex cursor-pointer list-none items-center gap-2 text-[13px]/[1.55] font-semibold text-body dark:text-slate-100">
                     <span class="inline-block transition-transform group-open:rotate-90" aria-hidden="true">›</span>
                     {{ $collection->name }}
@@ -17,8 +17,12 @@
 
                 <div class="flex flex-col gap-2">
                     @forelse ($collection->testCases as $testCase)
-                        <div class="flex flex-col gap-[7px] rounded-md bg-white p-3 dark:bg-abyss">
-                            <span class="text-xs/[1.55] text-body dark:text-slate-200">{{ $testCase->name }}</span>
+                        <div @class([
+                            'flex flex-col gap-[7px] rounded-md p-3',
+                            'bg-[#EAEAFF] shadow-[inset_3px_0_0_#2FA84F] dark:bg-indigo-900/40' => $selected?->getKey() == $testCase->getKey(),
+                            'bg-white dark:bg-abyss' => $selected?->getKey() != $testCase->getKey(),
+                        ])>
+                            <a href="{{ route('console', ['test_case' => $testCase->getKey()]) }}" class="text-xs/[1.55] text-body hover:text-accent dark:text-slate-200 dark:hover:text-indigo-300">{{ $testCase->name }}</a>
                             <x-console.status-badge :status="$testCase->status->value" />
                         </div>
                     @empty

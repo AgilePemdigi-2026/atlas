@@ -26,6 +26,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::middleware('auth')->group(function () {
     Route::get('/console', ConsoleController::class)->name('console');
     Route::resource('collections', CollectionController::class)->only(['store', 'update', 'destroy']);
+    Route::get('/test-cases/{testCase}/script/download', [ConsoleController::class, 'download'])->name('test-cases.script.download');
 });
 
 // F17 & F18 - Profile

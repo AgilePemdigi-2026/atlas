@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="flex min-h-[calc(100vh-72px)] flex-col min-[900px]:flex-row min-[1100px]:min-h-[calc(100vh-88px)]">
-        <x-console.collection-sidebar :collections="$collections" />
+        <x-console.collection-sidebar :collections="$collections" :selected="$selected" />
 
         <section class="flex min-w-0 flex-1 flex-col gap-7 px-6 pb-10 min-[900px]:px-9">
             @if (session('status'))
@@ -25,6 +25,32 @@
             <div role="tabpanel" id="panel-story" data-panel="story" aria-labelledby="tab-story">
                 {{-- Tahap 2: isi tab User Story --}}
                 <p class="text-sm text-subtle dark:text-slate-400">Isi tab User Story dipasang di tahap 2.</p>
+
+                @if ($selected)
+                    @php $hasScript = $selected->generatedScript !== null; @endphp
+                    <div class="mt-6 flex flex-col gap-4 border-t border-line pt-4 dark:border-slate-700">
+                        <div role="tablist" aria-label="Hasil generate" class="flex gap-7 border-b border-line dark:border-slate-700">
+                            <button type="button" role="tab" id="subtab-scenario" data-subtab="scenario" aria-controls="subpanel-scenario" aria-selected="{{ $hasScript ? 'false' : 'true' }}"
+                                class="-mb-px border-b-2 border-transparent px-1 py-3 text-xs whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
+                                Scenario URL
+                            </button>
+                            <button type="button" role="tab" id="subtab-script" data-subtab="script" aria-controls="subpanel-script" aria-selected="{{ $hasScript ? 'true' : 'false' }}"
+                                class="-mb-px border-b-2 border-transparent px-1 py-3 text-xs whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
+                                Generated Script
+                            </button>
+                        </div>
+
+                        <div role="tabpanel" id="subpanel-scenario" data-subpanel="scenario" aria-labelledby="subtab-scenario" {{ $hasScript ? 'hidden' : '' }}>
+                            {{-- F8 (Hiero): tabel Scenario URL dipasang di sini --}}
+                            <p class="text-sm text-subtle dark:text-slate-400">Tabel Scenario URL dipasang di F8.</p>
+                        </div>
+
+                        <div role="tabpanel" id="subpanel-script" data-subpanel="script" aria-labelledby="subtab-script" {{ $hasScript ? '' : 'hidden' }}>
+                            {{-- F15: Generated Script --}}
+                            <x-console.script-review :test-case="$selected" />
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div role="tabpanel" id="panel-config" data-panel="config" aria-labelledby="tab-config" hidden>
@@ -36,8 +62,8 @@
 
     <script>
         (function () {
-            var tabs = document.querySelectorAll('[role="tab"]');
-            var panels = document.querySelectorAll('[role="tabpanel"]');
+            var tabs = document.querySelectorAll('[data-tab]');
+            var panels = document.querySelectorAll('[data-panel]');
 
             function show(name) {
                 tabs.forEach(function (tab) {
@@ -50,6 +76,22 @@
 
             tabs.forEach(function (tab) {
                 tab.addEventListener('click', function () { show(tab.dataset.tab); });
+            });
+
+            var subtabs = document.querySelectorAll('[data-subtab]');
+            var subpanels = document.querySelectorAll('[data-subpanel]');
+
+            function showSub(name) {
+                subtabs.forEach(function (tab) {
+                    tab.setAttribute('aria-selected', tab.dataset.subtab === name ? 'true' : 'false');
+                });
+                subpanels.forEach(function (panel) {
+                    panel.hidden = panel.dataset.subpanel !== name;
+                });
+            }
+
+            subtabs.forEach(function (tab) {
+                tab.addEventListener('click', function () { showSub(tab.dataset.subtab); });
             });
 
             // Elemen apa pun dengan data-open-tab="config" akan membuka tab itu (dipakai link "Buka Config →" di tahap 2)
