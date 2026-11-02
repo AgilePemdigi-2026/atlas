@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CollectionController;
+use App\Http\Controllers\ConsoleController;
 use App\Http\Controllers\LandingController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,8 +15,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 
     // Lupa password
-   Route::view('/forgot-password', 'auth.reset-password')->name('password.request');
-Route::post('/forgot-password', fn () => back()->with('status', 'Link reset sudah dikirim (placeholder).'))->name('password.email');
+    Route::view('/forgot-password', 'auth.reset-password')->name('password.request');
+    Route::post('/forgot-password', fn () => back()->with('status', 'Link reset sudah dikirim (placeholder).'))->name('password.email');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// F14 - Collection & Console
+Route::middleware('auth')->group(function () {
+    Route::get('/console', ConsoleController::class)->name('console');
+    Route::resource('collections', CollectionController::class)->only(['store', 'update', 'destroy']);
+});
