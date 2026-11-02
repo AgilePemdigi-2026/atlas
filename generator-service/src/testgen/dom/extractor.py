@@ -46,14 +46,18 @@ def extract_dom(
                 from selenium.webdriver.chrome.options import Options
             except ImportError as error:  # pragma: no cover - depends on deployment
                 raise RuntimeError(
-                    "Selenium is required for DOM extraction.") from error
+                    "Selenium is required for DOM extraction."
+                ) from error
 
             options = Options()
             options.add_argument("--headless=new")
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-gpu")
-            def driver_factory(): return webdriver.Chrome(options=options)
+
+            def driver_factory():
+                return webdriver.Chrome(options=options)
+
         driver = driver_factory()
 
     try:

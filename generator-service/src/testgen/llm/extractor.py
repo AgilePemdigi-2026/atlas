@@ -23,7 +23,6 @@ from pydantic import ValidationError
 
 from testgen.config import Settings
 from testgen.dom.extractor import extract_dom
-from testgen.validation.validator import validate_extraction
 from testgen.llm.client import KenariClient
 from testgen.llm.errors import (
     INVALID_INPUT,
@@ -34,19 +33,18 @@ from testgen.llm.errors import (
 from testgen.schemas.extraction import ExtractionPayload
 from testgen.schemas.request import GenerateRequest
 from testgen.schemas.response import GenerateResponse, ResponseError, ResponseMeta
+from testgen.validation.validator import validate_extraction
 
 __all__ = ["clean_dom", "extract"]
 
 MAX_ELEMENTS = 200
 MAX_TEXT_CHARS = 80
 
-_SKIP_TAGS = frozenset(
-    {"script", "style", "svg", "canvas", "noscript", "head"})
+_SKIP_TAGS = frozenset({"script", "style", "svg", "canvas", "noscript", "head"})
 _INTERACTIVE_TAGS = frozenset(
     {"a", "button", "input", "select", "textarea", "option", "label", "form"}
 )
-_KEPT_ATTRS = ("id", "name", "type", "placeholder",
-               "href", "value", "aria-label")
+_KEPT_ATTRS = ("id", "name", "type", "placeholder", "href", "value", "aria-label")
 
 
 class _Cleaner(HTMLParser):
@@ -223,8 +221,7 @@ def _resolve_dom(
 def _user_message(request: GenerateRequest, dom_text: str, dom_source: str) -> str:
     lines = [f"User story:\n{request.user_story.strip()}"]
     if request.acceptance_criteria and request.acceptance_criteria.strip():
-        lines.append(
-            f"Acceptance criteria:\n{request.acceptance_criteria.strip()}")
+        lines.append(f"Acceptance criteria:\n{request.acceptance_criteria.strip()}")
     urls = [
         s.scenario_url.strip()
         for s in request.scenarios
@@ -240,11 +237,9 @@ def _user_message(request: GenerateRequest, dom_text: str, dom_source: str) -> s
             f"{request.auth_profile.login_url.strip()}"
         )
     if dom_source == "minimal":
-        lines.append(
-            "DOM: (none provided — guess targets, mark defaulted true)")
+        lines.append("DOM: (none provided — guess targets, mark defaulted true)")
     else:
-        lines.append(
-            f"DOM ({dom_source}, cleaned):\n{dom_text or '(no elements)'}")
+        lines.append(f"DOM ({dom_source}, cleaned):\n{dom_text or '(no elements)'}")
     return "\n\n".join(lines)
 
 
@@ -298,8 +293,7 @@ def extract(
     dom_text, dom_source, warnings = _resolve_dom(request, settings, transport)
     client = KenariClient(settings, transport=transport)
     user_message = _user_message(request, dom_text, dom_source)
-    max_retries = max(
-        0, min(request.options.max_retries, settings.max_retries, 3))
+    max_retries = max(0, min(request.options.max_retries, settings.max_retries, 3))
     attempts = 0
     last_error: LlmError | None = None
 
@@ -313,8 +307,7 @@ def extract(
                 dom_text if dom_source != "minimal" else None,
             )
             if not validation.valid:
-                details = "\n".join(
-                    f"- {message}" for message in validation.errors)
+                details = "\n".join(f"- {message}" for message in validation.errors)
                 last_error = LlmError(
                     "LLM output failed JSON/DOM validation: " + details,
                     code=INVALID_RESPONSE,
@@ -361,8 +354,9 @@ def extract(
                 field=field,
             )
             if attempts <= max_retries:
-                user_message += "\n\nFix this schema error and return complete JSON: " + \
-                    str(error)
+                user_message += (
+                    "\n\nFix this schema error and return complete JSON: " + str(error)
+                )
                 continue
             break
 
