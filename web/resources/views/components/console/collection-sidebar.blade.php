@@ -1,4 +1,4 @@
-@props(['collections'])
+@props(['collections', 'activeCollectionId' => null])
 
 <aside class="flex w-full flex-none flex-col gap-6 border-b border-line bg-surface p-5 min-[900px]:w-[236px] min-[900px]:border-r min-[900px]:border-b-0 dark:border-slate-700 dark:bg-night">
     <h2 class="text-sm/[1.55] font-semibold text-body dark:text-slate-100">Test Scenario</h2>
@@ -12,7 +12,15 @@
             <details class="group flex flex-col gap-2" {{ $loop->first ? 'open' : '' }}>
                 <summary class="flex cursor-pointer list-none items-center gap-2 text-[13px]/[1.55] font-semibold text-body dark:text-slate-100">
                     <span class="inline-block transition-transform group-open:rotate-90" aria-hidden="true">›</span>
-                    {{ $collection->name }}
+                    <svg class="size-3.5 flex-none stroke-accent dark:stroke-indigo-300" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M2.5 6.5A1.5 1.5 0 0 1 4 5h3.2l1.3 1.5H16a1.5 1.5 0 0 1 1.5 1.5v6A1.5 1.5 0 0 1 16 15.5H4A1.5 1.5 0 0 1 2.5 14V6.5Z" stroke-width="1.5" stroke-linejoin="round" />
+                    </svg>
+                    <a href="{{ route('console', ['collection' => $collection->getKey()]) }}"
+                        @class([
+                            'min-w-0 flex-1 truncate rounded-sm hover:text-accent dark:hover:text-indigo-300',
+                            'text-accent dark:text-indigo-300' => $activeCollectionId === $collection->getKey(),
+                        ])
+                        @if ($activeCollectionId === $collection->getKey()) aria-current="page" @endif>{{ $collection->name }}</a>
                 </summary>
 
                 <div class="flex flex-col gap-2">
