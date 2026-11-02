@@ -1,0 +1,35 @@
+if __name__ == "__main__":
+    options = webdriver.ChromeOptions()
+    if os.environ.get("HEADLESS", "true").lower() != "false":
+        options.add_argument("--headless=new")
+
+    driver = webdriver.Chrome(options=options)
+    driver.set_page_load_timeout(PAGE_LOAD_TIMEOUT)
+
+    passed = 0
+    failed = 0
+
+    try:
+        for index, run_scenario in enumerate(
+            [
+{{ scenarios }}
+            ],
+            start=1,
+        ):
+            try:
+                run_scenario(driver)
+            except AssertionError as error:
+                failed += 1
+                print(f"[ATLAS] scenario {index}: FAIL {error}", flush=True)
+            except Exception as error:
+                failed += 1
+                print(f"[ATLAS] scenario {index}: ERROR {error}", flush=True)
+                break
+            else:
+                passed += 1
+                print(f"[ATLAS] scenario {index}: PASS", flush=True)
+    finally:
+        driver.quit()
+
+    print(f"[ATLAS] result: {passed} passed, {failed} failed", flush=True)
+    raise SystemExit(1 if failed else 0)

@@ -1,73 +1,73 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('title', 'Register – ATLAS')
 
-@php
-    $fields = [
-        ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'placeholder' => 'Ristul', 'autocomplete' => 'name'],
-        ['name' => 'email', 'label' => 'Email', 'type' => 'email', 'placeholder' => 'ristulop@example.com', 'autocomplete' => 'email'],
-        ['name' => 'password', 'label' => 'Password', 'type' => 'password', 'placeholder' => '••••••••••••', 'autocomplete' => 'new-password', 'hint' => 'Gunakan minimal 8 karakter.'],
-    ];
-@endphp
+@section('intro')
+    <h1 class="font-display text-[40px]/[1.05] font-medium tracking-[-.04em] text-[#171B17] min-[900px]:text-[48px]/[1.05] dark:text-white">Create your account</h1>
+    <p class="mt-3 text-sm/[1.5] text-[#637064] dark:text-slate-400">Start building remarkable things with your team.</p>
+@endsection
 
-@section('content')
-    <main class="flex flex-col items-center gap-10 bg-surface px-6 py-12 min-[1100px]:flex-row min-[1100px]:gap-[100px] min-[1100px]:px-40 min-[1100px]:py-20 dark:bg-abyss">
-        <section class="flex w-full min-w-0 flex-col gap-7 min-[1100px]:w-[500px] min-[1100px]:shrink-0">
-            <div class="grid size-11 place-items-center">
-                <x-story-icon />
-            </div>
-            <h1 class="text-[32px]/[1.2] text-body min-[1100px]:text-[44px]/[1.2] dark:text-white">Ubah User-Story Anda menjadi Automated Test Case</h1>
+@section('form')
+    @php
+        $fields = [
+            ['name' => 'name', 'label' => 'Full name', 'type' => 'text', 'placeholder' => 'Enter your name', 'autocomplete' => 'name',
+             'icon' => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
+            ['name' => 'email', 'label' => 'Email address', 'type' => 'email', 'placeholder' => 'you@company.com', 'autocomplete' => 'email',
+             'icon' => '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>'],
+            ['name' => 'password', 'label' => 'Password', 'type' => 'password', 'placeholder' => 'At least 8 characters', 'autocomplete' => 'new-password', 'toggle' => true,
+             'icon' => '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'],
+        ];
+    @endphp
 
-            <div class="flex flex-col gap-4 rounded-[10px] bg-night p-7">
-                <div class="font-mono text-[13px]/[1.55] text-[#9AD9BD]">
-                    <div>Given I am on the "/register" page</div>
-                    <div>And I fill in "Name" with "Rizztul"</div>
-                    <div>And I fill in "Email" with "ristulop@gmail.com"</div>
-                    <div>And I fill in "Password" with "ristulristul"</div>
-                    <div>When I press the "Register" button</div>
-                    <div>Then I should see the message "Akun anda berhasil terdaftar"</div>
-                    <div>And I should be redirected to the "/login" page</div>
+    <form method="POST" action="{{ route('register') }}" class="flex flex-col gap-3.5">
+        @csrf
+
+        @foreach ($fields as $field)
+            <div class="flex flex-col gap-1.5">
+                <label for="{{ $field['name'] }}" class="text-[11px]/[1.5] font-semibold text-[#283329] dark:text-slate-200">{{ $field['label'] }}</label>
+                <div class="relative">
+                    <svg class="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-[#38714D] dark:text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $field['icon'] !!}</svg>
+                    <input
+                        id="{{ $field['name'] }}"
+                        name="{{ $field['name'] }}"
+                        type="{{ $field['type'] }}"
+                        value="{{ $field['type'] === 'password' ? '' : old($field['name']) }}"
+                        placeholder="{{ $field['placeholder'] }}"
+                        autocomplete="{{ $field['autocomplete'] }}"
+                        required
+                        class="auth-input @if (!empty($field['toggle'])) pr-11 @endif @error($field['name']) border-red-500 @enderror"
+                    >
+                    @if (!empty($field['toggle']))
+                        <button type="button" aria-label="Tampilkan atau sembunyikan password"
+                            onclick="const i = document.getElementById('{{ $field['name'] }}'); i.type = i.type === 'password' ? 'text' : 'password'"
+                            class="absolute top-1/2 right-3 grid size-8 -translate-y-1/2 place-items-center text-[#38714D] dark:text-emerald-300">
+                            <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    @endif
                 </div>
-                <div class="font-mono text-xs/[1.55] text-[#94A4BE]">user story → Selenium (Automated Test Case)</div>
+                @error($field['name'])
+                    <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
             </div>
-        </section>
+        @endforeach
 
-        <section class="w-full min-w-0 rounded-[10px] border border-line bg-white p-8 min-[1100px]:w-[460px] min-[1100px]:shrink-0 dark:border-slate-700 dark:bg-night">
-            <form method="POST" action="{{ route('register') }}" class="flex flex-col gap-6">
-                @csrf
+        <div class="flex flex-col gap-1.5">
+            <label class="flex items-start gap-2 text-[11px]/[1.45] text-[#647066] dark:text-slate-400">
+                <input type="checkbox" name="terms" value="1" required class="mt-px size-4 shrink-0 rounded border-[#B9CBB7] accent-[#30A956]" @checked(old('terms'))>
+                <span>I agree to the <a href="#" class="text-[#258C40] dark:text-emerald-300">Terms of Service</a> and <a href="#" class="text-[#258C40] dark:text-emerald-300">Privacy Policy</a>.</span>
+            </label>
+            @error('terms')
+                <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
 
-                <div class="flex flex-col gap-3">
-                    <div class="text-xs/[1.55] font-semibold text-accent dark:text-indigo-300">AKUN</div>
-                    <h2 class="text-[32px]/[1.2] text-body dark:text-white">Start With Your Story</h2>
-                </div>
+        <button type="submit" class="relative mt-1 flex h-[50px] w-full items-center justify-center rounded-[11px] bg-[linear-gradient(100deg,#30A956,#5CC247)] text-sm font-semibold text-white shadow-[0_8px_18px_rgba(49,148,60,.26)] hover:opacity-95">
+            Create account
+            <span class="absolute right-5 text-xl" aria-hidden="true">→</span>
+        </button>
+    </form>
 
-                @foreach ($fields as $field)
-                    <div class="flex flex-col gap-2">
-                        <label for="{{ $field['name'] }}" class="text-sm/[1.55] font-semibold text-body dark:text-slate-200">{{ $field['label'] }}</label>
-                        <input
-                            id="{{ $field['name'] }}"
-                            name="{{ $field['name'] }}"
-                            type="{{ $field['type'] }}"
-                            value="{{ $field['type'] === 'password' ? '' : old($field['name']) }}"
-                            placeholder="{{ $field['placeholder'] }}"
-                            autocomplete="{{ $field['autocomplete'] }}"
-                            required
-                            class="h-11 w-full rounded-md border bg-white px-3 text-[13px] text-body outline-none placeholder:text-subtle/60 focus:border-accent focus:ring-2 focus:ring-accent/30 dark:bg-abyss dark:text-white @error($field['name']) border-red-500 @else border-line dark:border-slate-600 @enderror"
-                        >
-                        @error($field['name'])
-                            <p class="text-xs/[1.55] text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @elseif (isset($field['hint']))
-                            <p class="text-xs/[1.55] text-subtle dark:text-slate-400">{{ $field['hint'] }}</p>
-                        @enderror
-                    </div>
-                @endforeach
-
-                <button type="submit" class="h-11 w-full rounded-md bg-accent text-sm font-semibold text-white hover:opacity-90">Register</button>
-
-                <p class="text-center text-[13px] text-subtle dark:text-slate-400">
-                    Sudah punya akun? <a href="{{ route('login') }}" class="font-semibold text-accent dark:text-indigo-300">Login</a>
-                </p>
-            </form>
-        </section>
-    </main>
+    <p class="mt-6 text-center text-xs text-[#7B837C] dark:text-slate-400">
+        Already have an account? <a href="{{ route('login') }}" class="font-bold text-[#14843A] dark:text-emerald-300">Sign in</a>
+    </p>
 @endsection

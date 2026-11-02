@@ -9,6 +9,8 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
             fonts: [
+                bunny('DM Sans', { weights: [400, 600, 700] }),
+                bunny('Cousine', { weights: [400] }),
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
