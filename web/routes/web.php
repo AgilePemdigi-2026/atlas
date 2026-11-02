@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
     // F6 & F8 - Test case draft and scenario URLs
     Route::post('/test-cases', [TestCaseController::class, 'store'])->name('test-cases.store');
     Route::get('/test-cases/{test_case}/scenario-urls', [TestCaseController::class, 'scenarioUrls'])->name('test-cases.scenario-urls');
+    Route::post('/test-cases/{test_case}/scenario-urls', [TestCaseController::class, 'generate'])->name('test-cases.scenario-urls.generate');
+    Route::get('/test-cases/{test_case}', [TestCaseController::class, 'show'])->name('test-cases.show');
 });
 
 // F17 & F18 - Profile

@@ -26,7 +26,7 @@
                 <div class="flex flex-col gap-2">
                     @forelse ($collection->testCases as $testCase)
                         <div class="flex flex-col gap-[7px] rounded-md bg-white p-3 dark:bg-abyss">
-                            <span class="text-xs/[1.55] text-body dark:text-slate-200">{{ $testCase->name }}</span>
+                            <a href="{{ route('test-cases.show', $testCase) }}" class="text-xs/[1.55] text-body hover:text-accent dark:text-slate-200 dark:hover:text-indigo-300">{{ $testCase->name }}</a>
                             <x-console.status-badge :status="$testCase->status->value" />
                         </div>
                     @empty

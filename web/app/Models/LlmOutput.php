@@ -21,6 +21,7 @@ class LlmOutput extends Model
     protected function casts(): array
     {
         return [
+            'output' => 'array',
             'validation_status' => LlmValidationStatus::class,
             'retry_count' => 'integer',
         ];
