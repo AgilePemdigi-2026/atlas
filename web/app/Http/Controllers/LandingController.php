@@ -14,10 +14,6 @@ class LandingController extends Controller
                 ['label' => 'Step 02: Generate Your Test Script', 'body' => "ATLAS analyzes the target page's DOM elements, processes your requirements using an LLM, and validates the extracted information before generating a Selenium script."],
                 ['label' => 'Step 03: Review and Run Your Script', 'body' => 'Review the generated script, run it against your target application, and check the execution status along with failure details if a test does not pass.'],
             ],
-            'scenarios' => [
-                ['title' => 'Menambahkan produk', 'url' => 'https://toko.example/products/tas-kanvas'],
-                ['title' => 'Menghapus produk', 'url' => 'https://toko.example/cart'],
-            ],
         ]);
     }
 }

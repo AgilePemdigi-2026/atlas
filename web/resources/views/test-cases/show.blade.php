@@ -13,17 +13,17 @@
         </div>
 
         <div role="tablist" aria-label="Hasil test case" class="flex gap-7 overflow-x-auto border-b border-line dark:border-slate-700">
-            <button type="button" role="tab" id="tab-scenarios" data-tab="scenarios" aria-controls="panel-scenarios" aria-selected="true"
+            <button type="button" role="tab" id="tab-scenarios" aria-controls="panel-scenarios" aria-selected="true"
                 class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
                 Scenario URL
             </button>
-            <button type="button" role="tab" id="tab-script" data-tab="script" aria-controls="panel-script" aria-selected="false"
+            <button type="button" role="tab" id="tab-script" aria-controls="panel-script" aria-selected="false"
                 class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
                 Generated Script
             </button>
         </div>
 
-        <div role="tabpanel" id="panel-scenarios" data-panel="scenarios" aria-labelledby="tab-scenarios">
+        <div role="tabpanel" id="panel-scenarios" aria-labelledby="tab-scenarios">
             <table class="w-full text-left text-[13px] text-body dark:text-slate-200">
                 <thead>
                     <tr class="text-[11px] uppercase tracking-wide text-subtle dark:text-slate-400">
@@ -48,7 +48,7 @@
             </table>
         </div>
 
-        <div role="tabpanel" id="panel-script" data-panel="script" aria-labelledby="tab-script" hidden>
+        <div role="tabpanel" id="panel-script" aria-labelledby="tab-script" hidden>
             @if ($script)
                 @if ($meta)
                     <p class="mb-3 text-[11px] text-subtle dark:text-slate-400">
@@ -70,24 +70,4 @@
 
         <a href="{{ route('console') }}" class="text-xs font-semibold text-accent hover:underline dark:text-indigo-300">Kembali ke console</a>
     </section>
-
-    <script>
-        (function () {
-            var tabs = document.querySelectorAll('[role="tab"]');
-            var panels = document.querySelectorAll('[role="tabpanel"]');
-
-            function show(name) {
-                tabs.forEach(function (tab) {
-                    tab.setAttribute('aria-selected', tab.dataset.tab === name ? 'true' : 'false');
-                });
-                panels.forEach(function (panel) {
-                    panel.hidden = panel.dataset.panel !== name;
-                });
-            }
-
-            tabs.forEach(function (tab) {
-                tab.addEventListener('click', function () { show(tab.dataset.tab); });
-            });
-        })();
-    </script>
 @endsection

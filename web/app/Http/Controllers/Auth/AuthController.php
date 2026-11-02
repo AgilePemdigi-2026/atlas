@@ -8,7 +8,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -22,6 +21,10 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'Field wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Field wajib diisi.',
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
@@ -47,6 +50,14 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
             'terms' => ['accepted'],
+        ], [
+            'name.required' => 'Field wajib diisi.',
+            'email.required' => 'Field wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar',
+            'password.required' => 'Field wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'terms.accepted' => 'Field wajib diisi.',
         ]);
 
         User::create(collect($data)->except('terms')->all());

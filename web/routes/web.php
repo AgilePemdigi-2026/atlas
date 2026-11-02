@@ -16,9 +16,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // Lupa password
+    // Lupa password — form tersedia, pengiriman email menunggu F4
     Route::view('/forgot-password', 'auth.reset-password')->name('password.request');
-    Route::post('/forgot-password', fn () => back()->with('status', 'Link reset sudah dikirim (placeholder).'))->name('password.email');
+    Route::post('/forgot-password', fn () => back())->name('password.email');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

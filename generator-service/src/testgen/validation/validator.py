@@ -51,7 +51,7 @@ def _dom_elements(dom: str) -> list[tuple[str, dict[str, str]]]:
             parser.feed(dom)
             if parser.elements:
                 return parser.elements
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - malformed HTML falls back to line parsing
             pass
     elements: list[tuple[str, dict[str, str]]] = []
     for line in dom.splitlines():
@@ -129,16 +129,26 @@ def validate_extraction(raw: Any, dom: str | None = None) -> ValidationResult:
             assert step.by is not None and step.target is not None
             matches: list[tuple[str, dict[str, str]]] = []
             for tag, attrs in dom_elements:
-                if step.by == "id" and attrs.get("id") == step.target or step.by == "name" and attrs.get("name") == step.target:
+                if (
+                    step.by == "id"
+                    and attrs.get("id") == step.target
+                    or step.by == "name"
+                    and attrs.get("name") == step.target
+                ):
                     matches.append((tag, attrs))
                 elif step.by == "css":
                     selector = step.target.strip()
-                    if selector.startswith("#") and attrs.get("id") == selector[1:] or (
-                        selector.startswith(".")
-                        and selector[1:] in attrs.get("class", "").split()
-                    ) or (
-                        re.fullmatch(r"[a-zA-Z][\w-]*", selector)
-                        and tag == selector.lower()
+                    if (
+                        selector.startswith("#")
+                        and attrs.get("id") == selector[1:]
+                        or (
+                            selector.startswith(".")
+                            and selector[1:] in attrs.get("class", "").split()
+                        )
+                        or (
+                            re.fullmatch(r"[a-zA-Z][\w-]*", selector)
+                            and tag == selector.lower()
+                        )
                     ):
                         matches.append((tag, attrs))
                     elif selector.startswith("[") and selector.endswith("]"):
@@ -157,15 +167,21 @@ def validate_extraction(raw: Any, dom: str | None = None) -> ValidationResult:
                 elif step.by == "xpath":
                     id_match = re.search(r"@id=['\"]([^'\"]+)['\"]", step.target)
                     name_match = re.search(r"@name=['\"]([^'\"]+)['\"]", step.target)
-                    if id_match and attrs.get("id") == id_match.group(1) or name_match and attrs.get("name") == name_match.group(1):
-                        matches.append((tag, attrs))
-                elif step.by in {"link_text", "partial_link_text"} and tag == "a":
-                    # Compact DOM descriptors preserve link text in the line; raw HTML
-                    # text is not indexed, so only accept if the text is present in DOM.
-                    if step.target in (dom or "") and (
-                        step.by == "link_text" or step.target in (dom or "")
+                    if (
+                        id_match
+                        and attrs.get("id") == id_match.group(1)
+                        or name_match
+                        and attrs.get("name") == name_match.group(1)
                     ):
                         matches.append((tag, attrs))
+                elif (
+                    step.by in {"link_text", "partial_link_text"}
+                    and tag == "a"
+                    and step.target in (dom or "")
+                ):
+                    # Compact DOM descriptors preserve link text in the line; raw HTML
+                    # text is not indexed, so only accept if the text is present in DOM.
+                    matches.append((tag, attrs))
             if not matches:
                 errors.append(
                     f"{prefix}.target '{step.target}' was not found in the extracted DOM."

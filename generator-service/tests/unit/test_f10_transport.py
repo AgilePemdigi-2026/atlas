@@ -116,6 +116,32 @@ def test_generate_llm_error_stays_in_envelope() -> None:
     assert response.json()["error"]["code"] == "llm_unavailable"
 
 
+def test_timeout_after_live_fetch_keeps_live_dom_source_and_502() -> None:
+    dom = "<html><body><button id='go'>Go</button></body></html>"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return httpx.Response(200, text=dom, headers={"content-type": "text/html"})
+        raise httpx.TimeoutException("LLM timed out")
+
+    response = _client(httpx.MockTransport(handler)).post(
+        "/v1/generate",
+        json={
+            "user_story": "As a user I want to login.",
+            "scenarios": [
+                {"name": "Login", "scenario_url": "https://example.test/login"}
+            ],
+        },
+        headers={"X-Service-Key": "svc"},
+    )
+
+    assert response.status_code == 502
+    body = response.json()
+    assert body["status"] == "error"
+    assert body["error"]["code"] == "llm_timeout"
+    assert body["meta"]["dom_source"] == "live"
+
+
 def test_generate_includes_generated_script() -> None:
     response = _client(_transport()).post(
         "/v1/generate",
@@ -152,7 +178,7 @@ def test_generate_codegen_failure_is_enveloped(monkeypatch) -> None:
 
 
 def test_settings_defaults_match_team_decision() -> None:
-    settings = Settings()
+    settings = Settings(_env_file=None)
 
     assert settings.chat_completions_url == "https://kenari.id/v1/chat/completions"
     assert settings.llm_model == "gpt-6-luna"

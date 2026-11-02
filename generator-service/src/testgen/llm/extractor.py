@@ -1,13 +1,13 @@
 """F10: user story + DOM -> structured extraction via Kenari LLM.
 
-Tiered DOM strategy (F9 stopgap, stdlib only — no Selenium, no JS render,
-no auto-login): fetch the target page live and strip it, else use a
-caller-provided snapshot, else run minimal with every guess defaulted.
+Tiered DOM strategy (F9): use the caller's ``dom`` snapshot, else open the
+target page with Selenium (headless Chrome, logging in first when an
+``auth_profile`` is supplied), else run minimal with every guess defaulted.
 The chosen source is always reported as ``dom_source`` so callers know
 how much to trust the output.
 
-No retry here (retry is F11's job) and no full JSON validation (also F11):
-one attempt, defensively parsed, then F12 revalidates downstream.
+Validation and the bounded error-feedback retry loop are F11's job and live
+here because they wrap the LLM call; nothing else retries (service rule 5).
 """
 
 from __future__ import annotations
@@ -313,6 +313,8 @@ def extract(
                     code=INVALID_RESPONSE,
                     http_status=502,
                     field="scenarios",
+                    dom_source=dom_source,
+                    attempts=attempts,
                 )
                 if attempts <= max_retries:
                     user_message += (
@@ -336,6 +338,8 @@ def extract(
             )
         except LlmError as error:
             last_error = error
+            error.dom_source = dom_source
+            error.attempts = attempts
             if attempts <= max_retries and error.code == INVALID_RESPONSE:
                 user_message += (
                     "\n\nYour previous response was invalid. Return only a complete "
@@ -352,6 +356,8 @@ def extract(
                 code=INVALID_RESPONSE,
                 http_status=502,
                 field=field,
+                dom_source=dom_source,
+                attempts=attempts,
             )
             if attempts <= max_retries:
                 user_message += (
@@ -396,7 +402,10 @@ def error_response(error: LlmError, settings: Settings) -> GenerateResponse:
     return GenerateResponse(
         status="error",
         meta=ResponseMeta(
-            model=settings.llm_model, prompt_version=settings.prompt_version
+            model=settings.llm_model,
+            prompt_version=settings.prompt_version,
+            dom_source=error.dom_source or "minimal",
+            attempts=error.attempts or 1,
         ),
         error=ResponseError(**error.to_dict()),
     )

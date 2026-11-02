@@ -22,7 +22,7 @@ def _find_element(driver: Any, selector: str) -> Any:
             return driver.find_element(strategies[strategy.lower()], value)
     try:
         return driver.find_element(By.NAME, selector)
-    except Exception:
+    except Exception:  # noqa: BLE001 - plain keys fall back from name to id
         return driver.find_element(By.ID, selector)
 
 
@@ -49,7 +49,7 @@ def login_with_profile(driver: Any, auth_profile: Any) -> None:
             from selenium.webdriver.common.keys import Keys
 
             last_element.send_keys(Keys.ENTER)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - leave the failure to later steps
             # A page may use a non-standard submit flow; leave the failure visible
             # to the subsequent target-page/validation steps rather than hiding it.
             pass

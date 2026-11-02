@@ -72,7 +72,7 @@ def extract_dom(
                     element => element.remove()
                 );"""
             )
-        except Exception:  # browser mocks may not implement execute_script
+        except Exception:  # noqa: BLE001, S110 - browser mocks may not implement execute_script
             pass
         html = str(driver.page_source or "")
         current_url = str(getattr(driver, "current_url", url) or url)

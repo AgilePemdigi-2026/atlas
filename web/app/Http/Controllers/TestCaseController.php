@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GeneratedScriptStatus;
+use App\Enums\LlmValidationStatus;
 use App\Enums\TestCaseStatus;
 use App\Models\Scenario;
 use App\Models\TestCase;
 use App\Services\Generator\GenerateRequest;
 use App\Services\Generator\GeneratorClient;
+use App\Services\Generator\GeneratorResult;
 use App\Services\Generator\ScenarioParser;
 use App\Services\RootCollection;
 use Illuminate\Contracts\View\View;
@@ -47,7 +50,7 @@ class TestCaseController extends Controller
         return redirect()->route('test-cases.scenario-urls', $testCase);
     }
 
-    public function scenarioUrls(Request $request, TestCase $testCase): View
+    public function scenarioUrls(TestCase $testCase): View
     {
         Gate::authorize('update', $testCase->collection);
 
@@ -75,34 +78,10 @@ class TestCaseController extends Controller
                 ->update(['scenario_url' => $row['scenario_url']]);
         }
 
-        $submittedUrls = collect($validated['scenarios'])->keyBy('scenario_id');
-
-        $scenarios = $testCase->scenarios()->get()->map(fn (Scenario $scenario): array => [
-            'name' => $scenario->name,
-            'scenario_url' => (string) ($submittedUrls->get($scenario->getKey())['scenario_url'] ?? $scenario->scenario_url),
-        ])->values()->all();
-
-        $result = (new GeneratorClient(
-            url: (string) config('services.generator.url'),
-            key: (string) config('services.generator.key'),
-            timeout: (int) config('services.generator.timeout'),
-        ))->send(new GenerateRequest(
-            testCaseId: $testCase->getKey(),
-            userStory: $testCase->user_story,
-            acceptanceCriteria: $testCase->acceptance_criteria ?? $testCase->user_story,
-            baseUrl: $testCase->base_url,
-            scenarios: $scenarios,
-        ));
+        $result = $this->callService($testCase, $validated['scenarios']);
 
         if (! $result->ok) {
-            DB::transaction(function () use ($testCase, $result): void {
-                $testCase->update(['status' => 'failed']);
-                $testCase->llmOutput()->updateOrCreate([], [
-                    'output' => $result->error ?? [],
-                    'validation_status' => 'invalid',
-                    'retry_count' => (int) ($result->error['meta']['attempts'] ?? 0),
-                ]);
-            });
+            $this->recordFailure($testCase, $result);
 
             return redirect()
                 ->route('test-cases.scenario-urls', $testCase)
@@ -110,31 +89,14 @@ class TestCaseController extends Controller
                 ->withErrors(['generate' => $result->copy]);
         }
 
-        $payload = $result->payload;
-        $script = $payload['data']['script'];
-        unset($payload['data']['script']);
-
-        DB::transaction(function () use ($testCase, $payload, $script): void {
-            $testCase->update(['status' => 'completed']);
-
-            $output = $testCase->llmOutput()->updateOrCreate([], [
-                'output' => $payload,
-                'validation_status' => 'valid',
-                'retry_count' => (int) ($payload['meta']['attempts'] ?? 0),
-            ]);
-
-            $output->generatedScript()->updateOrCreate([], [
-                'content' => $script,
-                'status' => 'completed',
-            ]);
-        });
+        $this->recordSuccess($testCase, $result->payload);
 
         return redirect()
             ->route('test-cases.show', $testCase)
             ->with('status', 'Test case berhasil dibuat.');
     }
 
-    public function show(Request $request, TestCase $testCase): View
+    public function show(TestCase $testCase): View
     {
         Gate::authorize('update', $testCase->collection);
 
@@ -152,5 +114,72 @@ class TestCaseController extends Controller
                 TestCaseStatus::Failed => 'Generate gagal.',
             },
         ]);
+    }
+
+    /**
+     * Send the confirmed scenario URLs to the generator service.
+     *
+     * @param  array<int, array{scenario_id: int|string, scenario_url: string}>  $rows
+     */
+    private function callService(TestCase $testCase, array $rows): GeneratorResult
+    {
+        $submittedUrls = collect($rows)->keyBy('scenario_id');
+
+        $scenarios = $testCase->scenarios()->get()->map(fn (Scenario $scenario): array => [
+            'name' => $scenario->name,
+            'scenario_url' => (string) ($submittedUrls->get($scenario->getKey())['scenario_url'] ?? $scenario->scenario_url),
+        ])->values()->all();
+
+        return (new GeneratorClient(
+            url: (string) config('services.generator.url'),
+            key: (string) config('services.generator.key'),
+            timeout: (int) config('services.generator.timeout'),
+        ))->send(new GenerateRequest(
+            testCaseId: $testCase->getKey(),
+            userStory: $testCase->user_story,
+            acceptanceCriteria: $testCase->acceptance_criteria ?? $testCase->user_story,
+            baseUrl: $testCase->base_url,
+            scenarios: $scenarios,
+        ));
+    }
+
+    private function recordFailure(TestCase $testCase, GeneratorResult $result): void
+    {
+        DB::transaction(function () use ($testCase, $result): void {
+            $testCase->update(['status' => TestCaseStatus::Failed]);
+
+            $output = $testCase->llmOutput()->updateOrCreate([], [
+                'output' => $result->error ?? [],
+                'validation_status' => LlmValidationStatus::Invalid,
+                'retry_count' => (int) ($result->error['meta']['attempts'] ?? 0),
+            ]);
+
+            // A failed re-generate must not leave the previous script looking current.
+            $output->generatedScript()->update(['status' => GeneratedScriptStatus::Failed]);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function recordSuccess(TestCase $testCase, array $payload): void
+    {
+        $script = $payload['data']['script'];
+        unset($payload['data']['script']);
+
+        DB::transaction(function () use ($testCase, $payload, $script): void {
+            $testCase->update(['status' => TestCaseStatus::Completed]);
+
+            $output = $testCase->llmOutput()->updateOrCreate([], [
+                'output' => $payload,
+                'validation_status' => LlmValidationStatus::Valid,
+                'retry_count' => (int) ($payload['meta']['attempts'] ?? 0),
+            ]);
+
+            $output->generatedScript()->updateOrCreate([], [
+                'content' => $script,
+                'status' => GeneratedScriptStatus::Completed,
+            ]);
+        });
     }
 }
