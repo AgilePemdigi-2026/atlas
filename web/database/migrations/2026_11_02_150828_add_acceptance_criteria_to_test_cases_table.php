@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('test_cases', function (Blueprint $table) {
-            $table->text('acceptance_criteria')->nullable()->after('user_story');
-        });
+        if (!Schema::hasColumn('test_cases', 'acceptance_criteria')) {
+            Schema::table('test_cases', function (Blueprint $table) {
+                $table->text('acceptance_criteria')
+                    ->nullable()
+                    ->after('user_story');
+            });
+        }
     }
 
     /**
