@@ -18,6 +18,12 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'generator' => [
+        'url' => env('GENERATOR_SERVICE_URL', 'http://127.0.0.1:8001'),
+        'key' => env('GENERATOR_SERVICE_KEY'),
+        'timeout' => (int) env('GENERATOR_SERVICE_TIMEOUT', 180),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

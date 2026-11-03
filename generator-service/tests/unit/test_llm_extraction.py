@@ -194,3 +194,87 @@ def test_client_requires_api_key() -> None:
         extract(request, _settings(kenari_api_key=""))
 
     assert excinfo.value.http_status == 503
+
+
+def _sequence_transport(responses: list[httpx.Response]) -> httpx.MockTransport:
+    """Return each canned response in order, repeating the last one."""
+    remaining = list(responses)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return remaining.pop(0) if len(remaining) > 1 else remaining[0]
+
+    return httpx.MockTransport(handler)
+
+
+def _chat(content: str) -> httpx.Response:
+    return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+
+def test_extract_retries_invalid_json_and_reports_attempts() -> None:
+    transport = _sequence_transport(
+        [_chat("not json"), _chat(json.dumps(EXTRACTION_JSON))]
+    )
+    request = GenerateRequest(user_story="As a user I want to login.", dom=HTML)
+
+    result = extract(request, _settings(), transport=transport)
+
+    assert result.status == "ok"
+    assert result.meta.attempts == 2
+
+
+def test_extract_stops_after_max_retries_and_keeps_meta() -> None:
+    transport = _sequence_transport([_chat("not json")])
+    request = GenerateRequest(user_story="As a user I want to login.")
+
+    with pytest.raises(LlmError) as excinfo:
+        extract(request, _settings(max_retries=1), transport=transport)
+
+    assert excinfo.value.code == "invalid_response"
+    assert excinfo.value.attempts == 2
+    assert excinfo.value.dom_source == "minimal"
+
+
+def test_extract_clamps_negative_retries_to_a_single_attempt() -> None:
+    transport = _sequence_transport([_chat("not json")])
+    request = GenerateRequest(
+        user_story="As a user I want to login.",
+        options={"max_retries": -5},
+    )
+
+    with pytest.raises(LlmError) as excinfo:
+        extract(request, _settings(), transport=transport)
+
+    assert excinfo.value.attempts == 1
+
+
+def test_extract_retries_when_validation_rejects_the_target() -> None:
+    """A target missing from the DOM is a validation error, so it retries."""
+    bad = {
+        "scenarios": [
+            {
+                "scenario": "Login",
+                "steps": [
+                    {
+                        "stage": "Given",
+                        "action": "navigate",
+                        "value": "http://127.0.0.1:8000/login",
+                    },
+                    {
+                        "stage": "When",
+                        "action": "click",
+                        "by": "id",
+                        "target": "tidak_ada_di_dom",
+                    },
+                ],
+            }
+        ]
+    }
+    transport = _sequence_transport(
+        [_chat(json.dumps(bad)), _chat(json.dumps(EXTRACTION_JSON))]
+    )
+    request = GenerateRequest(user_story="As a user I want to login.", dom=HTML)
+
+    result = extract(request, _settings(), transport=transport)
+
+    assert result.status == "ok"
+    assert result.meta.attempts == 2

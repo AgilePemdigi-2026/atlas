@@ -15,11 +15,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $user->collections()->create(['name' => 'Toko'])->testCases()->createMany([
+            ['name' => 'Keranjang belanja', 'user_story' => 'Sebagai pelanggan, saya ingin menambahkan produk ke keranjang.', 'status' => 'completed'],
+            ['name' => 'Tambah produk', 'user_story' => 'Sebagai pelanggan, saya ingin menambah produk.', 'status' => 'pending'],
+            ['name' => 'Hapus produk', 'user_story' => 'Sebagai pelanggan, saya ingin menghapus produk.', 'status' => 'pending'],
+            ['name' => 'Login pelanggan', 'user_story' => 'Sebagai pelanggan, saya ingin masuk ke akun saya.', 'status' => 'failed'],
+        ]);
+
+        $user->collections()->create(['name' => 'KaryaRasa']);
+        $user->collections()->create(['name' => 'LearnFit']);
     }
 }

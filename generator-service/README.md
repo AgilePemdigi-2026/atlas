@@ -1,25 +1,25 @@
 # generator-service
 
-Python service for ATLAS. Feature 10 (LLM extraction over Kenari) and feature 12
-(rule-based Selenium script generator) are implemented. DOM extraction (F9),
-validation (F11), and the error-handling layer (F13) are one-line placeholders.
+Python service for ATLAS. LLM extraction (F10/F11 incl. retry), DOM extraction
+(F9), rule-based Selenium codegen (F12), and the error envelope (F13) are
+implemented. `POST /v1/generate` returns both the parsed scenarios and the
+generated script in one synchronous call.
 
 ## Layout
 
 ```
 pyproject.toml
-Dockerfile                 # F9 placeholder: headless Chrome image
-.env.example               # F10/F13 placeholder: LLM/service keys
+Dockerfile                 # headless Chrome image for DOM extraction
+.env.example               # LLM/service keys
 src/testgen/
-├── main.py                # F13 placeholder: FastAPI app factory
-├── config.py              # F9-F13 placeholder: pydantic-settings
-├── errors.py              # F12 typed exceptions + error codes
-├── api/                   # F13 placeholders
-├── schemas/               # F10/F11/F13 placeholders
-├── pipeline/              # F9-F13 placeholder
-├── dom/                   # F7/F9 placeholders
-├── llm/                   # F10 placeholders
-├── validation/            # F11 placeholder
+├── main.py                # FastAPI app factory
+├── config.py              # pydantic-settings
+├── errors.py              # typed exceptions + error codes
+├── api/                   # routers (health, /v1/generate) + service-key auth
+├── schemas/               # request / response envelopes
+├── dom/                   # tiered DOM extraction (F9)
+├── llm/                   # Kenari client + extraction/retry loop (F10/F11)
+├── validation/            # schema + Gherkin order + anti-hallucination (F11)
 └── codegen/
     ├── selenium_generator.py
     └── templates/
@@ -37,11 +37,16 @@ Run from `generator-service/`:
 
 ```bash
 uv sync                 # install dependencies (test group is default)
+uv run uvicorn testgen.main:app --host 127.0.0.1 --port 8001   # run the service
 uv run pytest           # golden + browser integration tests
 uv run ruff check .
 uv run ruff format --check .
 uv run python tests/regenerate_golden.py
 ```
+
+`LLM_TIMEOUT` defaults to 30s in `config.py`, but Kenari can exceed that on cold
+requests; set `LLM_TIMEOUT=120` in `.env` for local e2e. The web side must use the
+same `SERVICE_API_KEY` as `GENERATOR_SERVICE_KEY`.
 
 `uv run pytest` runs the golden tests and the browser integration tests.
 Selenium Manager downloads Chrome for Testing on first run; if Chrome cannot be
@@ -159,18 +164,18 @@ is never called by the browser.
 }
 ```
 
-DOM tiers (F9 stopgap, stdlib only — no JS render, no auto-login): fetch the
-target page live and strip non-visual elements, else use the caller snapshot,
-else run minimal with every guess marked `defaulted: true`. The response always
-reports `meta.dom_source` (`live`/`snapshot`/`minimal`) so callers know how much
-to trust the output. Env (values stay out of the repo): `KENARI_API_KEY`,
-`LLM_BASE_URL` (default `https://kenari.id/v1`), `LLM_MODEL` (default
-`gpt-6-luna`), `SERVICE_API_KEY`, `LLM_TIMEOUT=30`, `MAX_RETRIES=3`.
+DOM tiers: use the caller's `dom` snapshot, else open the target page with
+Selenium (headless Chrome, logging in first when an `auth_profile` is
+supplied), else run minimal with every guess marked `defaulted: true`. The
+response always reports `meta.dom_source` (`live`/`snapshot`/`minimal`) so
+callers know how much to trust the output. Env (values stay out of the repo):
+`KENARI_API_KEY`, `LLM_BASE_URL` (default `https://kenari.id/v1`), `LLM_MODEL`
+(default `gpt-6-luna`), `SERVICE_API_KEY`, `LLM_TIMEOUT=120`, `MAX_RETRIES=3`.
 
-One attempt, no retry (retry is F11's job), defensive parse only (full
-validation is F11's job). F12 revalidates downstream and rejects bad JSON with
-`ConversionError`; F10 envelopes carry the same `{code, message, step_index,
-field}` shape so F13 maps one format.
+One extraction pass runs with up to `MAX_RETRIES` feedback retries (F11) and
+F12 revalidates downstream before codegen, rejecting bad JSON with
+`ConversionError` (enveloped as 502). F10 envelopes carry the same
+`{code, message, step_index, field}` shape so F13 maps one format.
 
 ## Tests
 
@@ -195,15 +200,10 @@ uv run python tests/regenerate_golden.py
 git diff tests/fixtures/golden
 ```
 
-## Placeholders
+## Status
 
-These files are intentionally one-line placeholders until their feature lands:
-
-- `pipeline/`, `dom/`, `validation/`
-- `Dockerfile`
-
-F10 owns `config.py`, `main.py`, `api/`, `schemas/`, and `llm/`; F13 owns only
-the user-facing error copy.
-
-The FastAPI app does not boot yet. Do not add behavior there without the
-corresponding feature work (F7-F13).
+All F7–F13 service work is implemented. Orchestration lives in
+`llm/extractor.py` (extraction → validation → retry) with codegen in
+`api/routes/generate.py`. The service boots via the FastAPI factory and is
+exercised by the test suite: `uv run pytest -q` → 57 passed (browser
+integration tests skip when Chrome cannot be provisioned).

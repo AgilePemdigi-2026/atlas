@@ -1,0 +1,78 @@
+@extends('layouts.app')
+
+@section('title', 'Console – ATLAS')
+
+@section('content')
+    <div class="flex min-h-[calc(100vh-72px)] flex-col min-[900px]:flex-row min-[1100px]:min-h-[calc(100vh-88px)]">
+        <x-console.collection-sidebar :collections="$collections" :active-collection-id="$activeCollectionId" />
+
+        <section class="flex min-w-0 flex-1 flex-col gap-7 px-6 pb-10 min-[900px]:px-9">
+            @if (session('status'))
+                <div class="mt-6 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-[13px] text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">{{ session('status') }}</div>
+            @endif
+
+            <div role="tablist" aria-label="Pengaturan test" class="flex gap-7 overflow-x-auto border-b border-line dark:border-slate-700">
+                <button type="button" role="tab" id="tab-story" aria-controls="panel-story" aria-selected="true"
+                    class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
+                    User Story
+                </button>
+                <button type="button" role="tab" id="tab-config" aria-controls="panel-config" aria-selected="false"
+                    class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
+                    Config
+                </button>
+            </div>
+
+            <div role="tabpanel" id="panel-story" aria-labelledby="tab-story">
+                <form method="POST" action="{{ route('test-cases.store') }}" class="flex max-w-[720px] flex-col gap-4">
+                    @csrf
+                    <input type="hidden" name="collection_id" value="{{ $activeCollectionId }}">
+
+                    <div class="flex flex-col gap-2">
+                        <label for="test-case-name" class="text-xs font-semibold text-body dark:text-slate-200">Nama test case</label>
+                        <input id="test-case-name" name="name" type="text" value="{{ old('name') }}" required maxlength="256" placeholder="Login berhasil"
+                            class="h-9 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                        @error('name')
+                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label for="test-case-story" class="text-xs font-semibold text-body dark:text-slate-200">User story</label>
+                        <textarea id="test-case-story" name="user_story" required rows="4" placeholder="Sebagai pengguna, saya ingin masuk ke dasbor."
+                            class="rounded-md border border-line bg-white px-3 py-2 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">{{ old('user_story') }}</textarea>
+                        @error('user_story')
+                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label for="test-case-criteria" class="text-xs font-semibold text-body dark:text-slate-200">Acceptance criteria</label>
+                        <textarea id="test-case-criteria" name="acceptance_criteria" required rows="6" placeholder="Skenario: Login berhasil&#10;Given saya di halaman login&#10;When saya mengisi email dan password&#10;Then saya melihat dasbor"
+                            class="rounded-md border border-line bg-white px-3 py-2 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">{{ old('acceptance_criteria') }}</textarea>
+                        @error('acceptance_criteria')
+                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label for="test-case-base-url" class="text-xs font-semibold text-body dark:text-slate-200">Base URL <span class="font-normal text-subtle dark:text-slate-400">(opsional)</span></label>
+                        <input id="test-case-base-url" name="base_url" type="url" value="{{ old('base_url') }}" placeholder="https://app.example.com"
+                            class="h-9 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                        @error('base_url')
+                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <button type="submit" class="h-9 rounded-md bg-accent px-4 text-xs font-semibold text-white">Generate Test</button>
+                    </div>
+                </form>
+            </div>
+
+            <div role="tabpanel" id="panel-config" aria-labelledby="tab-config" hidden>
+                {{-- Tab Config: menunggu desain --}}
+                <p class="text-sm text-subtle dark:text-slate-400">Isi tab Config menunggu desain.</p>
+            </div>
+        </section>
+    </div>
+@endsection

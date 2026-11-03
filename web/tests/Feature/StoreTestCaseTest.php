@@ -26,7 +26,7 @@ class StoreTestCaseTest extends TestCase
             'base_url' => 'https://example.com',
         ]);
 
-        $response->assertCreated();
+        $response->assertRedirect();
 
         $this->assertDatabaseHas('test_cases', [
             'collection_id' => $collection->getKey(),
@@ -73,7 +73,7 @@ class StoreTestCaseTest extends TestCase
             'acceptance_criteria' => 'Given...',
         ]);
 
-        $response->assertStatus(422);
+        $response->assertNotFound();
 
         $this->assertDatabaseMissing('test_cases', [
             'name' => 'Unauthorized Test',
