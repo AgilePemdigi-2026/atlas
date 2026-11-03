@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
@@ -27,17 +26,17 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/forgot-password', [
         ForgotPasswordController::class,
-        'sendResetLink'
+        'sendResetLink',
     ])->name('password.email');
 
     Route::get('/reset-password/{token}', [
         ResetPasswordController::class,
-        'showResetForm'
+        'showResetForm',
     ])->name('password.reset');
 
     Route::post('/reset-password', [
         ResetPasswordController::class,
-        'reset'
+        'reset',
     ])->name('password.update');
 });
 
@@ -57,48 +56,48 @@ Route::middleware('auth')->group(function () {
     // F6 & F8 - Test Case dan Scenario URL
     Route::post('/test-cases', [
         TestCaseController::class,
-        'store'
+        'store',
     ])->name('test-cases.store');
 
     Route::get('/test-cases/{test_case}/scenario-urls', [
         TestCaseController::class,
-        'scenarioUrls'
+        'scenarioUrls',
     ])->name('test-cases.scenario-urls');
 
     Route::post('/test-cases/{test_case}/scenario-urls', [
         TestCaseController::class,
-        'generate'
+        'generate',
     ])->name('test-cases.scenario-urls.generate');
 
     Route::get('/test-cases/{test_case}', [
         TestCaseController::class,
-        'show'
+        'show',
     ])->name('test-cases.show');
 
     // F7 - Auth Profile Config
     Route::put('/test-cases/{testCaseId}/auth-profile', [
         AuthProfileController::class,
-        'upsert'
+        'upsert',
     ])->whereNumber('testCaseId')->name('auth-profiles.upsert');
 
     Route::delete('/test-cases/{testCaseId}/auth-profile', [
         AuthProfileController::class,
-        'destroy'
+        'destroy',
     ])->whereNumber('testCaseId')->name('auth-profiles.destroy');
 
     // F17 & F18 - Profile Settings
     Route::get('/profile', [
         ProfileController::class,
-        'show'
+        'show',
     ])->name('profile');
 
     Route::patch('/profile', [
         ProfileController::class,
-        'update'
+        'update',
     ])->name('profile.update');
 
     Route::delete('/profile', [
         ProfileController::class,
-        'destroy'
+        'destroy',
     ])->name('profile.destroy');
 });
