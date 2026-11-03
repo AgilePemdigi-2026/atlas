@@ -14,6 +14,7 @@ Every scenario needs at least one step. Each step:
   Required for fill, click, select. Forbidden otherwise.
 - "target": element identifier. Required when "by" is present.
 - "value": required for navigate, fill, select, assert_url, assert_text.
+  Forbidden for click.
 - "defaulted": optional boolean, only on actions with "value". Set it to
   true for any value you guessed (for example when the DOM is missing).
 
@@ -23,6 +24,8 @@ Rules:
   {"stage": "Given", "action": "navigate", "value": "<absolute http(s) URL>"}.
 - navigate and assert_url values must be absolute http or https URLs.
 - Reference ONLY elements present in the provided DOM. Never invent ids.
+- Prefer "by": "id" or "name" when the DOM exposes them. Use css or xpath
+  only when the element has neither.
 - If no DOM was provided, guess targets from the story and mark every
   guessed step "defaulted": true.
 - All strings non-empty. No extra keys.
