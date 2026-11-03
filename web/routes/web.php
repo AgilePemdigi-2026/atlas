@@ -2,6 +2,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthProfileController;
@@ -21,6 +22,16 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
+    Route::get('/auth/google', [
+    GoogleAuthController::class,
+    'redirect'
+    ])->name('google.redirect');
+
+    Route::get('/auth/google/callback', [
+    GoogleAuthController::class,
+    'callback'
+    ])->name('google.callback');
 
     // F4 - Forgot Password
     Route::view('/forgot-password', 'auth.reset-password')->name('password.request');
