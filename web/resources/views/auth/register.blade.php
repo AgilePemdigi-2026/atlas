@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Register – ATLAS')
+@section('title', 'Register - ATLAS')
 
 @section('intro')
     <h1 class="font-display text-[40px]/[1.05] font-medium tracking-[-.04em] text-[#171B17] min-[900px]:text-[48px]/[1.05] dark:text-white">Create your account</h1>
@@ -51,6 +51,7 @@
             </div>
         @endforeach
 
+        {{--
         <div class="flex flex-col gap-1.5">
             <label class="flex items-start gap-2 text-[11px]/[1.45] text-[#647066] dark:text-slate-400">
                 <input type="checkbox" name="terms" value="1" required class="mt-px size-4 shrink-0 rounded border-[#B9CBB7] accent-[#30A956]" @checked(old('terms'))>
@@ -60,6 +61,7 @@
                 <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
         </div>
+        --}}
 
         <button type="submit" class="relative mt-1 flex h-[50px] w-full items-center justify-center rounded-[11px] bg-[linear-gradient(100deg,#30A956,#5CC247)] text-sm font-semibold text-white shadow-[0_8px_18px_rgba(49,148,60,.26)] hover:opacity-95">
             Create account

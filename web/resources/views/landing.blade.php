@@ -43,7 +43,12 @@
                 <h1 class="font-display text-[34px]/[1.2] font-extrabold tracking-[-.02em] text-[#0E2D07] min-[1100px]:text-[44px]/[1.2] dark:text-white">Turn User Stories<br>into Automated Test Scripts</h1>
                 <p class="font-iosevka text-[17px]/[1.55] text-[#595959] dark:text-slate-300">Transform your user stories and Gherkin-based acceptance criteria into Selenium test scripts with the assistance of an LLM.</p>
                 <div class="flex flex-wrap gap-3">
-                    <a href="#signup" class="grid h-11 w-[190px] place-items-center rounded-md bg-[#5FBB49] text-sm font-semibold text-white transition hover:brightness-95">Get Started</a>
+                    @auth
+                        <a href="{{ route('console') }}" class="grid h-11 w-[190px] place-items-center rounded-md bg-[#5FBB49] text-sm font-semibold text-white transition hover:brightness-95">Get Started</a>
+                    @endauth
+                    @guest
+                        <a href="{{ route('login') }}" class="grid h-11 w-[190px] place-items-center rounded-md bg-[#5FBB49] text-sm font-semibold text-white transition hover:brightness-95">Get Started</a>
+                    @endguest
                     <a href="#process" class="grid h-11 w-[180px] place-items-center rounded-md border border-[#DDE2EB] bg-white text-sm font-semibold text-[#236913] transition hover:bg-[#F8FAF7] dark:border-slate-700 dark:bg-night dark:text-emerald-300">Explore Process</a>
                 </div>
             </div>
@@ -73,7 +78,6 @@
                     @php $tone = $loop->odd ? 'text-[#4B50C8] dark:text-indigo-300' : 'text-[#4CAF41] dark:text-emerald-300'; @endphp
                     <div class="flex min-w-0 flex-col items-center gap-3">
                         <div class="text-center text-sm/[22px] font-semibold {{ $tone }}">{{ $step['label'] }}</div>
-                        {{-- Nomor di atas kartu (tidak lagi menimpa teks) --}}
                         <div class="font-display text-[64px]/none font-extrabold {{ $tone }}">{{ sprintf('%02d', $loop->iteration) }}</div>
                         <div class="w-full flex-1 rounded-md border border-[#DDE2EB] bg-white p-5 text-center font-mono text-[13px]/[1.55] text-[#202638] shadow-[0_-3px_8px_rgba(0,0,0,.08)] dark:border-slate-700 dark:bg-abyss dark:text-slate-200">{{ $step['body'] }}</div>
                     </div>
@@ -166,16 +170,10 @@
                 <p class="text-[13px]/[1.5] text-[#B7BFCE]">Start transforming your user stories into Selenium test scripts with ATLAS.</p>
                 <div class="mt-3 flex flex-wrap justify-center gap-3">
                     <a href="{{ route('register') }}" class="grid h-11 place-items-center rounded-[5px] bg-[#4D4FD2] px-[30px] text-[11px] font-semibold text-white shadow-[0_6px_18px_rgba(77,79,210,.28)] transition hover:brightness-110">Create Your Account</a>
-                    <a href="{{ $menu['docs']['href'] ?? '#' }}" class="grid h-11 place-items-center rounded-[5px] bg-white px-[30px] text-[11px] font-semibold text-[#161F34] transition hover:bg-[#F1F3F8]">Read the Documentation</a>
+                    <a href="#" class="grid h-11 place-items-center rounded-[5px] bg-white px-[30px] text-[11px] font-semibold text-[#161F34] transition hover:bg-[#F1F3F8]">Read the Documentation</a>
                 </div>
             </div>
         </div>
     </main>
     </div>
-
-    {{--  FOOTER  --}}
-    <footer class="flex flex-col items-center gap-3 bg-[#F7F8FA] px-6 py-8 text-center font-sans text-xs text-[#626C80] dark:bg-abyss dark:text-slate-400">
-        <p>© {{ date('Y') }} ATLAS. Semua hak dilindungi.</p>
-        <p>ATLAS: Automated Test case generation via LLM-Assisted Selenium scripting.</p>
-    </footer>
 @endsection

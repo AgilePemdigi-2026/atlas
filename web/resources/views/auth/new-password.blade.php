@@ -1,7 +1,7 @@
 
 @extends('layouts.auth')
 
-@section('title', 'Create New Password – ATLAS')
+@section('title', 'Create New Password - ATLAS')
 
 @section('intro')
     <div class="grid size-[43px] place-items-center rounded-xl border border-[#D8EAD5] bg-white/65 text-[#2F7043] dark:border-white/15 dark:bg-white/5 dark:text-emerald-300">

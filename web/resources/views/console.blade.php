@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Console – ATLAS')
+@section('title', 'Console - ATLAS')
 
 @section('content')
     <div class="flex min-h-[calc(100vh-72px)] flex-col min-[900px]:flex-row min-[1100px]:min-h-[calc(100vh-88px)]">

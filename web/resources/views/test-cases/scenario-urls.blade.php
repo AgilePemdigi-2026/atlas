@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $testCase->name.' – ATLAS')
+@section('title', $testCase->name.' - ATLAS')
 
 @section('content')
     <section class="mx-auto flex w-full max-w-[860px] flex-col gap-6 px-6 py-10">
