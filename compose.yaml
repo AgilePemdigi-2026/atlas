@@ -1,5 +1,3 @@
-# Production stack for Coolify.
-# Local development: Compose auto-loads compose.override.yaml.
 services:
   generator:
     build:
@@ -64,8 +62,8 @@ services:
       - >-
         mkdir -p storage/app &&
         touch storage/app/database.sqlite &&
-        php artisan optimize:clear &&
         php artisan migrate --force &&
+        php artisan optimize:clear &&
         php artisan optimize &&
         exec php artisan serve --host=0.0.0.0 --port=8000
     healthcheck:
