@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Console – ATLAS')
+@section('title', 'Console - ATLAS')
 
 @section('content')
     <main class="mx-auto max-w-6xl px-6 py-12">

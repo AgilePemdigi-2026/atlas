@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Profile – ATLAS')
+@section('title', 'Profile - ATLAS')
 
 @section('content')
     @php

@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Login – ATLAS')
+@section('title', 'Login - ATLAS')
 
 @section('intro')
     <h1 class="font-display text-[40px]/[1.05] font-medium tracking-[-.04em] text-[#171B17] min-[900px]:text-[48px]/[1.05] dark:text-white">Welcome back</h1>

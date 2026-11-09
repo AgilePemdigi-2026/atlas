@@ -62,7 +62,7 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'terms' => ['accepted'],
+            // 'terms' => ['accepted'],
         ], [
             'name.required' => 'Field wajib diisi.',
             'email.required' => 'Field wajib diisi.',
@@ -70,7 +70,7 @@ class AuthController extends Controller
             'email.unique' => 'Email sudah terdaftar',
             'password.required' => 'Field wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
-            'terms.accepted' => 'Field wajib diisi.',
+            // 'terms.accepted' => 'Field wajib diisi.',
         ]);
 
         try {
