@@ -38,8 +38,8 @@ services:
       APP_KEY: ${APP_KEY}
       APP_URL: ${APP_URL}
       LOG_CHANNEL: stderr
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /app/storage/app/database.sqlite
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
+      DB_URL: ${DB_URL}
       SESSION_DRIVER: database
       SESSION_SECURE_COOKIE: "true"
       CACHE_STORE: database
@@ -64,7 +64,6 @@ services:
       - -c
       - >-
         mkdir -p storage/app &&
-        touch storage/app/database.sqlite &&
         php artisan migrate --force &&
         php artisan optimize:clear &&
         php artisan optimize &&

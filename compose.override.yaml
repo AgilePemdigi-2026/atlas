@@ -19,7 +19,9 @@ services:
       APP_KEY:
       APP_URL:
       GENERATOR_SERVICE_KEY:
+      DB_CONNECTION: sqlite
       DB_DATABASE: /app/database/database.sqlite
+      DB_URL:
       SESSION_SECURE_COOKIE: "false"
     ports:
       - "127.0.0.1:8000:8000"

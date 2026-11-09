@@ -17,8 +17,7 @@ return new class extends Migration
                 ->unique()
                 ->constrained('test_cases', 'test_case_id')
                 ->cascadeOnDelete();
-            // json
-            $table->longText('output');
+            $table->jsonb('output');
             $table->string('validation_status', 10)->default('pending'); // pending | valid | invalid
             $table->unsignedInteger('retry_count')->default(0);
             $table->timestamps();
