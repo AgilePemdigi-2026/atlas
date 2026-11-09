@@ -1,1 +1,1 @@
-"""F7/F9 DOM package (placeholder)."""
+"""F7/F9 DOM extraction package."""

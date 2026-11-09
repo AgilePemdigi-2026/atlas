@@ -1,4 +1,4 @@
-﻿"""F9 DOM extraction tests without launching a real browser."""
+"""F9 DOM extraction tests without launching a real browser."""
 
 from __future__ import annotations
 

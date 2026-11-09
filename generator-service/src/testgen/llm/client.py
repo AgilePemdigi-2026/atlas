@@ -1,7 +1,7 @@
 """F10: Kenari chat-completions client (OpenAI-compatible).
 
 Best practice: thin wrapper over httpx, no retry here (retry is F11's job),
-no DB, no logging of secrets. Timeouts fixed at 30s per PRD section 12.
+no DB, no logging of secrets. The timeout comes from ``Settings.llm_timeout``.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from testgen.llm.errors import (
     LlmError,
 )
 
-__all__ = ["KenariClient", "complete_json"]
+__all__ = ["KenariClient"]
 
 
 class KenariClient:
@@ -62,7 +62,7 @@ class KenariClient:
             raise LlmError(
                 "LLM request timed out.",
                 code=LLM_TIMEOUT,
-                http_status=504,
+                http_status=502,
                 field="llm",
             ) from error
         except httpx.HTTPError as error:
@@ -96,8 +96,3 @@ class KenariClient:
                 http_status=502,
                 field="llm",
             ) from error
-
-
-def complete_json(system: str, user: str, settings: Settings) -> str:
-    """One-shot helper used by tests and simple callers."""
-    return KenariClient(settings).complete(system, user)

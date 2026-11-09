@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
-#[Fillable(['name', 'user_story', 'base_url', 'status'])]
+#[Fillable(['name', 'user_story', 'acceptance_criteria', 'base_url', 'status'])]
 class TestCase extends Model
 {
     protected $primaryKey = 'test_case_id';

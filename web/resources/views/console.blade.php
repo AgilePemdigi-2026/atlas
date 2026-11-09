@@ -12,11 +12,11 @@
             @endif
 
             <div role="tablist" aria-label="Pengaturan test" class="flex gap-7 overflow-x-auto border-b border-line dark:border-slate-700">
-                <button type="button" role="tab" id="tab-story" data-tab="story" aria-controls="panel-story" aria-selected="true"
+                <button type="button" role="tab" id="tab-story" aria-controls="panel-story" aria-selected="true"
                     class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
                     User Story
                 </button>
-                <button type="button" role="tab" id="tab-config" data-tab="config" aria-controls="panel-config" aria-selected="false"
+                <button type="button" role="tab" id="tab-config" aria-controls="panel-config" aria-selected="false"
                     class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
                     Config
                 </button>
@@ -53,7 +53,7 @@
                 @endif
             </div>
 
-            <div role="tabpanel" id="panel-config" data-panel="config" aria-labelledby="tab-config" hidden>
+            <div role="tabpanel" id="panel-config" aria-labelledby="tab-config" hidden>
                 {{-- Tab Config: menunggu desain --}}
                 <p class="text-sm text-subtle dark:text-slate-400">Isi tab Config menunggu desain.</p>
             </div>

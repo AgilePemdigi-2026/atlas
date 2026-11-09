@@ -27,7 +27,11 @@ __all__ = [
 
 
 class LlmError(TestgenError):
-    """Failure of the F10 extraction step (input, network, or LLM output)."""
+    """Failure of the F10 extraction step (input, network, or LLM output).
+
+    ``dom_source`` and ``attempts`` mirror the ``meta`` block of the response
+    envelope so a failure still reports how much grounding it had.
+    """
 
     def __init__(
         self,
@@ -37,11 +41,15 @@ class LlmError(TestgenError):
         http_status: int = 502,
         step_index: int | None = None,
         field: str | None = None,
+        dom_source: str | None = None,
+        attempts: int | None = None,
     ) -> None:
         super().__init__(message, code=code)
         self.http_status = http_status
         self.step_index = step_index
         self.field = field
+        self.dom_source = dom_source
+        self.attempts = attempts
 
     def to_dict(self) -> dict[str, Any]:
         return {

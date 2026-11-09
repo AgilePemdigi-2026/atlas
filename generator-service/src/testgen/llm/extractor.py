@@ -1,13 +1,13 @@
 """F10: user story + DOM -> structured extraction via Kenari LLM.
 
-Tiered DOM strategy (F9 stopgap, stdlib only — no Selenium, no JS render,
-no auto-login): fetch the target page live and strip it, else use a
-caller-provided snapshot, else run minimal with every guess defaulted.
+Tiered DOM strategy (F9): use the caller's ``dom`` snapshot, else open the
+target page with Selenium (headless Chrome, logging in first when an
+``auth_profile`` is supplied), else run minimal with every guess defaulted.
 The chosen source is always reported as ``dom_source`` so callers know
 how much to trust the output.
 
-No retry here (retry is F11's job) and no full JSON validation (also F11):
-one attempt, defensively parsed, then F12 revalidates downstream.
+Validation and the bounded error-feedback retry loop are F11's job and live
+here because they wrap the LLM call; nothing else retries (service rule 5).
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ import httpx
 from pydantic import ValidationError
 
 from testgen.config import Settings
+from testgen.dom.extractor import extract_dom
 from testgen.llm.client import KenariClient
 from testgen.llm.errors import (
     INVALID_INPUT,
@@ -32,6 +33,7 @@ from testgen.llm.errors import (
 from testgen.schemas.extraction import ExtractionPayload
 from testgen.schemas.request import GenerateRequest
 from testgen.schemas.response import GenerateResponse, ResponseError, ResponseMeta
+from testgen.validation.validator import validate_extraction
 
 __all__ = ["clean_dom", "extract"]
 
@@ -182,7 +184,36 @@ def _resolve_dom(
             http_status=422,
             field=field,
         )
-    text, capped = clean_dom(_fetch_html(url, field, settings, transport))
+    if transport is not None:
+        # Preserve deterministic HTTP-mocked tests; production uses Selenium below.
+        html = _fetch_html(url, field, settings, transport)
+    else:
+        try:
+            snapshot = extract_dom(
+                url,
+                auth_profile=request.auth_profile,
+                page_load_timeout=settings.llm_timeout,
+            )
+        except ValueError as error:
+            raise LlmError(
+                str(error), code=INVALID_URL, http_status=422, field=field
+            ) from error
+        except Exception as error:
+            raise LlmError(
+                "Target URL is unreachable or DOM extraction failed.",
+                code=INVALID_URL,
+                http_status=502,
+                field=field,
+            ) from error
+        html = snapshot.html
+        if not html.strip():
+            raise LlmError(
+                "Target page returned an empty DOM.",
+                code=INVALID_URL,
+                http_status=502,
+                field=field,
+            )
+    text, capped = clean_dom(html)
     warnings = ["Element list was capped."] if capped else []
     return text, "live", warnings
 
@@ -250,7 +281,7 @@ def extract(
     settings: Settings,
     transport: httpx.BaseTransport | None = None,
 ) -> GenerateResponse:
-    """Run one F10 extraction attempt. Raises LlmError on any failure."""
+    """Run F10 extraction with F11 validation and bounded error-feedback retries."""
     if not request.user_story.strip():
         raise LlmError(
             "Field 'user_story' must be a non-empty string.",
@@ -258,31 +289,90 @@ def extract(
             http_status=422,
             field="user_story",
         )
+
     dom_text, dom_source, warnings = _resolve_dom(request, settings, transport)
-    raw = KenariClient(settings, transport=transport).complete(
-        _SYSTEM_PROMPT, _user_message(request, dom_text, dom_source)
-    )
-    try:
-        payload = ExtractionPayload.model_validate(_parse_llm_json(raw))
-    except ValidationError as error:
-        first = error.errors()[0]
-        field = ".".join(str(part) for part in first["loc"]) or "scenarios"
-        raise LlmError(
-            "LLM output is not valid extraction JSON.",
-            code=INVALID_RESPONSE,
-            http_status=502,
-            field=field,
-        ) from error
-    return GenerateResponse(
-        status="ok",
-        data={"scenarios": _dump_scenarios(payload)},
-        meta=ResponseMeta(
-            model=settings.llm_model,
-            prompt_version=settings.prompt_version,
-            attempts=1,
-            dom_source=dom_source,  # type: ignore[arg-type]
-            warnings=warnings,
-        ),
+    client = KenariClient(settings, transport=transport)
+    user_message = _user_message(request, dom_text, dom_source)
+    max_retries = max(0, min(request.options.max_retries, settings.max_retries, 3))
+    attempts = 0
+    last_error: LlmError | None = None
+
+    while attempts <= max_retries:
+        attempts += 1
+        try:
+            raw = client.complete(_SYSTEM_PROMPT, user_message)
+            parsed = _parse_llm_json(raw)
+            validation = validate_extraction(
+                parsed,
+                dom_text if dom_source != "minimal" else None,
+            )
+            if not validation.valid:
+                details = "\n".join(f"- {message}" for message in validation.errors)
+                last_error = LlmError(
+                    "LLM output failed JSON/DOM validation: " + details,
+                    code=INVALID_RESPONSE,
+                    http_status=502,
+                    field="scenarios",
+                    dom_source=dom_source,
+                    attempts=attempts,
+                )
+                if attempts <= max_retries:
+                    user_message += (
+                        "\n\nYour previous JSON failed validation. Fix only these errors "
+                        "and return the complete JSON object again:\n" + details
+                    )
+                    continue
+                break
+            # Keep Pydantic's exact output contract for the existing F12 converter.
+            payload = ExtractionPayload.model_validate(parsed)
+            return GenerateResponse(
+                status="ok",
+                data={"scenarios": _dump_scenarios(payload)},
+                meta=ResponseMeta(
+                    model=settings.llm_model,
+                    prompt_version=settings.prompt_version,
+                    attempts=attempts,
+                    dom_source=dom_source,  # type: ignore[arg-type]
+                    warnings=warnings,
+                ),
+            )
+        except LlmError as error:
+            last_error = error
+            error.dom_source = dom_source
+            error.attempts = attempts
+            if attempts <= max_retries and error.code == INVALID_RESPONSE:
+                user_message += (
+                    "\n\nYour previous response was invalid. Return only a complete "
+                    "JSON object matching the requested schema. Error: " + error.message
+                )
+                continue
+            if error.code != INVALID_RESPONSE or attempts > max_retries:
+                raise
+        except ValidationError as error:
+            first = error.errors()[0]
+            field = ".".join(str(part) for part in first["loc"]) or "scenarios"
+            last_error = LlmError(
+                "LLM output is not valid extraction JSON.",
+                code=INVALID_RESPONSE,
+                http_status=502,
+                field=field,
+                dom_source=dom_source,
+                attempts=attempts,
+            )
+            if attempts <= max_retries:
+                user_message += (
+                    "\n\nFix this schema error and return complete JSON: " + str(error)
+                )
+                continue
+            break
+
+    if last_error is not None:
+        raise last_error
+    raise LlmError(
+        "LLM extraction failed after retries.",
+        code=INVALID_RESPONSE,
+        http_status=502,
+        field="llm",
     )
 
 
@@ -312,7 +402,10 @@ def error_response(error: LlmError, settings: Settings) -> GenerateResponse:
     return GenerateResponse(
         status="error",
         meta=ResponseMeta(
-            model=settings.llm_model, prompt_version=settings.prompt_version
+            model=settings.llm_model,
+            prompt_version=settings.prompt_version,
+            dom_source=error.dom_source or "minimal",
+            attempts=error.attempts or 1,
         ),
         error=ResponseError(**error.to_dict()),
     )
