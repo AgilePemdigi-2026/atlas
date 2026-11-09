@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 #[Fillable(['name', 'user_story', 'acceptance_criteria', 'base_url', 'status'])]
 class TestCase extends Model
@@ -43,5 +44,17 @@ class TestCase extends Model
     public function llmOutput(): HasOne
     {
         return $this->hasOne(LlmOutput::class, 'test_case_id');
+    }
+
+    public function generatedScript(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            GeneratedScript::class,
+            LlmOutput::class,
+            'test_case_id',
+            'llm_output_id',
+            'test_case_id',
+            'llm_output_id',
+        );
     }
 }
