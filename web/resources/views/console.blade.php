@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="flex min-h-[calc(100vh-72px)] flex-col min-[900px]:flex-row min-[1100px]:min-h-[calc(100vh-88px)]">
-        <x-console.collection-sidebar :collections="$collections" :active-collection-id="$activeCollectionId" />
+        <x-console.collection-sidebar :collections="$collections" :selected="$selected" />
 
         <section class="flex min-w-0 flex-1 flex-col gap-7 px-6 pb-10 min-[900px]:px-9">
             @if (session('status'))
@@ -22,51 +22,35 @@
                 </button>
             </div>
 
-            <div role="tabpanel" id="panel-story" aria-labelledby="tab-story">
-                <form method="POST" action="{{ route('test-cases.store') }}" class="flex max-w-[720px] flex-col gap-4">
-                    @csrf
-                    <input type="hidden" name="collection_id" value="{{ $activeCollectionId }}">
+            <div role="tabpanel" id="panel-story" data-panel="story" aria-labelledby="tab-story">
+                {{-- Tahap 2: isi tab User Story --}}
+                <p class="text-sm text-subtle dark:text-slate-400">Isi tab User Story dipasang di tahap 2.</p>
 
-                    <div class="flex flex-col gap-2">
-                        <label for="test-case-name" class="text-xs font-semibold text-body dark:text-slate-200">Nama test case</label>
-                        <input id="test-case-name" name="name" type="text" value="{{ old('name') }}" required maxlength="256" placeholder="Login berhasil"
-                            class="h-9 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
-                        @error('name')
-                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
+                @if ($selected)
+                    @php $hasScript = $selected->generatedScript !== null; @endphp
+                    <div class="mt-6 flex flex-col gap-4 border-t border-line pt-4 dark:border-slate-700">
+                        <div role="tablist" aria-label="Hasil generate" class="flex gap-7 border-b border-line dark:border-slate-700">
+                            <button type="button" role="tab" id="subtab-scenario" data-subtab="scenario" aria-controls="subpanel-scenario" aria-selected="{{ $hasScript ? 'false' : 'true' }}"
+                                class="-mb-px border-b-2 border-transparent px-1 py-3 text-xs whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
+                                Scenario URL
+                            </button>
+                            <button type="button" role="tab" id="subtab-script" data-subtab="script" aria-controls="subpanel-script" aria-selected="{{ $hasScript ? 'true' : 'false' }}"
+                                class="-mb-px border-b-2 border-transparent px-1 py-3 text-xs whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
+                                Generated Script
+                            </button>
+                        </div>
 
-                    <div class="flex flex-col gap-2">
-                        <label for="test-case-story" class="text-xs font-semibold text-body dark:text-slate-200">User story</label>
-                        <textarea id="test-case-story" name="user_story" required rows="4" placeholder="Sebagai pengguna, saya ingin masuk ke dasbor."
-                            class="rounded-md border border-line bg-white px-3 py-2 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">{{ old('user_story') }}</textarea>
-                        @error('user_story')
-                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
+                        <div role="tabpanel" id="subpanel-scenario" data-subpanel="scenario" aria-labelledby="subtab-scenario" {{ $hasScript ? 'hidden' : '' }}>
+                            {{-- F8 (Hiero): tabel Scenario URL dipasang di sini --}}
+                            <p class="text-sm text-subtle dark:text-slate-400">Tabel Scenario URL dipasang di F8.</p>
+                        </div>
 
-                    <div class="flex flex-col gap-2">
-                        <label for="test-case-criteria" class="text-xs font-semibold text-body dark:text-slate-200">Acceptance criteria</label>
-                        <textarea id="test-case-criteria" name="acceptance_criteria" required rows="6" placeholder="Skenario: Login berhasil&#10;Given saya di halaman login&#10;When saya mengisi email dan password&#10;Then saya melihat dasbor"
-                            class="rounded-md border border-line bg-white px-3 py-2 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">{{ old('acceptance_criteria') }}</textarea>
-                        @error('acceptance_criteria')
-                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
+                        <div role="tabpanel" id="subpanel-script" data-subpanel="script" aria-labelledby="subtab-script" {{ $hasScript ? '' : 'hidden' }}>
+                            {{-- F15: Generated Script --}}
+                            <x-console.script-review :test-case="$selected" />
+                        </div>
                     </div>
-
-                    <div class="flex flex-col gap-2">
-                        <label for="test-case-base-url" class="text-xs font-semibold text-body dark:text-slate-200">Base URL <span class="font-normal text-subtle dark:text-slate-400">(opsional)</span></label>
-                        <input id="test-case-base-url" name="base_url" type="url" value="{{ old('base_url') }}" placeholder="https://app.example.com"
-                            class="h-9 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
-                        @error('base_url')
-                            <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <button type="submit" class="h-9 rounded-md bg-accent px-4 text-xs font-semibold text-white">Generate Test</button>
-                    </div>
-                </form>
+                @endif
             </div>
 
             <div role="tabpanel" id="panel-config" aria-labelledby="tab-config" hidden>
@@ -75,4 +59,45 @@
             </div>
         </section>
     </div>
+
+    <script>
+        (function () {
+            var tabs = document.querySelectorAll('[data-tab]');
+            var panels = document.querySelectorAll('[data-panel]');
+
+            function show(name) {
+                tabs.forEach(function (tab) {
+                    tab.setAttribute('aria-selected', tab.dataset.tab === name ? 'true' : 'false');
+                });
+                panels.forEach(function (panel) {
+                    panel.hidden = panel.dataset.panel !== name;
+                });
+            }
+
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () { show(tab.dataset.tab); });
+            });
+
+            var subtabs = document.querySelectorAll('[data-subtab]');
+            var subpanels = document.querySelectorAll('[data-subpanel]');
+
+            function showSub(name) {
+                subtabs.forEach(function (tab) {
+                    tab.setAttribute('aria-selected', tab.dataset.subtab === name ? 'true' : 'false');
+                });
+                subpanels.forEach(function (panel) {
+                    panel.hidden = panel.dataset.subpanel !== name;
+                });
+            }
+
+            subtabs.forEach(function (tab) {
+                tab.addEventListener('click', function () { showSub(tab.dataset.subtab); });
+            });
+
+            // Elemen apa pun dengan data-open-tab="config" akan membuka tab itu (dipakai link "Buka Config →" di tahap 2)
+            document.querySelectorAll('[data-open-tab]').forEach(function (el) {
+                el.addEventListener('click', function () { show(el.dataset.openTab); });
+            });
+        })();
+    </script>
 @endsection

@@ -28,6 +28,10 @@ class TestCaseController extends Controller
             'acceptance_criteria' => ['required', 'string'],
             'base_url' => ['nullable', 'url'],
             'collection_id' => ['nullable', 'integer'],
+        ], [
+            'name.required' => 'Field wajib diisi.',
+            'user_story.required' => 'Field wajib diisi.',
+            'acceptance_criteria.required' => 'Field wajib diisi.',
         ]);
 
         $user = $request->user();

@@ -1,0 +1,62 @@
+name: atlas
+
+services:
+  generator:
+    build:
+      context: ./generator-service
+    ports:
+      - "127.0.0.1:18001:8001"
+    volumes:
+      - ./generator-service:/app
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=2)",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  web:
+    build:
+      context: ./web
+    environment:
+      GENERATOR_SERVICE_URL: http://generator:8001
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./web/app:/app/app
+      - ./web/routes:/app/routes
+      - ./web/resources:/app/resources
+      - ./web/config:/app/config
+      - ./web/database:/app/database
+      - ./web/storage:/app/storage
+      - ./web/tests:/app/tests
+      - ./web/.env:/app/.env:ro
+    init: true
+    restart: unless-stopped
+    depends_on:
+      generator:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - touch database/database.sqlite && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s

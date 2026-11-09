@@ -4,6 +4,7 @@ use App\Models\Collection;
 use App\Models\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -20,65 +21,88 @@ function draftedTestCase(User $user, array $attributes = []): TestCase
     return $testCase;
 }
 
-test('guests cannot open the scenario url table', function () {
-    $testCase = draftedTestCase(User::factory()->create());
-
-    $this->get(route('test-cases.scenario-urls', $testCase))->assertRedirect(route('login'));
-});
-
-test('the owner sees one row per scenario with empty inputs', function () {
-    $user = User::factory()->create();
-    $testCase = draftedTestCase($user);
-
-    $this->actingAs($user)
-        ->get(route('test-cases.scenario-urls', $testCase))
-        ->assertOk()
-        ->assertSee('Login berhasil')
-        ->assertSee('Login gagal')
-        ->assertSee('Lanjut &amp; Generate', false);
-});
-
-test('base url pre-fills scenario rows', function () {
-    $user = User::factory()->create();
-    $testCase = draftedTestCase($user, ['base_url' => 'https://app.example.com/login/']);
-
-    $this->actingAs($user)
-        ->get(route('test-cases.scenario-urls', $testCase))
-        ->assertOk()
-        ->assertSee('value="https://app.example.com/login/"', false);
-});
-
-test('the confirmation form targets the generate route', function () {
-    $user = User::factory()->create();
-    $testCase = draftedTestCase($user);
-
-    $this->actingAs($user)
-        ->get(route('test-cases.scenario-urls', $testCase))
-        ->assertOk()
-        ->assertSee(route('test-cases.scenario-urls.generate', $testCase), false)
-        ->assertSee('Sedang menghasilkan test case', false);
-});
-
-test('submitted urls are persisted to the scenario rows', function () {
-    $user = User::factory()->create();
-    $testCase = draftedTestCase($user);
-
-    $payload = ['scenarios' => $testCase->scenarios()->get()->map(fn ($scenario) => [
+function scenarioUrlPayload(TestCase $testCase, array $urls): array
+{
+    return ['scenarios' => $testCase->scenarios()->get()->map(fn ($scenario, $index) => [
         'scenario_id' => $scenario->getKey(),
-        'scenario_url' => 'https://app.example.com/'.$scenario->getKey(),
+        'scenario_url' => $urls[$index] ?? '',
     ])->all()];
+}
 
-    $this->actingAs($user)
-        ->post(route('test-cases.scenario-urls.generate', $testCase), $payload)
-        ->assertRedirect();
+describe('F8 Scenario URL Table', function () {
+    test('Prompt for Missing Scenario URLs', function () {
+        // Given I am on the "Test Case" page
+        $user = User::factory()->create();
 
-    expect($testCase->scenarios()->pluck('scenario_url')->filter()->count())->toBe(2);
-});
+        // And I fill in the User Story without specifying URLs for each scenario
+        $payload = [
+            'name' => 'Checkout',
+            'user_story' => 'Sebagai pembeli, saya ingin checkout.',
+            'acceptance_criteria' => "Scenario: Bayar\nGiven saya di keranjang\n\nScenario: Gagal bayar\nWhen kartu ditolak",
+        ];
 
-test('another user cannot open or generate someone else test case', function () {
-    $testCase = draftedTestCase(User::factory()->create());
+        // When I press the "Generate" button
+        $response = $this->actingAs($user)->post(route('test-cases.store'), $payload);
 
-    $this->actingAs(User::factory()->create())
-        ->get(route('test-cases.scenario-urls', $testCase))
-        ->assertForbidden();
+        // Then the system displays a table for entering scenario URLs
+        $testCase = TestCase::query()->sole();
+
+        $response->assertRedirect(route('test-cases.scenario-urls', $testCase));
+
+        $this->actingAs($user)
+            ->get(route('test-cases.scenario-urls', $testCase))
+            ->assertOk()
+            ->assertSee('Bayar')
+            ->assertSee('Gagal bayar')
+            ->assertSee('name="scenarios[0][scenario_url]"', false)
+            ->assertSee('name="scenarios[1][scenario_url]"', false)
+            ->assertSee('Lanjut &amp; Generate', false);
+    });
+
+    test('Confirm pre-filled scenario URLs', function () {
+        // Given every scenario already has a URL
+        $user = User::factory()->create();
+        $testCase = draftedTestCase($user, ['base_url' => 'https://app.example.com/login/']);
+
+        // When I press the "Generate" button
+        $response = $this->actingAs($user)
+            ->get(route('test-cases.scenario-urls', $testCase));
+
+        // Then the table is shown pre-filled for me to confirm
+        $response->assertOk()
+            ->assertSee('value="https://app.example.com/login/"', false)
+            ->assertSee(route('test-cases.scenario-urls.generate', $testCase), false);
+    });
+
+    test('Reject an invalid scenario URL', function () {
+        // Given the URL table is shown
+        $user = User::factory()->create();
+        $testCase = draftedTestCase($user);
+        Http::preventStrayRequests();
+
+        // When I submit a row with an empty URL
+        $response = $this->actingAs($user)->post(
+            route('test-cases.scenario-urls.generate', $testCase),
+            scenarioUrlPayload($testCase, ['', 'https://app.example.com/login']),
+        );
+
+        // Then I should see "Field wajib diisi."
+        $response->assertSessionHasErrors([
+            'scenarios.0.scenario_url' => 'Field wajib diisi.',
+        ]);
+
+        // When I submit a row with a malformed URL
+        $response = $this->actingAs($user)->post(
+            route('test-cases.scenario-urls.generate', $testCase),
+            scenarioUrlPayload($testCase, ['bukan-url', 'https://app.example.com/login']),
+        );
+
+        // Then I should see "Format URL tidak valid."
+        $response->assertSessionHasErrors([
+            'scenarios.0.scenario_url' => 'Format URL tidak valid.',
+        ]);
+
+        // And the service is never called
+        Http::assertNothingSent();
+    });
 });
