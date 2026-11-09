@@ -1,15 +1,22 @@
-name: atlas
-
+# Production stack for Coolify.
+# Local development: Compose auto-loads compose.override.yaml.
 services:
   generator:
     build:
       context: ./generator-service
-    ports:
-      - "127.0.0.1:18001:8001"
-    volumes:
-      - ./generator-service:/app
+    environment:
+      KENARI_API_KEY: ${KENARI_API_KEY}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://kenari.id/v1}
+      LLM_MODEL: ${LLM_MODEL:-gpt-6-luna}
+      SERVICE_API_KEY: ${SERVICE_API_KEY}
+      LLM_TIMEOUT: ${LLM_TIMEOUT:-120}
+      MAX_RETRIES: ${MAX_RETRIES:-3}
+    expose:
+      - "8001"
     init: true
     restart: unless-stopped
+    mem_limit: 1g
+    shm_size: 256mb
     healthcheck:
       test:
         [
@@ -21,24 +28,31 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-      start_period: 15s
+      start_period: 20s
 
   web:
     build:
       context: ./web
     environment:
+      APP_NAME: ATLAS
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/storage/app/database.sqlite
+      SESSION_DRIVER: database
+      SESSION_SECURE_COOKIE: "true"
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
       GENERATOR_SERVICE_URL: http://generator:8001
-    ports:
-      - "127.0.0.1:8000:8000"
+      GENERATOR_SERVICE_KEY: ${SERVICE_API_KEY}
+      GENERATOR_SERVICE_TIMEOUT: "180"
+    expose:
+      - "8000"
     volumes:
-      - ./web/app:/app/app
-      - ./web/routes:/app/routes
-      - ./web/resources:/app/resources
-      - ./web/config:/app/config
-      - ./web/database:/app/database
-      - ./web/storage:/app/storage
-      - ./web/tests:/app/tests
-      - ./web/.env:/app/.env:ro
+      - atlas-storage:/app/storage
     init: true
     restart: unless-stopped
     depends_on:
@@ -47,7 +61,13 @@ services:
     command:
       - sh
       - -c
-      - touch database/database.sqlite && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+      - >-
+        mkdir -p storage/app &&
+        touch storage/app/database.sqlite &&
+        php artisan optimize:clear &&
+        php artisan migrate --force &&
+        php artisan optimize &&
+        exec php artisan serve --host=0.0.0.0 --port=8000
     healthcheck:
       test:
         [
@@ -59,4 +79,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-      start_period: 20s
+      start_period: 30s
+
+volumes:
+  atlas-storage:
