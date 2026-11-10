@@ -57,8 +57,10 @@
                         $pageOff = $pageBase . ' border-line bg-white text-subtle opacity-40 dark:border-slate-600 dark:bg-transparent dark:text-slate-300';
                         $pageOn = $pageBase . ' border-accent bg-accent text-white';
 
-                        $current = $testCases->currentPage();
-                        $pageUrls = $testCases->getUrlRange(max(1, $current - 2), min($testCases->lastPage(), $current + 2));
+                        $current = $testCases?->currentPage() ?? 1;
+                        $pageUrls = $testCases === null
+                            ? []
+                            : $testCases->getUrlRange(max(1, $current - 2), min($testCases->lastPage(), $current + 2));
                     @endphp
 
                     <div class="flex flex-col gap-2">
@@ -74,9 +76,13 @@
                                 <div class="w-[210px] flex-none">Dibuat</div>
                             </div>
 
-                            @forelse ($testCases as $case)
-                                @php $style = $statusStyles[$case->status->value]; @endphp
-                                <div class="flex items-center gap-6 border-t border-line p-4 dark:border-slate-700">
+                            @if ($historyError)
+                                <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Data tidak dapat dimuat saat ini</p>
+                            @else
+                                @forelse ($testCases as $case)
+                                    @php $style = $statusStyles[$case->status->value]; @endphp
+                                    <a href="{{ route('test-cases.show', $case) }}"
+                                        class="flex items-center gap-6 border-t border-line p-4 transition hover:bg-surface dark:border-slate-700 dark:hover:bg-white/5">
                                     <div class="flex min-w-0 flex-1 flex-col gap-1.5">
                                         <p class="text-sm/[1.55] font-semibold break-words text-body dark:text-white">{{ $case->name }}</p>
                                         <p class="truncate text-xs/[1.55] text-subtle dark:text-slate-400">{{ $case->scenarios_count }} skenario{{ $case->base_url ? ' · ' . $case->base_url : '' }}</p>
@@ -88,13 +94,15 @@
                                     </div>
                                     <div class="w-[210px] flex-none font-mono text-[11px]/[1.55] text-subtle dark:text-slate-400">{{ $case->created_at->timezone('Asia/Jakarta')->locale('id')->translatedFormat('d M Y · H.i') }}</div>
                                 </div>
-                            @empty
-                                <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Belum ada riwayat test case.</p>
-                            @endforelse
+                                    </a>
+                                @empty
+                                    <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Belum ada riwayat test case.</p>
+                                @endforelse
+                            @endif
                         </div>
                     </div>
 
-                    @if ($testCases->total() > 0)
+                    @if ($testCases !== null && $testCases->total() > 0)
                         <div class="flex flex-col gap-3 min-[700px]:flex-row min-[700px]:items-center min-[700px]:justify-between">
                             <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Menampilkan {{ $testCases->firstItem() }}–{{ $testCases->lastItem() }} dari {{ $testCases->total() }} hasil</p>
 

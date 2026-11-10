@@ -71,4 +71,21 @@ describe('F15 Review Test Case Script', function () {
         $this->get(route('test-cases.show', $testCase))
             ->assertRedirect(route('login'));
     });
+
+    test('The script stays escaped in the view', function () {
+        // Given a generated script contains markup
+        $user = User::factory()->create();
+        $testCase = reviewTestCase($user);
+        $testCase->generatedScript->update([
+            'content' => "print('<script>alert(1)</script>')\n",
+        ]);
+
+        // When I open the test case
+        $response = $this->actingAs($user)->get(route('test-cases.show', $testCase));
+
+        // Then the markup is shown as text and not rendered
+        $response->assertOk()
+            ->assertSee('&lt;script&gt;', false)
+            ->assertDontSee('<script>alert(1)</script>', false);
+    });
 });

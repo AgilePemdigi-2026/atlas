@@ -224,6 +224,10 @@ URL.".
   script and proves no credential value is ever returned.
 - `tests/integration/test_f7_login_script.py` runs the generated login in a real
   browser against the fixture login page.
+- `tests/unit/test_f9_f11_dom_validation.py` covers DOM cleaning, extraction from
+  a protected page, stage order, and DOM anti-hallucination.
+- `tests/integration/test_f9_live_dom.py` extracts the DOM with headless Chrome
+  and checks the non-visual nodes are gone.
 - `tests/unit/test_package.py` checks the package version.
 
 Regenerate expectations only after reviewing the diff:

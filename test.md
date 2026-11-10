@@ -43,8 +43,12 @@
 | Confirm pre-filled scenario URLs | F8 | | proposed |
 | Reject an invalid scenario URL | F8 | | proposed |
 | DOM source tiers | F9 | | proposed, technical |
+| Non-visual elements are removed from the DOM | F9 | | proposed, technical |
+| The DOM is extracted from a protected page | F9 | F7 | proposed, technical |
 | Plain story becomes structured steps | F10 | | proposed, technical |
 | Invalid output is retried then fails | F11 | | proposed, technical |
+| Stage order must follow Given, When, Then | F11 | | proposed, technical |
+| A target that is not in the DOM is rejected | F11 | F9 | proposed, technical |
 | Each action and locator renders | F12 | | proposed, technical |
 | Successful Script Generation | F12 | F6, F8, F9, F10, F11 | report |
 | Failed Generate (target URL unreachable) | F13 | F9 | report |
@@ -58,11 +62,13 @@
 | Successfully Review Test Case Script | F15 | F14 | report |
 | Another user's test case is forbidden | F15 | | proposed |
 | Guest cannot review | F15 | | proposed |
+| The script stays escaped in the view | F15 | | proposed |
 | Download Test Case Script | F16 | F15 | report |
 | Another user's script cannot be downloaded | F16 | | proposed |
 | No Test Case History Found | F17 | F15 | report |
 | Test history is paginated | F17 | | proposed |
 | History cannot be loaded | F17 | | proposed |
+| Selecting a row opens the test case detail | F17 | F15 | proposed |
 | Guest cannot open test history | F17 | | proposed |
 | Update account information | F18 | | proposed |
 | Reject an invalid email | F18 | | proposed |
@@ -324,9 +330,22 @@ Scenario: DOM source tiers
   Then meta.dom_source is "live"
   Given a request with neither
   Then meta.dom_source is "minimal" and guessed targets are flagged "defaulted"
+
+Scenario: Non-visual elements are removed from the DOM   [proposed]
+  Given a page with script, style, svg, and canvas elements
+  When the DOM is extracted
+  Then the cleaned DOM contains none of them
+  And the interactive elements are still there
+
+Scenario: The DOM is extracted from a protected page   [proposed]
+  Given the target requires a login
+  And an auth profile is supplied
+  When the DOM is extracted
+  Then the login happens before the page is read
+  And the extracted DOM is the page behind the login form
 ```
 
-Tests: pytest, `tests/unit/` (fixtures) and `tests/integration/` (headless Chrome).
+Tests: pytest, `tests/unit/` (fixtures) and `tests/integration/` (headless Chrome). Existing coverage: `test_f9_dom_source_tiers.py`, `test_f9_dom_extraction.py`, `test_f9_f11_dom_validation.py`, `test_f9_live_dom.py`.
 
 ### F10 LLM Extraction (Must, Sprint 1, enabler) [technical]
 
@@ -349,9 +368,21 @@ Scenario: Invalid output is retried then fails
   Then it retries up to the configured maximum (hard cap 3)
   And finally returns the error code "invalid_response"
   And meta.attempts records the number of attempts
+
+Scenario: Stage order must follow Given, When, Then   [proposed]
+  Given the LLM returns a step that goes back to "Given" after a "When"
+  When extraction runs
+  Then the output is rejected
+  And the LLM is asked again with the reason
+
+Scenario: A target that is not in the DOM is rejected   [proposed]
+  Given the LLM returns a step pointing at an element the page does not have
+  When extraction runs
+  Then the output is rejected as a hallucinated target
+  And the LLM is asked again with the reason
 ```
 
-Notes: only the extraction layer retries. Also cover stage order and DOM anti-hallucination.
+Notes: only the extraction layer retries. The retry limit is a hard cap of 3, and `meta.attempts` counts every attempt including the first. Existing coverage: `test_f11_retry.py`, `test_validator.py`, `test_f9_f11_dom_validation.py`.
 
 ### F12 Rule-based Script Generator (Must, Sprint 1, enabler)
 
@@ -452,6 +483,11 @@ Scenario: Guest cannot review   [proposed]
   Given I am not logged in
   When I open a test case
   Then I am redirected to the "/login" page
+
+Scenario: The script stays escaped in the view   [proposed]
+  Given a generated script contains markup
+  When I open the test case
+  Then the markup is shown as text and not rendered
 ```
 
 Notes: existing coverage is `TestCaseReviewTest` and `ConsoleScriptTest`. The script must stay escaped in the view.
@@ -482,7 +518,7 @@ Feature: Test History
 Scenario: No Test Case History Found
   Given I am on the "Test Case" page
   And no test case history has been created yet
-  Then I should see the message "Belum ada hasil test case"   (check code)
+  Then I should see the message "Belum ada riwayat test case."   (check code)
 
 Scenario: Test history is paginated   [proposed]
   Given I have more than 6 test cases
@@ -492,8 +528,15 @@ Scenario: Test history is paginated   [proposed]
 Scenario: History cannot be loaded   [proposed]
   Given the database cannot be reached
   When I open the Profile "Test History" tab
-  Then I should see the message "Data tidak dapat dimuat saat ini"   (check code)
+  Then I should see the message "Data tidak dapat dimuat saat ini"
+
+Scenario: Selecting a row opens the test case detail   [proposed]
+  Given I have at least one test case in my history
+  When I select a row
+  Then I should see the details of that test case
 ```
+
+Notes: the empty state and the load failure are different messages, so a failed load never looks like an empty history. The copy is `Belum ada riwayat test case.` for the empty state and `Data tidak dapat dimuat saat ini` for a failed load. A row links to the test case detail, so the history is an entry point to the review flow. Existing coverage: `TestHistoryTest`.
 
 ### F18 Profile Settings (Could, Sprint 2) [proposed scenarios]
 
