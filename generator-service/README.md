@@ -141,8 +141,7 @@ subclass. `to_dict()` returns exactly:
 
 - `code`: `invalid_input`, `missing_field`, `unsupported_action`,
   `unsupported_locator`, `invalid_stage_order`, `empty_steps`,
-  `empty_scenarios`, `missing_navigation`, `invalid_url`
-- `message`: English, mapped to Indonesian UI copy by feature 13
+  `empty_scenarios`, `missing_navigation`, `invalid_url`- `message`: English, mapped to Indonesian UI copy by feature 13
 - `step_index`: 1-based, `null` for scenario/global errors
 - `field`: fully qualified, e.g. `scenarios[0].steps[2].target`
 
@@ -177,6 +176,34 @@ F12 revalidates downstream before codegen, rejecting bad JSON with
 `ConversionError` (enveloped as 502). F10 envelopes carry the same
 `{code, message, step_index, field}` shape so F13 maps one format.
 
+## F7: Auth Profile
+
+When the request carries an `auth_profile`, the service logs in to the target
+before extracting the DOM, and the generated script logs in before it runs the
+scenarios.
+
+The credential **values** never reach the generated script. The script carries
+only the login URL and the field selectors; the values are read from
+environment variables at run time:
+
+```bash
+# The script prints the exact variable names it needs in its header.
+export ATLAS_AUTH_ID_EMAIL='qa@example.com'
+export ATLAS_AUTH_PASSWORD='s3cr3t'
+python generated_script.py
+```
+
+The variable name is `ATLAS_AUTH_` plus the uppercased selector with
+non-alphanumeric runs replaced by `_` (`id:email` -> `ATLAS_AUTH_ID_EMAIL`).
+Two selectors that slug to the same name get `_2`, `_3` suffixes.
+
+Selector rules match the DOM extraction: `id:`, `name:`, `css:`, and `xpath:`
+name their strategy; a plain key is looked up by name and then by id.
+
+If the target rejects the login, the service returns the `auth_failed` error
+code (502) and the web side shows "Gagal login. Periksa kredensial atau Login
+URL.".
+
 ## Tests
 
 - `tests/unit/test_codegen_golden.py` parametrizes over
@@ -191,6 +218,12 @@ F12 revalidates downstream before codegen, rejecting bad JSON with
   tiers, Kenari client errors, and the F10->F12 handoff (all mocked, no network).
 - `tests/unit/test_f10_transport.py` covers auth gating and the
   `POST /v1/generate` envelope over FastAPI's test client.
+- `tests/unit/test_f7_auth_login.py` covers the login helper and the
+  `auth_failed` error code.
+- `tests/unit/test_f7_script_login.py` covers the login block in the generated
+  script and proves no credential value is ever returned.
+- `tests/integration/test_f7_login_script.py` runs the generated login in a real
+  browser against the fixture login page.
 - `tests/unit/test_package.py` checks the package version.
 
 Regenerate expectations only after reviewing the diff:
@@ -205,5 +238,5 @@ git diff tests/fixtures/golden
 All F7–F13 service work is implemented. Orchestration lives in
 `llm/extractor.py` (extraction → validation → retry) with codegen in
 `api/routes/generate.py`. The service boots via the FastAPI factory and is
-exercised by the test suite: `uv run pytest -q` → 57 passed (browser
+exercised by the test suite: `uv run pytest -q` → 91 passed (browser
 integration tests skip when Chrome cannot be provisioned).

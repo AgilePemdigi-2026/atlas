@@ -24,7 +24,7 @@ from testgen.errors import (
     ConversionError,
 )
 
-__all__ = ["generate_script"]
+__all__ = ["AuthSpec", "generate_script"]
 
 STAGE_ORDER = {"Given": 0, "When": 1, "Then": 2}
 
@@ -69,6 +69,9 @@ RESERVED_NAMES = frozenset(
         "run_scenario",
         "passed",
         "failed",
+        "atlas_login",
+        "atlas_login_field",
+        "atlas_login_value",
     }
 ) | frozenset(dir(builtins))
 
@@ -99,9 +102,47 @@ class _Scenario:
     steps: list[_Step]
 
 
-def generate_script(payload: Any) -> str:
+@dataclass(frozen=True)
+class AuthSpec:
+    """Where the generated script must log in before it runs the scenarios.
+
+    Carries the login URL and the credential *selectors* only. The credential
+    values never reach the generator: the script reads them from environment
+    variables at run time, so no secret is stored or displayed with the script.
+    """
+
+    login_url: str
+    selectors: tuple[str, ...]
+
+
+def _env_var_name(selector: str, taken: set[str]) -> str:
+    """A stable, readable environment variable name for one credential selector."""
+    slug = re.sub(r"[^A-Z0-9]+", "_", selector.upper()).strip("_") or "VALUE"
+    name = f"ATLAS_AUTH_{slug}"
+    suffix = 2
+    while name in taken:
+        name = f"ATLAS_AUTH_{slug}_{suffix}"
+        suffix += 1
+    taken.add(name)
+    return name
+
+
+def _locator_parts(selector: str) -> tuple[str, str]:
+    """Split a credential selector into its Selenium strategy and target.
+
+    A prefixed selector names its strategy; a plain key falls back from name
+    to id, exactly like the DOM extraction does.
+    """
+    if ":" in selector:
+        strategy, value = selector.split(":", 1)
+        if strategy.lower() in ("id", "name", "css", "xpath") and value:
+            return strategy.lower(), value
+    return "name_or_id", selector
+
+
+def generate_script(payload: Any, *, auth: AuthSpec | None = None) -> str:
     """Convert one test case (a dict of scenarios) into a Selenium script."""
-    return _render(_parse(payload))
+    return _render(_parse(payload), auth)
 
 
 def _parse(payload: Any) -> list[_Scenario]:
@@ -326,15 +367,49 @@ def _parse_step(
     )
 
 
-def _render(scenarios: list[_Scenario]) -> str:
+def _render(scenarios: list[_Scenario], auth: AuthSpec | None = None) -> str:
     blocks = [_ENV.get_template("header.py.j2").render()]
+
+    if auth is not None:
+        blocks.append(_render_auth(auth))
+
     blocks.extend(
         _render_scenario(scenario, index)
         for index, scenario in enumerate(scenarios, start=1)
     )
-    blocks.append(_render_main(scenarios))
+    blocks.append(_render_main(scenarios, auth is not None))
 
     return "\n\n\n".join(block.rstrip("\n") for block in blocks) + "\n"
+
+
+def _render_auth(auth: AuthSpec) -> str:
+    """Render the login block: selectors and variable names, never values."""
+    taken: set[str] = set()
+    docs: list[str] = []
+    fills: list[str] = []
+
+    for selector in auth.selectors:
+        variable = _env_var_name(selector, taken)
+        strategy, target = _locator_parts(selector)
+        docs.append(f"#   {variable} = value for the {selector} field")
+        fills.append(
+            f"    element = atlas_login_field(driver, {_py_string(strategy)}, "
+            f"{_py_string(target)})"
+        )
+        fills.append("    element.clear()")
+        fills.append(
+            f"    element.send_keys(atlas_login_value({_py_string(variable)}))"
+        )
+
+    # The last field submits the form, the same way the DOM extraction does.
+    if fills:
+        fills.append("    element.send_keys(Keys.ENTER)")
+
+    return _ENV.get_template("auth.py.j2").render(
+        credential_docs="\n".join(docs),
+        login_url=_py_string(auth.login_url),
+        fill_lines="\n".join(fills),
+    )
 
 
 def _render_scenario(scenario: _Scenario, scenario_index: int) -> str:
@@ -424,12 +499,15 @@ def _render_step(
     ]
 
 
-def _render_main(scenarios: list[_Scenario]) -> str:
+def _render_main(scenarios: list[_Scenario], auth_login: bool = False) -> str:
     names = "\n".join(
         f"                {scenario.function_name}," for scenario in scenarios
     )
 
-    return _ENV.get_template("main.py.j2").render(scenarios=names)
+    return _ENV.get_template("main.py.j2").render(
+        scenarios=names,
+        auth_login=auth_login,
+    )
 
 
 def _unique_function_names(names: list[str]) -> list[str]:

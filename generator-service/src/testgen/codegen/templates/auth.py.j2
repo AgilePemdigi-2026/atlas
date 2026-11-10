@@ -1,0 +1,52 @@
+# --- Auth Profile (ATLAS) ---
+# This script logs in before it runs the scenarios. The credential values are
+# never stored in the script: set these environment variables before running it.
+{{ credential_docs }}
+
+def atlas_login_value(name):
+    """Read one credential value from the environment."""
+    value = os.environ.get(name)
+    if value is None:
+        raise SystemExit(
+            f"Missing environment variable {name}. Set it before running this script."
+        )
+    return value
+
+
+def atlas_login_field(driver, strategy, target):
+    """Find one credential field, using the same selector rules as the generator."""
+    from selenium.common.exceptions import NoSuchElementException
+
+    if strategy == "name_or_id":
+        for by in (By.NAME, By.ID):
+            try:
+                return driver.find_element(by, target)
+            except NoSuchElementException:
+                continue
+        raise SystemExit(f"Login field not found: {target}")
+
+    strategies = {
+        "id": By.ID,
+        "name": By.NAME,
+        "css": By.CSS_SELECTOR,
+        "xpath": By.XPATH,
+    }
+    return driver.find_element(strategies[strategy], target)
+
+
+def atlas_login(driver):
+    """Log in to the target before the scenarios run."""
+    from selenium.webdriver.common.keys import Keys
+
+    driver.get({{ login_url }})
+{{ fill_lines }}
+    try:
+        WebDriverWait(driver, 5).until_not(
+            lambda d: d.current_url.startswith({{ login_url }})
+            and bool(d.find_elements(By.CSS_SELECTOR, "input[type='password']"))
+        )
+    except Exception:
+        raise SystemExit(
+            "Login failed: the target still shows a password field. "
+            "Check the credentials and the Login URL."
+        )

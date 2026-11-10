@@ -17,9 +17,10 @@ class ConsoleController extends Controller
     {
         $collections = $request->user()
             ->collections()
-            ->with(['testCases' => fn ($query) => $query
-                ->select(['test_case_id', 'collection_id', 'name', 'status'])
-                ->latest(),
+            ->with([
+                'testCases' => fn ($query) => $query
+                    ->select(['test_case_id', 'collection_id', 'name', 'status'])
+                    ->latest(),
             ])
             ->orderBy('name')
             ->get();
@@ -30,7 +31,21 @@ class ConsoleController extends Controller
 
         $selected?->load('generatedScript')->loadCount('scenarios');
 
-        return view('console', ['collections' => $collections, 'selected' => $selected]);
+        // Tentukan collection aktif.
+        $requestedCollectionId = $request->integer('collection');
+
+        $activeCollection = $selected
+            ? $collections->firstWhere('id', $selected->collection_id)
+            : $collections->firstWhere('id', $requestedCollectionId);
+
+        // Jika tidak ada collection yang dipilih, gunakan collection pertama.
+        $activeCollection ??= $collections->first();
+
+        return view('console', [
+            'collections' => $collections,
+            'selected' => $selected,
+            'activeCollectionId' => $activeCollection?->getKey(),
+        ]);
     }
 
     public function download(TestCase $testCase): StreamedResponse

@@ -22,7 +22,9 @@ import httpx
 from pydantic import ValidationError
 
 from testgen.config import Settings
+from testgen.dom.auth import AuthError
 from testgen.dom.extractor import extract_dom
+from testgen.errors import AUTH_FAILED
 from testgen.llm.client import KenariClient
 from testgen.llm.errors import (
     INVALID_INPUT,
@@ -34,8 +36,6 @@ from testgen.schemas.extraction import ExtractionPayload
 from testgen.schemas.request import GenerateRequest
 from testgen.schemas.response import GenerateResponse, ResponseError, ResponseMeta
 from testgen.validation.validator import validate_extraction
-
-__all__ = ["clean_dom", "extract"]
 
 MAX_ELEMENTS = 200
 MAX_TEXT_CHARS = 80
@@ -194,6 +194,13 @@ def _resolve_dom(
                 auth_profile=request.auth_profile,
                 page_load_timeout=settings.llm_timeout,
             )
+        except AuthError as error:
+            raise LlmError(
+                str(error),
+                code=AUTH_FAILED,
+                http_status=502,
+                field="auth_profile",
+            ) from error
         except ValueError as error:
             raise LlmError(
                 str(error), code=INVALID_URL, http_status=422, field=field
@@ -206,13 +213,13 @@ def _resolve_dom(
                 field=field,
             ) from error
         html = snapshot.html
-        if not html.strip():
-            raise LlmError(
-                "Target page returned an empty DOM.",
-                code=INVALID_URL,
-                http_status=502,
-                field=field,
-            )
+    if not html.strip():
+        raise LlmError(
+            "Target page returned an empty DOM.",
+            code=INVALID_URL,
+            http_status=502,
+            field=field,
+        )
     text, capped = clean_dom(html)
     warnings = ["Element list was capped."] if capped else []
     return text, "live", warnings

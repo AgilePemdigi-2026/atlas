@@ -62,6 +62,25 @@ def test_value_on_click_is_rejected() -> None:
     ]
 
 
+def test_stage_order_must_follow_given_when_then() -> None:
+    result = validate_extraction(
+        _payload(
+            {
+                "stage": "Then",
+                "action": "assert_url",
+                "value": "http://example.test/tutorial",
+            },
+            _step(stage="When"),
+        ),
+        DOM,
+    )
+
+    assert result.valid is False
+    assert result.errors == [
+        "scenarios[0].steps[2].stage must follow Given → When → Then order."
+    ]
+
+
 def test_xpath_text_target_matches_the_compact_dom() -> None:
     result = validate_extraction(
         _payload(_step(by="xpath", target='//button[text()="Create account"]')),

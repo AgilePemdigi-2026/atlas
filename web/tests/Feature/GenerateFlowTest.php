@@ -71,7 +71,7 @@ test('a successful generate persists output and script and completes the test ca
     Http::assertSentCount(1);
     Http::assertSent(fn ($request) => $request['acceptance_criteria'] === $testCase->acceptance_criteria
         && $request['options']['max_retries'] === 3
-        && ! array_key_exists('auth_profile', $request->data()));
+        && $request['auth_profile'] === null);
 });
 
 test('a service failure maps to copy and marks failed', function () {

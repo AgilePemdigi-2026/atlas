@@ -9,6 +9,7 @@ test('every service error code resolves to indonesian copy', function (string $c
     ['missing_field', 502, 'Field wajib diisi.'],
     ['invalid_url', 422, 'Format URL tidak valid.'],
     ['invalid_url', 502, 'URL tidak dapat diakses.'],
+    ['auth_failed', 502, 'Gagal login. Periksa kredensial atau Login URL.'],
     ['llm_timeout', 502, 'Proses generate gagal, layanan tidak tersedia.'],
     ['llm_unavailable', 502, 'Proses generate gagal, layanan tidak tersedia.'],
     ['internal_error', 502, 'Proses generate gagal, layanan tidak tersedia.'],

@@ -8,6 +8,8 @@ final class ErrorCopy
 
     private const GENERIC_FAILURE = 'Gagal menghasilkan script. Coba lagi atau periksa isian skenario Anda.';
 
+    private const AUTH_FAILED = 'Gagal login. Periksa kredensial atau Login URL.';
+
     /**
      * Machine-facing service error codes mapped to frozen Indonesian copy.
      *
@@ -17,6 +19,7 @@ final class ErrorCopy
         'invalid_input' => 'Field wajib diisi.',
         'missing_field' => 'Field wajib diisi.',
         'invalid_url' => 'Format URL tidak valid.',
+        'auth_failed' => self::AUTH_FAILED,
         'llm_timeout' => self::SERVICE_UNAVAILABLE,
         'llm_unavailable' => self::SERVICE_UNAVAILABLE,
         'internal_error' => self::SERVICE_UNAVAILABLE,

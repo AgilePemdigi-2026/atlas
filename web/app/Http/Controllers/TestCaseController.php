@@ -58,7 +58,7 @@ class TestCaseController extends Controller
     {
         Gate::authorize('update', $testCase->collection);
 
-        $testCase->load('scenarios');
+        $testCase->load('scenarios', 'authProfile');
 
         return view('test-cases.scenario-urls', ['testCase' => $testCase]);
     }
@@ -144,6 +144,10 @@ class TestCaseController extends Controller
             acceptanceCriteria: $testCase->acceptance_criteria ?? $testCase->user_story,
             baseUrl: $testCase->base_url,
             scenarios: $scenarios,
+            authProfile: $testCase->authProfile === null ? null : [
+                'login_url' => $testCase->authProfile->login_url,
+                'credentials' => $testCase->authProfile->credentials ?? [],
+            ],
         ));
     }
 

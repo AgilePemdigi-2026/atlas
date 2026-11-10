@@ -10,7 +10,8 @@ if __name__ == "__main__":
     failed = 0
 
     try:
-        for index, run_scenario in enumerate(
+{% if auth_login %}        atlas_login(driver)
+{% endif %}        for index, run_scenario in enumerate(
             [
 {{ scenarios }}
             ],
