@@ -1,4 +1,4 @@
-@props(['collections', 'selected' => null])
+@props(['collections', 'selected' => null, 'activeCollectionId' => null])
 
 <aside class="flex w-full flex-none flex-col gap-6 border-b border-line bg-surface p-5 min-[900px]:w-[236px] min-[900px]:border-r min-[900px]:border-b-0 dark:border-slate-700 dark:bg-night">
     <h2 class="text-sm/[1.55] font-semibold text-body dark:text-slate-100">Test Scenario</h2>

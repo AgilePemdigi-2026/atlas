@@ -28,9 +28,21 @@ class ConsoleController extends Controller
             ->flatMap(fn ($collection) => $collection->testCases)
             ->firstWhere('test_case_id', $request->integer('test_case'));
 
-        $selected?->load('generatedScript')->loadCount('scenarios');
+        $selected?->load(['generatedScript', 'authProfile'])
+            ->loadCount('scenarios');
 
-        return view('console', ['collections' => $collections, 'selected' => $selected]);
+        $activeCollectionId = $selected?->collection_id
+            ?? $request->integer('collection');
+
+        if (! $collections->contains('collection_id', $activeCollectionId)) {
+            $activeCollectionId = $collections->first()?->getKey();
+        }
+
+        return view('console', [
+            'collections' => $collections,
+            'selected' => $selected,
+            'activeCollectionId' => $activeCollectionId,
+        ]);
     }
 
     public function download(TestCase $testCase): StreamedResponse

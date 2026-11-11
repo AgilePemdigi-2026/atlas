@@ -4,7 +4,11 @@
 
 @section('content')
     <div class="flex min-h-[calc(100vh-72px)] flex-col min-[900px]:flex-row min-[1100px]:min-h-[calc(100vh-88px)]">
-        <x-console.collection-sidebar :collections="$collections" :selected="$selected" />
+        <x-console.collection-sidebar
+            :collections="$collections"
+            :selected="$selected"
+            :active-collection-id="$activeCollectionId"
+        />
 
         <section class="flex min-w-0 flex-1 flex-col gap-7 px-6 pb-10 min-[900px]:px-9">
             @if (session('status'))
@@ -12,19 +16,80 @@
             @endif
 
             <div role="tablist" aria-label="Pengaturan test" class="flex gap-7 overflow-x-auto border-b border-line dark:border-slate-700">
-                <button type="button" role="tab" id="tab-story" aria-controls="panel-story" aria-selected="true"
+                <button type="button" role="tab" id="tab-story" data-tab="story" aria-controls="panel-story" aria-selected="true"
                     class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
                     User Story
                 </button>
-                <button type="button" role="tab" id="tab-config" aria-controls="panel-config" aria-selected="false"
+                <button type="button" role="tab" id="tab-config" data-tab="config" aria-controls="panel-config" aria-selected="false"
                     class="-mb-px border-b-2 border-transparent px-1 py-4 text-sm whitespace-nowrap text-subtle transition hover:text-body aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent dark:text-slate-400 dark:hover:text-slate-100 dark:aria-selected:border-indigo-300 dark:aria-selected:text-indigo-300">
                     Config
                 </button>
             </div>
 
             <div role="tabpanel" id="panel-story" data-panel="story" aria-labelledby="tab-story">
-                {{-- Tahap 2: isi tab User Story --}}
-                <p class="text-sm text-subtle dark:text-slate-400">Isi tab User Story dipasang di tahap 2.</p>
+                <form method="POST" action="{{ route('test-cases.store') }}" class="flex max-w-3xl flex-col gap-5 py-6">
+                    @csrf
+
+                    <div>
+                        <label for="test-case-name" class="mb-2 block text-sm font-semibold text-body dark:text-slate-100">
+                            Nama Test Case
+                        </label>
+                        <input id="test-case-name" type="text" name="name"
+                            value="{{ old('name') }}" required maxlength="256"
+                            placeholder="Contoh: Login berhasil"
+                            class="w-full rounded-md border border-line bg-white px-4 py-3 text-sm text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                        @error('name')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="user-story" class="mb-2 block text-sm font-semibold text-body dark:text-slate-100">
+                            User Story
+                        </label>
+                        <textarea id="user-story" name="user_story" rows="4" required
+                            placeholder="Sebagai pengguna, saya ingin login agar dapat mengakses akun."
+                            class="w-full rounded-md border border-line bg-white px-4 py-3 text-sm text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">{{ old('user_story') }}</textarea>
+                        @error('user_story')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="acceptance-criteria" class="mb-2 block text-sm font-semibold text-body dark:text-slate-100">
+                            Acceptance criteria
+                        </label>
+                        <textarea id="acceptance-criteria" name="acceptance_criteria" rows="6" required
+                            placeholder="Skenario: Login berhasil&#10;Given saya berada di halaman login&#10;When saya memasukkan kredensial yang valid&#10;Then saya berhasil masuk"
+                            class="w-full rounded-md border border-line bg-white px-4 py-3 text-sm text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">{{ old('acceptance_criteria') }}</textarea>
+                        @error('acceptance_criteria')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="base-url" class="mb-2 block text-sm font-semibold text-body dark:text-slate-100">
+                            Base URL <span class="font-normal text-subtle">(opsional)</span>
+                        </label>
+                        <input id="base-url" type="url" name="base_url"
+                            value="{{ old('base_url') }}" placeholder="https://example.com"
+                            class="w-full rounded-md border border-line bg-white px-4 py-3 text-sm text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                        @error('base_url')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    @if ($activeCollectionId)
+                        <input type="hidden" name="collection_id" value="{{ $activeCollectionId }}">
+                    @endif
+
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="rounded-md bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
+                            Generate Test
+                        </button>
+                    </div>
+                </form>
 
                 @if ($selected)
                     @php $hasScript = $selected->generatedScript !== null; @endphp
@@ -53,10 +118,101 @@
                 @endif
             </div>
 
-            <div role="tabpanel" id="panel-config" aria-labelledby="tab-config" hidden>
-                {{-- Tab Config: menunggu desain --}}
-                <p class="text-sm text-subtle dark:text-slate-400">Isi tab Config menunggu desain.</p>
-            </div>
+        <div role="tabpanel" id="panel-config" data-panel="config" aria-labelledby="tab-config" hidden>
+            @if ($selected)
+                @php
+                    $authProfile = $selected->authProfile;
+                    $hasAuth = $authProfile !== null;
+                @endphp
+
+                <div class="mt-6 rounded-xl border border-line bg-white p-6 dark:border-slate-700 dark:bg-night">
+                    <h2 class="mb-2 text-lg font-semibold text-body dark:text-slate-100">
+                        Authentication Configuration
+                    </h2>
+                    <p class="mb-5 text-sm text-subtle dark:text-slate-400">
+                        Atur autentikasi untuk website yang akan diuji pada Test Case ini.
+                    </p>
+
+                    <div class="mb-6 flex items-center gap-6 text-sm">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="auth-mode" value="none" {{ $hasAuth ? '' : 'checked' }}>
+                            No Auth
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="auth-mode" value="auth" {{ $hasAuth ? 'checked' : '' }}>
+                            Auth
+                        </label>
+                    </div>
+
+                    <div id="auth-fields" {{ $hasAuth ? '' : 'hidden' }}>
+                        <form id="auth-profile-form"
+                            data-save-url="{{ route('auth-profiles.upsert', $selected->getKey()) }}"
+                            data-delete-url="{{ route('auth-profiles.destroy', $selected->getKey()) }}"
+                            class="flex flex-col gap-5">
+
+                            @csrf
+
+                            <div>
+                                <label for="login-url" class="mb-2 block text-sm font-semibold">
+                                    Login URL
+                                </label>
+                                <input id="login-url" name="login_url" type="url" required
+                                    value="{{ $authProfile?->login_url }}"
+                                    placeholder="https://example.com/login"
+                                    class="w-full rounded-md border border-line bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-abyss">
+                            </div>
+
+                            <div>
+                                <h3 class="mb-2 text-sm font-semibold">Credentials</h3>
+                                <p class="mb-3 text-xs text-subtle">
+                                    Masukkan key dan value untuk login ke website target.
+                                    Untuk memperbarui profil, masukkan kembali seluruh credentials.
+                                </p>
+
+                                <div id="credentials-rows" class="flex flex-col gap-3">
+                                    <div class="credential-row grid grid-cols-2 gap-3">
+                                        <input type="text" placeholder="Key (contoh: email)"
+                                            aria-label="Credential key"
+                                            class="credential-key rounded-md border border-line px-3 py-2 text-sm dark:border-slate-600 dark:bg-abyss">
+                                        <input type="text" placeholder="Value"
+                                            aria-label="Credential value"
+                                            class="credential-value rounded-md border border-line px-3 py-2 text-sm dark:border-slate-600 dark:bg-abyss">
+                                    </div>
+                                </div>
+
+                                <button type="button" id="add-credential"
+                                    class="text-left text-sm font-semibold text-accent dark:text-indigo-300">
+                                    + Tambah baris
+                                </button>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button type="submit" id="save-auth"
+                                    class="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white">
+                                    Simpan Profil
+                                </button>
+
+                                <button type="button" id="delete-auth"
+                                    class="rounded-md border border-red-300 px-5 py-3 text-sm font-semibold text-red-600">
+                                    Hapus Profil / No Auth
+                                </button>
+                            </div>
+
+                            <p id="auth-feedback" role="status" aria-live="polite" class="text-sm"></p>
+                        </form>
+                    </div>
+
+                    <div id="no-auth-message" {{ $hasAuth ? 'hidden' : '' }}
+                        class="rounded-md bg-slate-50 p-4 text-sm text-subtle dark:bg-slate-800">
+                        Test Case ini tidak menggunakan konfigurasi autentikasi.
+                    </div>
+                </div>
+            @else
+                <div class="mt-6 rounded-lg border border-line p-6 text-sm text-subtle">
+                    Pilih Test Case di sidebar terlebih dahulu untuk mengatur autentikasi.
+                </div>
+            @endif
+        </div>
         </section>
     </div>
 
