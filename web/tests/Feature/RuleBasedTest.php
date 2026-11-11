@@ -87,7 +87,7 @@ describe('F12 Rule-based Script Generator', function () {
         Http::assertSentCount(1);
         Http::assertSent(fn ($request) => $request['acceptance_criteria'] === $testCase->acceptance_criteria
             && $request['options']['max_retries'] === 3
-            && ! array_key_exists('auth_profile', $request->data()));
+            && $request['auth_profile'] === null);
     });
 
     test('[llm] Plain story becomes structured steps', function () {

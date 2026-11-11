@@ -15,6 +15,8 @@
             </div>
         @endif
 
+        <x-console.auth-profile :test-case="$testCase" />
+
         <form method="POST" action="{{ route('test-cases.scenario-urls.generate', $testCase) }}" class="flex flex-col gap-5" data-generate-form>
             @csrf
 
@@ -32,7 +34,7 @@
                             <td class="px-2 py-2">
                                 <input type="hidden" name="scenarios[{{ $index }}][scenario_id]" value="{{ $scenario->getKey() }}">
                                 <input type="url" name="scenarios[{{ $index }}][scenario_url]" required
-                                    value="{{ old("scenarios.$index.scenario_url", $testCase->base_url) }}"
+                                    value="{{ old("scenarios.$index.scenario_url", $scenario->scenario_url ?? $testCase->base_url) }}"
                                     aria-label="URL awal {{ $scenario->name }}" placeholder="https://app.example.com/login"
                                     class="h-9 w-full rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
                             </td>

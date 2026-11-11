@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TestCase;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,17 +16,28 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $testCases = TestCase::query()
-            ->whereHas('collection', fn ($query) => $query->where('user_id', $user->user_id))
-            ->withCount('scenarios')
-            ->latest()
-            ->orderByDesc('test_case_id')
-            ->paginate(6)
-            ->fragment('history');
+        // A failed load must not look like an empty history, so the two
+        // states are reported separately.
+        try {
+            $testCases = TestCase::query()
+                ->whereHas('collection', fn ($query) => $query->where('user_id', $user->user_id))
+                ->withCount('scenarios')
+                ->latest()
+                ->orderByDesc('test_case_id')
+                ->paginate(6)
+                ->fragment('history');
+        } catch (QueryException) {
+            return view('profile', [
+                'user' => $user,
+                'testCases' => null,
+                'historyError' => true,
+            ]);
+        }
 
         return view('profile', [
             'user' => $user,
             'testCases' => $testCases,
+            'historyError' => false,
         ]);
     }
 

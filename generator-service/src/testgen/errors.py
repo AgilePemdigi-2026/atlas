@@ -11,6 +11,7 @@ EMPTY_STEPS = "empty_steps"
 EMPTY_SCENARIOS = "empty_scenarios"
 MISSING_NAVIGATION = "missing_navigation"
 INVALID_URL = "invalid_url"
+AUTH_FAILED = "auth_failed"
 
 
 class TestgenError(Exception):

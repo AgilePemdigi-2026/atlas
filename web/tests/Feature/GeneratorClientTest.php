@@ -40,7 +40,7 @@ test('a successful response yields the script and no copy', function () {
 
     Http::assertSent(fn ($request) => $request->hasHeader('X-Service-Key', 'secret')
         && $request['user_story'] === 'Sebagai pengguna, saya ingin masuk.'
-        && ! array_key_exists('auth_profile', $request->data()));
+        && $request['auth_profile'] === null);
 });
 
 test('a service error envelope maps to indonesian copy', function () {

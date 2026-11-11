@@ -17,9 +17,10 @@ class ConsoleController extends Controller
     {
         $collections = $request->user()
             ->collections()
-            ->with(['testCases' => fn ($query) => $query
-                ->select(['test_case_id', 'collection_id', 'name', 'status'])
-                ->latest(),
+            ->with([
+                'testCases' => fn ($query) => $query
+                    ->select(['test_case_id', 'collection_id', 'name', 'status'])
+                    ->latest(),
             ])
             ->orderBy('name')
             ->get();
@@ -28,20 +29,25 @@ class ConsoleController extends Controller
             ->flatMap(fn ($collection) => $collection->testCases)
             ->firstWhere('test_case_id', $request->integer('test_case'));
 
+        // Ambil generated script, auth profile F7, dan jumlah skenario.
         $selected?->load(['generatedScript', 'authProfile'])
             ->loadCount('scenarios');
 
-        $activeCollectionId = $selected?->collection_id
+        // Tentukan Collection aktif dari Test Case atau query parameter.
+        $requestedCollectionId = $selected?->collection_id
             ?? $request->integer('collection');
 
-        if (! $collections->contains('collection_id', $activeCollectionId)) {
-            $activeCollectionId = $collections->first()?->getKey();
-        }
+        $activeCollection = $collections->first(
+            fn ($collection) => $collection->getKey() == $requestedCollectionId
+        );
+
+        // Jika Collection tidak ditemukan, pilih Collection pertama milik user.
+        $activeCollection ??= $collections->first();
 
         return view('console', [
             'collections' => $collections,
             'selected' => $selected,
-            'activeCollectionId' => $activeCollectionId,
+            'activeCollectionId' => $activeCollection?->getKey(),
         ]);
     }
 
@@ -55,7 +61,9 @@ class ConsoleController extends Controller
 
         return response()->streamDownload(function () use ($script) {
             echo $script->content;
-        }, self::scriptFilename($testCase), ['Content-Type' => 'text/plain; charset=UTF-8']);
+        }, self::scriptFilename($testCase), [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
     }
 
     public static function scriptFilename(TestCase $testCase): string

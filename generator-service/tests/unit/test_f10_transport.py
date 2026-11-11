@@ -160,7 +160,7 @@ def test_generate_codegen_failure_is_enveloped(monkeypatch) -> None:
     from testgen.api.routes import generate as generate_module
     from testgen.errors import ConversionError
 
-    def boom(payload: object) -> str:
+    def boom(payload: object, **kwargs: object) -> str:
         raise ConversionError(code="missing_navigation", message="No navigation step.")
 
     monkeypatch.setattr(generate_module, "generate_script", boom)

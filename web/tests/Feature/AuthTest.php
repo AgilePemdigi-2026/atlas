@@ -57,13 +57,24 @@ test('registration rejects a malformed email and a short password', function () 
     ]);
 });
 
-test('logging in starts a session and redirects home', function () {
+// test('logging in starts a session and redirects home', function () {
+//     $user = User::factory()->create(['email' => 'masuk@example.com']);
+
+//     $this->post(route('login'), [
+//         'email' => $user->email,
+//         'password' => 'password',
+//     ])->assertRedirect(route('home'));
+
+//     $this->assertAuthenticatedAs($user);
+// });
+
+test('logging in starts a session and redirects to the console', function () {
     $user = User::factory()->create(['email' => 'masuk@example.com']);
 
     $this->post(route('login'), [
         'email' => $user->email,
         'password' => 'password',
-    ])->assertRedirect(route('home'));
+    ])->assertRedirect(route('console'));
 
     $this->assertAuthenticatedAs($user);
 });
