@@ -8,10 +8,10 @@
     }
 @endphp
 
-<section class="flex flex-col gap-4 rounded-lg border border-line bg-white p-5 dark:border-slate-700 dark:bg-night">
+<section class="flex flex-col gap-4 rounded-xl border border-edge bg-white p-5 dark:border-slate-800 dark:bg-night">
     <div class="flex flex-col gap-1">
-        <h2 class="text-sm/[1.55] font-semibold text-body dark:text-slate-100">Auth Profile</h2>
-        <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Hanya dipakai untuk membuka halaman target yang terlindungi. Kredensial tidak masuk ke script.</p>
+        <h2 class="font-display text-sm/[1.55] font-semibold text-body dark:text-slate-100">Auth Profile</h2>
+        <p class="console-hint">Hanya dipakai untuk membuka halaman target yang terlindungi. Kredensial tidak masuk ke script.</p>
     </div>
 
     <form method="POST" action="{{ route('auth-profiles.upsert', $testCase) }}" data-auth-profile-form
@@ -33,41 +33,41 @@
 
         <div data-auth-fields @if ($authProfile === null) hidden @endif class="flex flex-col gap-4">
             <div class="flex flex-col gap-1.5">
-                <label for="login-url" class="text-sm font-semibold text-body dark:text-slate-100">Login URL</label>
+                <label for="login-url" class="console-label">Login URL</label>
                 <input id="login-url" name="login_url" type="url" value="{{ $authProfile?->login_url }}"
-                    placeholder="https://app.example.com/login"
-                    class="rounded-md border border-line bg-white px-3 py-2 text-sm text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                    placeholder="https://app.example.com/login" class="console-field">
             </div>
 
             <div class="flex flex-col gap-2">
-                <span class="text-sm font-semibold text-body dark:text-slate-100">Credential</span>
-                <p class="text-xs text-subtle dark:text-slate-400">Selector boleh memakai <code>id:</code>, <code>name:</code>, <code>css:</code>, atau <code>xpath:</code>; tanpa prefix dicari lewat name lalu id.</p>
+                <span class="console-label">Credential</span>
+                <p class="console-hint">Selector boleh memakai <code>id:</code>, <code>name:</code>, <code>css:</code>, atau
+                    <code>xpath:</code>; tanpa prefix dicari lewat name lalu id.</p>
 
                 <div data-credential-rows class="flex flex-col gap-2">
                     @foreach ($credentials as $selector => $value)
                         <div data-credential-row class="flex flex-col gap-2 min-[620px]:flex-row">
                             <input data-credential-selector value="{{ $selector }}" placeholder="email"
                                 aria-label="Selector kredensial"
-                                class="h-9 min-w-0 flex-1 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                                class="console-field h-9 min-w-0 flex-1 text-xs">
                             <input data-credential-value value="{{ $value }}" placeholder="nilai kredensial"
                                 aria-label="Nilai kredensial"
-                                class="h-9 min-w-0 flex-1 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                                class="console-field h-9 min-w-0 flex-1 text-xs">
                             <button type="button" data-remove-credential
-                                class="h-9 rounded-md border border-line px-3 text-xs font-semibold text-subtle hover:bg-surface dark:border-slate-600 dark:text-slate-300 dark:hover:bg-white/5">Hapus</button>
+                                class="console-btn-ghost h-9 px-3 text-xs">Hapus</button>
                         </div>
                     @endforeach
                 </div>
 
                 <div>
                     <button type="button" data-add-credential
-                        class="text-xs font-semibold text-accent hover:underline dark:text-indigo-300">Tambah kredensial</button>
+                        class="text-xs font-semibold text-accent transition hover:underline dark:text-indigo-300">Tambah kredensial</button>
                 </div>
             </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-            <button type="submit" class="h-9 rounded-md bg-accent px-4 text-xs font-semibold text-white">Simpan pengaturan</button>
-            <p data-auth-status class="text-xs text-subtle dark:text-slate-400" role="status"></p>
+            <button type="submit" class="console-btn-primary h-9 px-4 text-xs">Simpan pengaturan</button>
+            <p data-auth-status class="console-hint" role="status"></p>
         </div>
     </form>
 </section>

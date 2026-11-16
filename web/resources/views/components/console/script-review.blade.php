@@ -30,11 +30,11 @@
 
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-col gap-1">
-                <span class="text-[13px] font-bold text-body dark:text-slate-100">{{ $filename }}</span>
+                <span class="font-display text-[13px] font-bold text-body dark:text-slate-100">{{ $filename }}</span>
                 <span class="text-[11px] text-subtle dark:text-slate-400">Python 3 · Selenium 4 · Review sebelum dijalankan</span>
             </div>
             <a href="{{ route('test-cases.script.download', $testCase) }}"
-                class="inline-flex h-9 items-center rounded-[7px] bg-accent px-4 text-[11px] font-semibold text-white hover:opacity-90">Download Script</a>
+                class="console-btn-primary h-9 px-4 text-xs">Download Script</a>
         </div>
 
         <div class="overflow-hidden rounded-[11px] border border-[#2D3449] bg-[#161B2E] shadow-lg">

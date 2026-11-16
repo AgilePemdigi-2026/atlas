@@ -12,15 +12,16 @@ describe('F14 Collection Management', function () {
         // Given I am logged in
         $user = User::factory()->create();
         // When I create a collection with a name
-        $this->actingAs($user)
-            ->post(route('collections.store'), ['name' => 'KaryaRasa'])
-            ->assertRedirect(route('console'));
+        $response = $this->actingAs($user)
+            ->post(route('collections.store'), ['name' => 'KaryaRasa']);
         // Then it appears in my sidebar
         $this->actingAs($user)
             ->get(route('console'))
             ->assertOk()
             ->assertSee('KaryaRasa');
-        expect($user->collections()->where('name', 'KaryaRasa')->exists())->toBeTrue();
+        $collection = $user->collections()->where('name', 'KaryaRasa')->firstOrFail();
+        $response->assertRedirect(route('console', ['collection' => $collection->getKey()]));
+        expect($collection->exists())->toBeTrue();
     });
 
     test('Rename a collection', function () {
@@ -30,7 +31,7 @@ describe('F14 Collection Management', function () {
         // When I change its name
         $this->actingAs($user)
             ->patch(route('collections.update', $collection), ['name' => 'Baru'])
-            ->assertRedirect(route('console'));
+            ->assertRedirect(route('console', ['collection' => $collection->getKey()]));
         // Then the new name is saved
         expect($collection->fresh()->name)->toBe('Baru');
     });

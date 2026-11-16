@@ -11,13 +11,15 @@ class CollectionController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validated = $request->validateWithBag('createCollection', [
             'name' => ['required', 'string', 'max:256'],
         ]);
 
-        $request->user()->collections()->create($validated);
+        $collection = $request->user()->collections()->create($validated);
 
-        return redirect()->route('console')->with('status', 'Collection berhasil dibuat.');
+        return redirect()
+            ->route('console', ['collection' => $collection->getKey()])
+            ->with('status', 'Collection berhasil dibuat.');
     }
 
     public function update(Request $request, Collection $collection): RedirectResponse
@@ -30,15 +32,26 @@ class CollectionController extends Controller
 
         $collection->update($validated);
 
-        return redirect()->route('console')->with('status', 'Nama collection diperbarui.');
+        return redirect()
+            ->route('console', ['collection' => $collection->getKey()])
+            ->with('status', 'Nama collection diperbarui.');
     }
 
     public function destroy(Collection $collection): RedirectResponse
     {
         Gate::authorize('delete', $collection);
 
+        $userId = $collection->user_id;
+
         $collection->delete();
 
-        return redirect()->route('console')->with('status', 'Collection dihapus.');
+        $remaining = Collection::query()
+            ->where('user_id', $userId)
+            ->orderBy('name')
+            ->first();
+
+        return redirect()
+            ->route('console', $remaining ? ['collection' => $remaining->getKey()] : [])
+            ->with('status', 'Collection dihapus.');
     }
 }

@@ -30,7 +30,9 @@
             @yield('content')
         </div>
 
-        @include('partials.footer')
+        @unless ($__env->hasSection('without-footer'))
+            @include('partials.footer')
+        @endunless
     @endif
 
     <button type="button" id="theme-toggle" aria-label="Ganti mode terang atau gelap"

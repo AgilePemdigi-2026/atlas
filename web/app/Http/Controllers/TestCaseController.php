@@ -42,16 +42,119 @@ class TestCaseController extends Controller
 
         $testCase = $collection->testCases()->create([
             'name' => $validated['name'],
-            'user_story' => $validated['user_story'],
-            'acceptance_criteria' => $validated['acceptance_criteria'],
-            'base_url' => $validated['base_url'] ?? null,
         ]);
 
-        foreach (ScenarioParser::names($validated['acceptance_criteria'], $validated['name']) as $name) {
-            $testCase->scenarios()->create(['name' => $name]);
-        }
+        $this->applyStory($testCase, $validated);
 
         return redirect()->route('test-cases.scenario-urls', $testCase);
+    }
+
+    public function storeDraft(Request $request): RedirectResponse
+    {
+        $bag = $request->input('source') === 'empty' ? 'createFirstTestCase' : 'createTestCase';
+
+        $validated = $request->validateWithBag($bag, [
+            'name' => ['required', 'string', 'max:256'],
+            'collection_id' => ['nullable', 'integer'],
+        ], [
+            'name.required' => 'Field wajib diisi.',
+        ]);
+
+        $user = $request->user();
+
+        $collection = $validated['collection_id'] ?? null
+            ? $user->collections()->findOrFail($validated['collection_id'])
+            : RootCollection::for($user);
+
+        $testCase = $collection->testCases()->create([
+            'name' => $validated['name'],
+        ]);
+
+        return redirect()
+            ->route('console', [
+                'collection' => $collection->getKey(),
+                'test_case' => $testCase->getKey(),
+                'focus' => 1,
+            ])
+            ->with('status', 'Test case berhasil dibuat.');
+    }
+
+    public function update(Request $request, TestCase $testCase): RedirectResponse
+    {
+        Gate::authorize('update', $testCase->collection);
+
+        if ($request->boolean('rename')) {
+            $validated = $request->validateWithBag('renameTestCase', [
+                'name' => ['required', 'string', 'max:256'],
+            ], [
+                'name.required' => 'Field wajib diisi.',
+            ]);
+
+            $testCase->update($validated);
+
+            return redirect()
+                ->route('console', [
+                    'collection' => $testCase->collection_id,
+                    'test_case' => $testCase->getKey(),
+                ])
+                ->with('status', 'Nama test case diperbarui.');
+        }
+
+        $validated = $request->validateWithBag('updateTestCase', [
+            'name' => ['required', 'string', 'max:256'],
+            'user_story' => ['required', 'string'],
+            'acceptance_criteria' => ['required', 'string'],
+            'base_url' => ['nullable', 'url'],
+        ], [
+            'name.required' => 'Field wajib diisi.',
+            'user_story.required' => 'Field wajib diisi.',
+            'acceptance_criteria.required' => 'Field wajib diisi.',
+        ]);
+
+        $this->applyStory($testCase, $validated);
+
+        return redirect()
+            ->route('test-cases.scenario-urls', $testCase)
+            ->with('status', 'Test case diperbarui.');
+    }
+
+    public function destroy(TestCase $testCase): RedirectResponse
+    {
+        Gate::authorize('delete', $testCase->collection);
+
+        $collectionId = $testCase->collection_id;
+
+        $testCase->delete();
+
+        return redirect()
+            ->route('console', ['collection' => $collectionId])
+            ->with('status', 'Test case dihapus.');
+    }
+
+    /**
+     * Apply the story fields and rebuild scenarios, preserving existing URLs
+     * for scenarios that keep their name.
+     *
+     * @param  array{name: string, user_story: string, acceptance_criteria: string, base_url?: string|null}  $validated
+     */
+    private function applyStory(TestCase $testCase, array $validated): void
+    {
+        DB::transaction(function () use ($testCase, $validated): void {
+            $testCase->update([
+                'name' => $validated['name'],
+                'user_story' => $validated['user_story'],
+                'acceptance_criteria' => $validated['acceptance_criteria'],
+                'base_url' => $validated['base_url'] ?? null,
+            ]);
+
+            $names = ScenarioParser::names($validated['acceptance_criteria'], $validated['name']);
+
+            foreach ($names as $name) {
+                $testCase->scenarios()->updateOrCreate(['name' => $name], []);
+            }
+
+            $testCase->scenarios()->whereNotIn('name', $names)->delete();
+        });
     }
 
     public function scenarioUrls(TestCase $testCase): View
@@ -140,7 +243,7 @@ class TestCaseController extends Controller
             timeout: (int) config('services.generator.timeout'),
         ))->send(new GenerateRequest(
             testCaseId: $testCase->getKey(),
-            userStory: $testCase->user_story,
+            userStory: (string) $testCase->user_story,
             acceptanceCriteria: $testCase->acceptance_criteria ?? $testCase->user_story,
             baseUrl: $testCase->base_url,
             scenarios: $scenarios,

@@ -19,7 +19,7 @@ class ConsoleController extends Controller
             ->collections()
             ->with([
                 'testCases' => fn ($query) => $query
-                    ->select(['test_case_id', 'collection_id', 'name', 'status'])
+                    ->select(['test_case_id', 'collection_id', 'name', 'user_story', 'acceptance_criteria', 'base_url', 'status'])
                     ->latest(),
             ])
             ->orderBy('name')

@@ -4,7 +4,6 @@
 
 @section('content')
     @php
-        // Logo huruf "A" yang sama dengan halaman login/register
         $logo = '<path d="M3.5 20 11 4h2l7.5 16"/><path d="M7.5 14h9"/>';
 
         $features = [
@@ -36,7 +35,6 @@
     @include('partials.hero-art')
 
     <main class="font-dm">
-        {{--  HERO  --}}
         <div class="relative z-10 flex flex-col items-start gap-10 px-6 py-14 min-[1100px]:min-h-[678px] min-[1100px]:flex-row min-[1100px]:items-center min-[1100px]:justify-between min-[1100px]:gap-12 min-[1100px]:py-0 min-[1100px]:pr-[119px] min-[1100px]:pl-[122px]">
             <div class="flex max-w-[646px] flex-col gap-6">
                 <p class="font-typewriter text-xs/[1.55] font-semibold text-[#5FBB49]">FROM USER STORIES TO AUTOMATED TESTING</p>
@@ -67,7 +65,6 @@
             </div>
         </div>
 
-        {{--  01 / HOW IT WORKS  --}}
         <section id="process" class="relative z-10 flex flex-col gap-7 px-6 py-12 min-[1100px]:px-[104px] min-[1100px]:py-16">
             <div class="font-typewriter text-sm/[1.55] font-semibold text-[#5FBB49]">01 / HOW IT WORKS</div>
             <h2 class="font-display text-[28px]/[1.2] font-bold tracking-[-.02em] text-[#202638] min-[1100px]:text-4xl/[1.2] dark:text-white">From Requirements to Automated Testing</h2>
@@ -85,7 +82,6 @@
             </div>
         </section>
 
-        {{--  02 / WHAT ATLAS OFFERS  --}}
         <section id="features" class="relative z-10 border-y border-[#ECEEF4] bg-[radial-gradient(ellipse_at_8%_18%,rgba(85,197,74,.08),transparent_30%),radial-gradient(ellipse_at_92%_82%,rgba(77,79,210,.08),transparent_32%)] bg-[#F8FAF8] px-6 py-20 min-[1100px]:py-[100px] dark:border-slate-800 dark:bg-night dark:bg-none">
             <div class="mx-auto flex max-w-[1180px] flex-col items-center gap-14">
                 <div class="flex max-w-[700px] flex-col items-center gap-4 text-center">
@@ -113,7 +109,6 @@
             </div>
         </section>
 
-        {{--  03 / SEE IT IN ACTION      --}}
         <section id="preview" class="relative z-10 overflow-x-clip px-6 py-16 min-[1100px]:py-[88px]">
     @include('partials.preview-art')
             <div class="relative z-10 mx-auto flex max-w-[1180px] flex-col gap-10">
@@ -124,7 +119,6 @@
                 </div>
 
                 <div class="relative grid grid-cols-1 gap-6 rounded-[15px] border border-[#E5E7EC] bg-white p-3 shadow-[0_19px_58px_rgba(30,38,57,.08)] min-[1100px]:grid-cols-2 dark:border-slate-700 dark:bg-night">
-                    {{-- Kiri: user story --}}
                     <div class="overflow-hidden rounded-[7px] border border-[#E3E7E4] bg-[radial-gradient(ellipse_at_0%_100%,rgba(85,197,74,.08),transparent_40%)] bg-[#FBFCFB] dark:border-slate-700 dark:bg-abyss dark:bg-none">
                         <div class="flex items-center justify-between border-b border-[#E8EAF0] px-5 py-4 dark:border-slate-700">
                             <span class="text-[9.5px] font-bold tracking-[.05em] text-[#4D4FD2] dark:text-indigo-300">YOUR USER STORY</span>
@@ -139,10 +133,8 @@
                         </div>
                     </div>
 
-                    {{-- Panah di tengah --}}
                     <div aria-hidden="true" class="absolute top-1/2 left-1/2 z-10 hidden size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[linear-gradient(145deg,#55C54A,#4D4FD2)] text-[22px] text-white ring-[5px] ring-white min-[1100px]:grid dark:ring-night">→</div>
 
-                    {{-- Kanan: script hasil generate --}}
                     <div class="min-w-0 overflow-hidden rounded-[7px] border border-[#2B354C] bg-[#161F34]">
                         <div class="flex items-center justify-between border-b border-[#30394E] px-5 py-4">
                             <span class="text-[9.5px] font-bold tracking-[.05em] text-[#ADB1FF]">GENERATED SELENIUM SCRIPT</span>
@@ -161,7 +153,6 @@
             </div>
         </section>
 
-        {{--  CTA  --}}
         <div id="signup" class="relative overflow-hidden bg-[radial-gradient(ellipse_at_15%_20%,rgba(85,197,74,.28),transparent_35%),radial-gradient(ellipse_at_88%_75%,rgba(100,102,235,.34),transparent_38%),linear-gradient(125deg,#152134,#17243A_52%,#252452)] px-6 py-20 text-center min-[1100px]:py-[88px]">
             <div aria-hidden="true" class="absolute -bottom-32 -left-16 size-[330px] rounded-full border border-[#77DA6F]/25"></div>
             <div class="relative mx-auto flex max-w-[780px] flex-col items-center gap-5">
