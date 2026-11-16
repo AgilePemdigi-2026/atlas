@@ -2,7 +2,10 @@
 
 @php
     $authProfile = $testCase->authProfile;
-    $credentials = $authProfile?->credentials ?? [];
+    $credentials = array_fill_keys(
+        array_keys($authProfile?->credentials ?? []),
+        ''
+    );
     if ($credentials === []) {
         $credentials = ['email' => ''];
     }
@@ -43,14 +46,22 @@
                 <p class="console-hint">Selector boleh memakai <code>id:</code>, <code>name:</code>, <code>css:</code>, atau
                     <code>xpath:</code>; tanpa prefix dicari lewat name lalu id.</p>
 
+                @if ($authProfile)
+                    <p class="console-hint text-amber-700 dark:text-amber-300">
+                        Auth Profile sudah tersimpan. Demi keamanan, nilai credentials
+                        tidak ditampilkan kembali. Untuk memperbarui profil,
+                        masukkan ulang semua nilai credentials.
+                    </p>
+                @endif
+
                 <div data-credential-rows class="flex flex-col gap-2">
                     @foreach ($credentials as $selector => $value)
                         <div data-credential-row class="flex flex-col gap-2 min-[620px]:flex-row">
                             <input data-credential-selector value="{{ $selector }}" placeholder="email"
                                 aria-label="Selector kredensial"
                                 class="console-field h-9 min-w-0 flex-1 text-xs">
-                            <input data-credential-value value="{{ $value }}" placeholder="nilai kredensial"
-                                aria-label="Nilai kredensial"
+                            <input data-credential-value type="password" value="" autocomplete="new-password"
+                                placeholder="Masukkan nilai kredensial" aria-label="Nilai kredensial"
                                 class="console-field h-9 min-w-0 flex-1 text-xs">
                             <button type="button" data-remove-credential
                                 class="console-btn-ghost h-9 px-3 text-xs">Hapus</button>
@@ -170,6 +181,12 @@
                 if (!response.ok) {
                     setStatus(body.message || 'Gagal menyimpan Auth Profile.', true);
                     return;
+                }
+
+                if (useAuth()) {
+                    rows.querySelectorAll('[data-credential-value]').forEach(function (input) {
+                        input.value = '';
+                    });
                 }
 
                 setStatus(body.message || 'Pengaturan Auth Profile disimpan.');

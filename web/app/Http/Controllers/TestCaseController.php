@@ -81,7 +81,7 @@ class TestCaseController extends Controller
 
     public function update(Request $request, TestCase $testCase): RedirectResponse
     {
-        Gate::authorize('update', $testCase->collection);
+        Gate::authorize('update', $testCase);
 
         if ($request->boolean('rename')) {
             $validated = $request->validateWithBag('renameTestCase', [
@@ -97,6 +97,20 @@ class TestCaseController extends Controller
                     'collection' => $testCase->collection_id,
                     'test_case' => $testCase->getKey(),
                 ])
+                ->with('status', 'Nama test case diperbarui.');
+        }
+
+        if (! $request->has('user_story')) {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:256'],
+            ], [
+                'name.required' => 'Field wajib diisi.',
+            ]);
+
+            $testCase->update($validated);
+
+            return redirect()
+                ->route('console', ['test_case' => $testCase->getKey()])
                 ->with('status', 'Nama test case diperbarui.');
         }
 
@@ -120,7 +134,7 @@ class TestCaseController extends Controller
 
     public function destroy(TestCase $testCase): RedirectResponse
     {
-        Gate::authorize('delete', $testCase->collection);
+        Gate::authorize('delete', $testCase);
 
         $collectionId = $testCase->collection_id;
 

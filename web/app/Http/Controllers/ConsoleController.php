@@ -29,16 +29,19 @@ class ConsoleController extends Controller
             ->flatMap(fn ($collection) => $collection->testCases)
             ->firstWhere('test_case_id', $request->integer('test_case'));
 
-        $selected?->load('generatedScript')->loadCount('scenarios');
+        // Ambil generated script, auth profile F7, dan jumlah skenario.
+        $selected?->load(['generatedScript', 'authProfile'])
+            ->loadCount('scenarios');
 
-        // Tentukan collection aktif.
-        $requestedCollectionId = $request->integer('collection');
+        // Tentukan Collection aktif dari Test Case atau query parameter.
+        $requestedCollectionId = $selected?->collection_id
+            ?? $request->integer('collection');
 
-        $activeCollection = $selected
-            ? $collections->firstWhere('id', $selected->collection_id)
-            : $collections->firstWhere('id', $requestedCollectionId);
+        $activeCollection = $collections->first(
+            fn ($collection) => $collection->getKey() == $requestedCollectionId
+        );
 
-        // Jika tidak ada collection yang dipilih, gunakan collection pertama.
+        // Jika Collection tidak ditemukan, pilih Collection pertama milik user.
         $activeCollection ??= $collections->first();
 
         return view('console', [
@@ -58,7 +61,9 @@ class ConsoleController extends Controller
 
         return response()->streamDownload(function () use ($script) {
             echo $script->content;
-        }, self::scriptFilename($testCase), ['Content-Type' => 'text/plain; charset=UTF-8']);
+        }, self::scriptFilename($testCase), [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
     }
 
     public static function scriptFilename(TestCase $testCase): string

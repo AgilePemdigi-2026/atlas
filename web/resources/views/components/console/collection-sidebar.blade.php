@@ -146,26 +146,8 @@
 
     <p class="text-[11px]/[1.55] text-subtle dark:text-slate-400">Pilih test case untuk melihat cerita dan hasil sebelumnya.</p>
 
-    <form method="POST" data-delete-form hidden>
-        @csrf
-        @method('DELETE')
-    </form>
-
-    <div data-delete-modal hidden class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
-        <div role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-message"
-            class="w-full max-w-sm rounded-2xl border border-edge bg-white p-5 shadow-[0_16px_40px_-16px_rgba(16,24,40,.3)] dark:border-slate-700 dark:bg-night">
-            <h2 id="delete-dialog-title" class="text-sm font-semibold text-body dark:text-white">Hapus item?</h2>
-            <p id="delete-dialog-message" data-delete-copy class="mt-2 text-xs/[1.55] text-subtle dark:text-slate-400"></p>
-            <div class="mt-5 flex justify-end gap-2">
-                <button type="button" data-delete-cancel
-                    class="h-8 rounded-lg border border-edge bg-white px-3 text-xs font-semibold text-body transition hover:bg-surface dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-white/5">Batal</button>
-                <button type="button" data-delete-confirm
-                    class="h-8 rounded-lg bg-[#BA3D4A] px-3 text-xs font-semibold text-white transition hover:opacity-90">Hapus</button>
-            </div>
-        </div>
-    </div>
-
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
         (function () {
             var sidebar = document.querySelector('[data-sidebar]');
             if (!sidebar) {
@@ -594,6 +576,26 @@
                 });
             }
         })();
+        });
     </script>
     </aside>
+
+    <form method="POST" data-delete-form hidden>
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <div data-delete-modal hidden class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+        <div role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-message"
+            class="w-full max-w-sm rounded-2xl border border-edge bg-white p-5 shadow-[0_16px_40px_-16px_rgba(16,24,40,.3)] dark:border-slate-700 dark:bg-night">
+            <h2 id="delete-dialog-title" class="text-sm font-semibold text-body dark:text-white">Hapus item?</h2>
+            <p id="delete-dialog-message" data-delete-copy class="mt-2 text-xs/[1.55] text-subtle dark:text-slate-400"></p>
+            <div class="mt-5 flex justify-end gap-2">
+                <button type="button" data-delete-cancel
+                    class="h-8 rounded-lg border border-edge bg-white px-3 text-xs font-semibold text-body transition hover:bg-surface dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-white/5">Batal</button>
+                <button type="button" data-delete-confirm
+                    class="h-8 rounded-lg bg-[#BA3D4A] px-3 text-xs font-semibold text-white transition hover:opacity-90">Hapus</button>
+            </div>
+        </div>
+    </div>
 </div>
