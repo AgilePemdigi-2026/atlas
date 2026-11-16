@@ -79,6 +79,16 @@ Route::middleware('auth')->group(function () {
         'store',
     ])->name('test-cases.store');
 
+    Route::patch('/test-cases/{testCase}', [
+        TestCaseController::class,
+        'update',
+    ])->name('test-cases.update');
+
+    Route::delete('/test-cases/{testCase}', [
+        TestCaseController::class,
+        'destroy',
+    ])->name('test-cases.destroy');
+
     Route::get('/test-cases/{test_case}/scenario-urls', [
         TestCaseController::class,
         'scenarioUrls',

@@ -2,7 +2,10 @@
 
 @php
     $authProfile = $testCase->authProfile;
-    $credentials = $authProfile?->credentials ?? [];
+    $credentials = array_fill_keys(
+    array_keys($authProfile?->credentials ?? []),
+    ''
+    );
     if ($credentials === []) {
         $credentials = ['email' => ''];
     }
@@ -38,18 +41,31 @@
                     placeholder="https://app.example.com/login"
                     class="rounded-md border border-line bg-white px-3 py-2 text-sm text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
             </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-sm font-semibold text-body dark:text-slate-100">Credential</span>
 
-            <div class="flex flex-col gap-2">
-                <span class="text-sm font-semibold text-body dark:text-slate-100">Credential</span>
-                <p class="text-xs text-subtle dark:text-slate-400">Selector boleh memakai <code>id:</code>, <code>name:</code>, <code>css:</code>, atau <code>xpath:</code>; tanpa prefix dicari lewat name lalu id.</p>
+                    <p class="text-xs text-subtle dark:text-slate-400">
+                        Selector boleh memakai <code>id:</code>, <code>name:</code>,
+                        <code>css:</code>, atau <code>xpath:</code>;
+                        tanpa prefix dicari lewat name lalu id.
+                    </p>
 
-                <div data-credential-rows class="flex flex-col gap-2">
+                    @if ($authProfile)
+                        <p class="text-xs text-amber-700 dark:text-amber-300">
+                            Auth Profile sudah tersimpan. Demi keamanan, nilai credentials
+                            tidak ditampilkan kembali. Untuk memperbarui profil,
+                            masukkan ulang semua nilai credentials.
+                        </p>
+                    @endif
+
+                    <div data-credential-rows class="flex flex-col gap-2">
                     @foreach ($credentials as $selector => $value)
                         <div data-credential-row class="flex flex-col gap-2 min-[620px]:flex-row">
                             <input data-credential-selector value="{{ $selector }}" placeholder="email"
                                 aria-label="Selector kredensial"
                                 class="h-9 min-w-0 flex-1 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
-                            <input data-credential-value value="{{ $value }}" placeholder="nilai kredensial"
+                            <input data-credential-value type="password" value=""
+                                autocomplete="new-password" placeholder="Masukkan nilai kredensial"
                                 aria-label="Nilai kredensial"
                                 class="h-9 min-w-0 flex-1 rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
                             <button type="button" data-remove-credential
@@ -170,6 +186,12 @@
                 if (!response.ok) {
                     setStatus(body.message || 'Gagal menyimpan Auth Profile.', true);
                     return;
+                }
+
+                if (useAuth()) {
+                    rows.querySelectorAll('[data-credential-value]').forEach(function (input) {
+                        input.value = '';
+                    });
                 }
 
                 setStatus(body.message || 'Pengaturan Auth Profile disimpan.');
