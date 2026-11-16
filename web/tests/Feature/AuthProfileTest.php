@@ -253,4 +253,32 @@ describe('F7 Auth Profile Config', function () {
             ->assertSee('Login URL')
             ->assertSee('Tambah kredensial');
     });
+
+
+    test('saved credentials are not exposed in the console HTML', function () {
+        $user = User::factory()->create();
+        $testCase = authProfileSetup($user);
+
+        $this->actingAs($user)
+            ->putJson(route('auth-profiles.upsert', $testCase->getKey()), [
+                'login_url' => 'https://app.example.com/login',
+                'credentials' => [
+                    'email' => 'private-qa@example.com',
+                    'password' => 'secret-test-password-123',
+                ],
+            ])
+            ->assertOk();
+
+        $this->get(route('console', [
+            'test_case' => $testCase->getKey(),
+        ]))
+            ->assertOk()
+            ->assertDontSee('private-qa@example.com')
+            ->assertDontSee('secret-test-password-123');
+
+        $this->get(route('test-cases.scenario-urls', $testCase))
+            ->assertOk()
+            ->assertDontSee('private-qa@example.com')
+            ->assertDontSee('secret-test-password-123');
+    });
 });

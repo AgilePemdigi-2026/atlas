@@ -54,6 +54,36 @@ class TestCaseController extends Controller
         return redirect()->route('test-cases.scenario-urls', $testCase);
     }
 
+    public function update(Request $request, TestCase $testCase): RedirectResponse
+    {
+        Gate::authorize('update', $testCase);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:256'],
+        ]);
+
+        $testCase->update([
+            'name' => $validated['name'],
+        ]);
+
+        return redirect()
+            ->route('console', ['test_case' => $testCase->getKey()])
+            ->with('status', 'Nama Test Case berhasil diperbarui.');
+    }
+
+    public function destroy(TestCase $testCase): RedirectResponse
+    {
+        Gate::authorize('delete', $testCase);
+
+        $collectionId = $testCase->collection_id;
+
+        $testCase->delete();
+
+        return redirect()
+            ->route('console', ['collection' => $collectionId])
+            ->with('status', 'Test Case berhasil dihapus.');
+    }
+
     public function scenarioUrls(TestCase $testCase): View
     {
         Gate::authorize('update', $testCase->collection);

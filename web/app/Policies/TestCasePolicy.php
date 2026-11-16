@@ -11,4 +11,14 @@ class TestCasePolicy
     {
         return $testCase->collection->user_id === $user->getKey();
     }
+
+    public function update(User $user, TestCase $testCase): bool
+    {
+        return $this->view($user, $testCase);
+    }
+
+    public function delete(User $user, TestCase $testCase): bool
+    {
+        return $this->view($user, $testCase);
+    }
 }
