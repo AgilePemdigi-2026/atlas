@@ -63,14 +63,16 @@ test('the required fields are enforced', function () {
         ->assertSessionHasErrors('user_story');
 });
 
-test('the console shows the user story form posting to the draft endpoint', function () {
+test('the console shows the user story form for a selected draft', function () {
     $user = User::factory()->create();
+    $collection = Collection::factory()->for($user)->create(['name' => 'Toko']);
+    $testCase = $collection->testCases()->create(['name' => 'Login']);
 
     $this->actingAs($user)
-        ->get(route('console'))
+        ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
-        ->assertSee(route('test-cases.store'), false)
-        ->assertSee('Generate Test')
+        ->assertSee(route('test-cases.update', $testCase), false)
+        ->assertSee('Lanjutkan')
         ->assertSee('Acceptance criteria')
         ->assertDontSee('Isi tab User Story dipasang di tahap 2.');
 });
