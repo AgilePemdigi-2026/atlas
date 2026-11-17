@@ -12,7 +12,6 @@ use App\Services\Generator\GeneratorClient;
 use App\Services\Generator\GeneratorResult;
 use App\Services\Generator\ScenarioParser;
 use App\Services\RootCollection;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +45,11 @@ class TestCaseController extends Controller
 
         $this->applyStory($testCase, $validated);
 
-        return redirect()->route('test-cases.scenario-urls', $testCase);
+        return redirect()->route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'scenario',
+        ]);
     }
 
     public function storeDraft(Request $request): RedirectResponse
@@ -128,7 +131,11 @@ class TestCaseController extends Controller
         $this->applyStory($testCase, $validated);
 
         return redirect()
-            ->route('test-cases.scenario-urls', $testCase)
+            ->route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'scenario',
+            ])
             ->with('status', 'Test case diperbarui.');
     }
 
@@ -171,13 +178,15 @@ class TestCaseController extends Controller
         });
     }
 
-    public function scenarioUrls(TestCase $testCase): View
+    public function scenarioUrls(TestCase $testCase): RedirectResponse
     {
         Gate::authorize('update', $testCase->collection);
 
-        $testCase->load('scenarios', 'authProfile');
-
-        return view('test-cases.scenario-urls', ['testCase' => $testCase]);
+        return redirect()->route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'scenario',
+        ]);
     }
 
     public function generate(Request $request, TestCase $testCase): RedirectResponse
@@ -205,7 +214,11 @@ class TestCaseController extends Controller
             $this->recordFailure($testCase, $result);
 
             return redirect()
-                ->route('test-cases.scenario-urls', $testCase)
+                ->route('console', [
+                    'test_case' => $testCase->getKey(),
+                    'collection' => $testCase->collection_id,
+                    'tab' => 'scenario',
+                ])
                 ->withInput()
                 ->withErrors(['generate' => $result->copy]);
         }
@@ -213,27 +226,22 @@ class TestCaseController extends Controller
         $this->recordSuccess($testCase, $result->payload);
 
         return redirect()
-            ->route('test-cases.show', $testCase)
+            ->route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'script',
+            ])
             ->with('status', 'Test case berhasil dibuat.');
     }
 
-    public function show(TestCase $testCase): View
+    public function show(TestCase $testCase): RedirectResponse
     {
         Gate::authorize('update', $testCase->collection);
 
-        $testCase->load('scenarios', 'llmOutput.generatedScript');
-
-        $meta = $testCase->llmOutput?->output;
-
-        return view('test-cases.show', [
-            'testCase' => $testCase,
-            'script' => $testCase->llmOutput?->generatedScript?->content,
-            'meta' => is_array($meta) ? $meta : null,
-            'statusCopy' => match ($testCase->status) {
-                TestCaseStatus::Pending => 'Menunggu generate.',
-                TestCaseStatus::Completed => 'Generate selesai.',
-                TestCaseStatus::Failed => 'Generate gagal.',
-            },
+        return redirect()->route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => $testCase->generatedScript ? 'script' : 'scenario',
         ]);
     }
 
