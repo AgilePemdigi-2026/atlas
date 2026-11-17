@@ -17,7 +17,6 @@
         <h1 class="text-3xl text-body dark:text-white">My Profile</h1>
 
         <div class="flex flex-col gap-7 min-[900px]:flex-row min-[900px]:items-start">
-            {{-- Kartu kiri --}}
             <aside class="w-full flex-none overflow-hidden rounded-lg border border-line bg-white min-[900px]:w-60 dark:border-slate-700 dark:bg-night">
                 <div class="flex flex-col items-center gap-4 p-6">
                     <div class="grid size-[88px] place-items-center rounded-full bg-[#EEEEFC] text-2xl font-semibold text-accent dark:bg-accent/30 dark:text-indigo-200" aria-hidden="true">{{ $initials }}</div>
@@ -34,7 +33,6 @@
                 </div>
             </aside>
 
-            {{-- Kartu kanan --}}
             <section class="min-w-0 flex-1 overflow-hidden rounded-lg border border-line bg-white dark:border-slate-700 dark:bg-night">
                 <div class="px-7">
                     <div role="tablist" aria-label="Profile" class="flex gap-7 overflow-x-auto border-b border-line dark:border-slate-700">
@@ -44,7 +42,6 @@
                 </div>
 
                 <div role="tabpanel" id="panel-history" aria-labelledby="tab-history" class="flex flex-col gap-6 p-7">
-                    {{-- Tahap 4: Test History --}}
                     @php
                         $statusStyles = [
                             'completed' => ['label' => 'Completed', 'badge' => 'bg-[#EDF8F2] text-[#23765B] dark:bg-emerald-900/30 dark:text-emerald-300', 'dot' => 'bg-[#23765B] dark:bg-emerald-300'],
@@ -81,7 +78,7 @@
                             @else
                                 @forelse ($testCases as $case)
                                     @php $style = $statusStyles[$case->status->value]; @endphp
-                                    <a href="{{ route('test-cases.show', $case) }}"
+                                    <a href="{{ route('console', ['test_case' => $case->getKey()]) }}"
                                         class="flex items-center gap-6 border-t border-line p-4 transition hover:bg-surface dark:border-slate-700 dark:hover:bg-white/5">
                                     <div class="flex min-w-0 flex-1 flex-col gap-1.5">
                                         <p class="text-sm/[1.55] font-semibold break-words text-body dark:text-white">{{ $case->name }}</p>
@@ -140,7 +137,6 @@
                             ['name' => 'email', 'label' => 'Email', 'type' => 'email', 'autocomplete' => 'email', 'max' => 100],
                         ];
 
-                        // UI saja: belum ada data yang menyimpannya (menunggu jawaban tim)
                         $notifications = [
                             ['id' => 'notify-success', 'title' => 'Skrip berhasil dibuat', 'text' => 'Pemberitahuan saat hasil siap direview.', 'on' => true],
                             ['id' => 'notify-failed', 'title' => 'Generate gagal', 'text' => 'Pemberitahuan jika proses tidak selesai.', 'on' => false],
@@ -151,7 +147,6 @@
                         <div class="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-[13px] text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">{{ session('status') }}</div>
                     @endif
 
-                    {{-- Account Information --}}
                     <div class="flex flex-col gap-[18px] border-b border-line pb-7 dark:border-slate-700">
                         <h2 class="text-xl/6 text-body dark:text-white">Account Information</h2>
 
@@ -183,7 +178,6 @@
                         </form>
                     </div>
 
-                    {{-- Notifications --}}
                     <div class="flex flex-col gap-5 border-b border-line pb-7 dark:border-slate-700">
                         <h2 class="text-xl/6 text-body dark:text-white">Notifications</h2>
 
@@ -201,7 +195,6 @@
                         @endforeach
                     </div>
 
-                    {{-- API / Integrations --}}
                     <div class="flex flex-col gap-4 border-b border-line pb-7 dark:border-slate-700">
                         <h2 class="text-xl/6 text-body dark:text-white">API / Integrations</h2>
 
@@ -213,7 +206,6 @@
                         </div>
                     </div>
 
-                    {{-- Delete Account --}}
                     <div class="flex flex-col gap-4">
                         <h2 class="text-xl/6 text-body dark:text-white">Delete Account</h2>
 
@@ -235,11 +227,10 @@
     </div>
 
     <script>
-        // Tab switching lives in resources/js/app.js; wait for the module to attach.
         document.addEventListener('DOMContentLoaded', function () {
             var initial = location.hash.slice(1);
             @if (session('status') || $errors->any())
-                initial = 'settings'; // setelah simpan atau error validasi, tetap di tab Settings
+                initial = 'settings';
             @endif
 
             if (initial !== 'history' && initial !== 'settings') {

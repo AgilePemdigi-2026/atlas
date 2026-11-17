@@ -86,11 +86,11 @@ describe('F17 Test History', function () {
         $panel = $this->actingAs($user)->get(route('profile'))->assertOk();
 
         // Then the row links to the test case detail
-        $panel->assertSee(route('test-cases.show', $testCase), false);
+        $panel->assertSee(route('console', ['test_case' => $testCase->getKey()]), false);
 
         // And the detail page shows that test case
         $this->actingAs($user)
-            ->get(route('test-cases.show', $testCase))
+            ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
             ->assertSee('Login terlindungi');
     });

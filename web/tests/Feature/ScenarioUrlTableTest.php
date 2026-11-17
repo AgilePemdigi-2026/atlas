@@ -47,10 +47,14 @@ describe('F8 Scenario URL Table', function () {
         // Then the system displays a table for entering scenario URLs
         $testCase = TestCase::query()->sole();
 
-        $response->assertRedirect(route('test-cases.scenario-urls', $testCase));
+        $response->assertRedirect(route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'scenario',
+        ]));
 
         $this->actingAs($user)
-            ->get(route('test-cases.scenario-urls', $testCase))
+            ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
             ->assertSee('Bayar')
             ->assertSee('Gagal bayar')
@@ -66,12 +70,35 @@ describe('F8 Scenario URL Table', function () {
 
         // When I press the "Generate" button
         $response = $this->actingAs($user)
-            ->get(route('test-cases.scenario-urls', $testCase));
+            ->get(route('console', ['test_case' => $testCase->getKey()]));
 
         // Then the table is shown pre-filled for me to confirm
         $response->assertOk()
             ->assertSee('value="https://app.example.com/login/"', false)
             ->assertSee(route('test-cases.scenario-urls.generate', $testCase), false);
+    });
+
+    test('A validation error is shown on the console scenario tab', function () {
+        // Given I am on the console scenario tab
+        $user = User::factory()->create();
+        $testCase = draftedTestCase($user);
+        Http::preventStrayRequests();
+
+        $consoleUrl = route('console', [
+            'test_case' => $testCase->getKey(),
+            'tab' => 'scenario',
+        ]);
+
+        // When I submit a row with a malformed URL
+        $this->actingAs($user)
+            ->from($consoleUrl)
+            ->followingRedirects()
+            ->post(
+                route('test-cases.scenario-urls.generate', $testCase),
+                scenarioUrlPayload($testCase, ['bukan-url', 'https://app.example.com/login']),
+            )
+            ->assertOk()
+            ->assertSee('Format URL tidak valid.');
     });
 
     test('Reject an invalid scenario URL', function () {

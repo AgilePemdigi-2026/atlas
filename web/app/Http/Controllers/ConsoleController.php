@@ -19,7 +19,7 @@ class ConsoleController extends Controller
             ->collections()
             ->with([
                 'testCases' => fn ($query) => $query
-                    ->select(['test_case_id', 'collection_id', 'name', 'status'])
+                    ->select(['test_case_id', 'collection_id', 'name', 'user_story', 'acceptance_criteria', 'base_url', 'status'])
                     ->latest(),
             ])
             ->orderBy('name')
@@ -29,22 +29,32 @@ class ConsoleController extends Controller
             ->flatMap(fn ($collection) => $collection->testCases)
             ->firstWhere('test_case_id', $request->integer('test_case'));
 
-        $selected?->load('generatedScript')->loadCount('scenarios');
+        // Ambil generated script, auth profile F7, skenario, dan jumlah skenario.
+        $selected?->load(['generatedScript', 'authProfile', 'scenarios'])
+            ->loadCount('scenarios');
 
-        // Tentukan collection aktif.
-        $requestedCollectionId = $request->integer('collection');
+        $activeResultTab = $request->query('tab');
 
-        $activeCollection = $selected
-            ? $collections->firstWhere('id', $selected->collection_id)
-            : $collections->firstWhere('id', $requestedCollectionId);
+        if (! in_array($activeResultTab, ['scenario', 'script'], true)) {
+            $activeResultTab = $selected?->generatedScript ? 'script' : 'scenario';
+        }
 
-        // Jika tidak ada collection yang dipilih, gunakan collection pertama.
+        // Tentukan Collection aktif dari Test Case atau query parameter.
+        $requestedCollectionId = $selected?->collection_id
+            ?? $request->integer('collection');
+
+        $activeCollection = $collections->first(
+            fn ($collection) => $collection->getKey() == $requestedCollectionId
+        );
+
+        // Jika Collection tidak ditemukan, pilih Collection pertama milik user.
         $activeCollection ??= $collections->first();
 
         return view('console', [
             'collections' => $collections,
             'selected' => $selected,
             'activeCollectionId' => $activeCollection?->getKey(),
+            'activeResultTab' => $activeResultTab,
         ]);
     }
 
@@ -58,7 +68,9 @@ class ConsoleController extends Controller
 
         return response()->streamDownload(function () use ($script) {
             echo $script->content;
-        }, self::scriptFilename($testCase), ['Content-Type' => 'text/plain; charset=UTF-8']);
+        }, self::scriptFilename($testCase), [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
     }
 
     public static function scriptFilename(TestCase $testCase): string

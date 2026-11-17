@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthProfileController;
 use App\Http\Controllers\CollectionController;
@@ -23,13 +23,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 
     Route::get('/auth/google', [
-    GoogleAuthController::class,
-    'redirect'
+        GoogleAuthController::class,
+        'redirect',
     ])->name('google.redirect');
 
     Route::get('/auth/google/callback', [
-    GoogleAuthController::class,
-    'callback'
+        GoogleAuthController::class,
+        'callback',
     ])->name('google.callback');
 
     // F4 - Forgot Password
@@ -70,14 +70,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('collections', CollectionController::class)
-        ->only(['store', 'update', 'destroy']);
-
     // F6 & F8 - Test Case dan Scenario URL
     Route::post('/test-cases', [
         TestCaseController::class,
         'store',
     ])->name('test-cases.store');
+
+    Route::post('/test-cases/drafts', [
+        TestCaseController::class,
+        'storeDraft',
+    ])->name('test-cases.drafts');
 
     Route::get('/test-cases/{test_case}/scenario-urls', [
         TestCaseController::class,
@@ -93,6 +95,16 @@ Route::middleware('auth')->group(function () {
         TestCaseController::class,
         'show',
     ])->name('test-cases.show');
+
+    Route::patch('/test-cases/{test_case}', [
+        TestCaseController::class,
+        'update',
+    ])->name('test-cases.update');
+
+    Route::delete('/test-cases/{test_case}', [
+        TestCaseController::class,
+        'destroy',
+    ])->name('test-cases.destroy');
 
     // F7 - Auth Profile Config
     Route::put('/test-cases/{testCaseId}/auth-profile', [

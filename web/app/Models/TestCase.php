@@ -38,7 +38,7 @@ class TestCase extends Model
 
     public function scenarios(): HasMany
     {
-        return $this->hasMany(Scenario::class, 'test_case_id');
+        return $this->hasMany(Scenario::class, 'test_case_id')->orderBy('scenario_id');
     }
 
     public function llmOutput(): HasOne

@@ -78,7 +78,11 @@ describe('F7 Auth Profile Config', function () {
         $this->actingAs($user)
             // And the generated script logs in before the scenarios
             ->post(route('test-cases.scenario-urls.generate', $testCase), authProfileScenarios($testCase))
-            ->assertRedirect(route('test-cases.show', $testCase));
+            ->assertRedirect(route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'script',
+            ]));
         // And the generator request includes the login URL and credentials
         Http::assertSent(fn (Request $request) => Arr::has($request->data(), 'auth_profile'));
     });
@@ -92,7 +96,11 @@ describe('F7 Auth Profile Config', function () {
         fakeGenerateOk();
         $this->actingAs($user)
             ->post(route('test-cases.scenario-urls.generate', $testCase), authProfileScenarios($testCase))
-            ->assertRedirect(route('test-cases.show', $testCase));
+            ->assertRedirect(route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'script',
+            ]));
         // Then no auth profile is stored for the test case
         expect(AuthProfile::query()->where('test_case_id', $testCase->getKey())->exists())->toBeFalse();
     });
@@ -194,7 +202,11 @@ describe('F7 Auth Profile Config', function () {
 
         $this->actingAs($user)
             ->post(route('test-cases.scenario-urls.generate', $testCase), authProfileScenarios($testCase))
-            ->assertRedirect(route('test-cases.show', $testCase));
+            ->assertRedirect(route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'script',
+            ]));
 
         Http::assertSent(function (Request $request) {
             $authProfile = $request->data()['auth_profile'] ?? null;
@@ -246,11 +258,38 @@ describe('F7 Auth Profile Config', function () {
         $testCase = authProfileSetup($user);
 
         $this->actingAs($user)
-            ->get(route('test-cases.scenario-urls', $testCase))
+            ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
             ->assertSee('Auth Profile')
             ->assertSee('No auth')
             ->assertSee('Login URL')
             ->assertSee('Tambah kredensial');
+    });
+
+    test('saved credentials are shown in the console HTML', function () {
+        $user = User::factory()->create();
+        $testCase = authProfileSetup($user);
+
+        $this->actingAs($user)
+            ->putJson(route('auth-profiles.upsert', $testCase->getKey()), [
+                'login_url' => 'https://app.example.com/login',
+                'credentials' => [
+                    'email' => 'private-qa@example.com',
+                    'password' => 'secret-test-password-123',
+                ],
+            ])
+            ->assertOk();
+
+        $this->get(route('console', [
+            'test_case' => $testCase->getKey(),
+        ]))
+            ->assertOk()
+            ->assertSee('private-qa@example.com')
+            ->assertSee('secret-test-password-123');
+
+        $this->get(route('console', ['test_case' => $testCase->getKey()]))
+            ->assertOk()
+            ->assertSee('private-qa@example.com')
+            ->assertSee('secret-test-password-123');
     });
 });

@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained('collections', 'collection_id')
                 ->cascadeOnDelete();
             $table->string('name', 256);
-            $table->text('user_story');
+            $table->text('user_story')->nullable();
             $table->text('base_url')->nullable();
             $table->string('status', 20)->default('pending');
             $table->timestamps();

@@ -250,7 +250,7 @@ def _user_message(request: GenerateRequest, dom_text: str, dom_source: str) -> s
     return "\n\n".join(lines)
 
 
-def _parse_llm_json(raw: str) -> dict:
+def parse_llm_json(raw: str) -> dict:
     text = raw.strip()
     if text.startswith("```"):
         text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
@@ -308,7 +308,7 @@ def extract(
         attempts += 1
         try:
             raw = client.complete(_SYSTEM_PROMPT, user_message)
-            parsed = _parse_llm_json(raw)
+            parsed = parse_llm_json(raw)
             validation = validate_extraction(
                 parsed,
                 dom_text if dom_source != "minimal" else None,

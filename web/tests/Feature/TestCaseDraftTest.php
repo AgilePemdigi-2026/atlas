@@ -28,7 +28,11 @@ test('a test case is stored as a pending draft with parsed scenarios', function 
         ->post(route('test-cases.store'), draftPayload(['collection_id' => $collection->getKey()]));
 
     $testCase = TestCase::query()->sole();
-    $response->assertRedirect(route('test-cases.scenario-urls', $testCase));
+    $response->assertRedirect(route('console', [
+        'test_case' => $testCase->getKey(),
+        'collection' => $testCase->collection_id,
+        'tab' => 'scenario',
+    ]));
     expect($testCase->status->value)->toBe('pending')
         ->and($testCase->collection_id)->toBe($collection->getKey())
         ->and($testCase->scenarios()->pluck('name')->all())->toBe(['Login berhasil']);
@@ -63,14 +67,16 @@ test('the required fields are enforced', function () {
         ->assertSessionHasErrors('user_story');
 });
 
-test('the console shows the user story form posting to the draft endpoint', function () {
+test('the console shows the user story form for a selected draft', function () {
     $user = User::factory()->create();
+    $collection = Collection::factory()->for($user)->create(['name' => 'Toko']);
+    $testCase = $collection->testCases()->create(['name' => 'Login']);
 
     $this->actingAs($user)
-        ->get(route('console'))
+        ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
-        ->assertSee(route('test-cases.store'), false)
-        ->assertSee('Generate Test')
+        ->assertSee(route('test-cases.update', $testCase), false)
+        ->assertSee('Lanjutkan')
         ->assertSee('Acceptance criteria')
         ->assertDontSee('Isi tab User Story dipasang di tahap 2.');
 });

@@ -31,18 +31,16 @@ function completedTestCase(User $user): array
     return [$testCase, $output];
 }
 
-test('the owner sees the script, scenario urls, and meta line', function () {
+test('the owner sees the script and scenario urls on the console', function () {
     $user = User::factory()->create();
     [$testCase] = completedTestCase($user);
 
     $this->actingAs($user)
-        ->get(route('test-cases.show', $testCase))
+        ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
         ->assertSee('Login saya')
         ->assertSee('https://app.example.com/login')
-        ->assertSee('Belum ada URL')
         ->assertSee('from selenium import webdriver')
-        ->assertSee('attempts 2')
         ->assertSee('Scenario URL')
         ->assertSee('Generated Script');
 });
@@ -56,10 +54,45 @@ test('a draft without output tells the user the script is not ready', function (
     ]);
 
     $this->actingAs($user)
-        ->get(route('test-cases.show', $testCase))
+        ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
-        ->assertSee('Menunggu generate.')
-        ->assertSee('Script belum tersedia.');
+        ->assertSee('Belum ada hasil test case.');
+});
+
+test('the console opens the requested result tab', function () {
+    $user = User::factory()->create();
+    [$testCase] = completedTestCase($user);
+
+    $this->actingAs($user)
+        ->get(route('console', ['test_case' => $testCase->getKey(), 'tab' => 'scenario']))
+        ->assertOk()
+        ->assertSee('data-active-tab="scenario"', false);
+
+    $this->actingAs($user)
+        ->get(route('console', ['test_case' => $testCase->getKey(), 'tab' => 'script']))
+        ->assertOk()
+        ->assertSee('data-active-tab="script"', false);
+});
+
+test('the old scenario-urls and show pages redirect to the console', function () {
+    $user = User::factory()->create();
+    [$testCase] = completedTestCase($user);
+
+    $this->actingAs($user)
+        ->get(route('test-cases.scenario-urls', $testCase))
+        ->assertRedirect(route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'scenario',
+        ]));
+
+    $this->actingAs($user)
+        ->get(route('test-cases.show', $testCase))
+        ->assertRedirect(route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'script',
+        ]));
 });
 
 test('guests are redirected and foreign owners are forbidden', function () {

@@ -25,11 +25,13 @@ test('the console lists only the collections of the signed in user', function ()
 test('a user can create a collection', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)
-        ->post(route('collections.store'), ['name' => 'KaryaRasa'])
-        ->assertRedirect(route('console'));
+    $response = $this->actingAs($user)
+        ->post(route('collections.store'), ['name' => 'KaryaRasa']);
 
-    expect($user->collections()->where('name', 'KaryaRasa')->exists())->toBeTrue();
+    $collection = $user->collections()->where('name', 'KaryaRasa')->firstOrFail();
+    $response->assertRedirect(route('console', ['collection' => $collection->getKey()]));
+
+    expect($collection->exists())->toBeTrue();
 });
 
 test('a collection requires a name', function () {
@@ -37,7 +39,7 @@ test('a collection requires a name', function () {
 
     $this->actingAs($user)
         ->post(route('collections.store'), ['name' => ''])
-        ->assertSessionHasErrors('name');
+        ->assertSessionHasErrors('name', null, 'createCollection');
 });
 
 test('the owner can rename a collection', function () {
@@ -46,7 +48,7 @@ test('the owner can rename a collection', function () {
 
     $this->actingAs($user)
         ->patch(route('collections.update', $collection), ['name' => 'Baru'])
-        ->assertRedirect(route('console'));
+        ->assertRedirect(route('console', ['collection' => $collection->getKey()]));
 
     expect($collection->fresh()->name)->toBe('Baru');
 });
