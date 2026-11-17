@@ -12,6 +12,8 @@
     </a>
 
     <nav class="flex items-center gap-1 font-typewriter text-sm min-[1100px]:gap-3">
+        <a href="{{ route('docs') }}" class="rounded-md px-3 py-2 text-[#595959] transition hover:bg-[#E9FFE4] hover:text-[#0E2D07] min-[1100px]:px-5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">Docs</a>
+
         @auth
             <a href="{{ route('profile') }}" class="rounded-md px-3 py-2 text-[#595959] transition hover:bg-[#E9FFE4] hover:text-[#0E2D07] min-[1100px]:px-5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">Profile</a>
             <a href="{{ route('console') }}" class="rounded-md px-3 py-2 text-[#595959] transition hover:bg-[#E9FFE4] hover:text-[#0E2D07] min-[1100px]:px-5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">Console</a>

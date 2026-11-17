@@ -161,7 +161,7 @@
                 <p class="text-[13px]/[1.5] text-[#B7BFCE]">Start transforming your user stories into Selenium test scripts with ATLAS.</p>
                 <div class="mt-3 flex flex-wrap justify-center gap-3">
                     <a href="{{ route('register') }}" class="grid h-11 place-items-center rounded-[5px] bg-[#4D4FD2] px-[30px] text-[11px] font-semibold text-white shadow-[0_6px_18px_rgba(77,79,210,.28)] transition hover:brightness-110">Create Your Account</a>
-                    <a href="#" class="grid h-11 place-items-center rounded-[5px] bg-white px-[30px] text-[11px] font-semibold text-[#161F34] transition hover:bg-[#F1F3F8]">Read the Documentation</a>
+                    <a href="{{ route('docs') }}" class="grid h-11 place-items-center rounded-[5px] bg-white px-[30px] text-[11px] font-semibold text-[#161F34] transition hover:bg-[#F1F3F8]">Read the Documentation</a>
                 </div>
             </div>
         </div>
