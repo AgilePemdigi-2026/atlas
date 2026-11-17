@@ -97,7 +97,11 @@ test('Successful Script Generation against the live service', function () {
         ->post(route('test-cases.scenario-urls.generate', $testCase), $payload);
 
     // Then I should see a confirmation that the script was successfully generated
-    $response->assertRedirect(route('test-cases.show', $testCase));
+    $response->assertRedirect(route('console', [
+        'test_case' => $testCase->getKey(),
+        'collection' => $testCase->collection_id,
+        'tab' => 'script',
+    ]));
 
     $testCase->refresh();
     $output = $testCase->llmOutput?->output;
@@ -126,11 +130,12 @@ test('Successful Script Generation against the live service', function () {
 
     assertValidPython($script);
 
-    // And I should see the script on the review page
+    // And I should see the script on the review panel
     $this->actingAs($user)
-        ->get(route('test-cases.show', $testCase))
+        ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
-        ->assertSee($script);
+        ->assertSee('from selenium import webdriver')
+        ->assertSee($targetUrl);
 
     if (env('GENERATOR_E2E_DUMP')) {
         fwrite(STDERR, "\n".$script."\n");

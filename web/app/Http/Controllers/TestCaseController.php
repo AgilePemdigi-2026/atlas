@@ -11,8 +11,9 @@ use App\Services\Generator\GenerateRequest;
 use App\Services\Generator\GeneratorClient;
 use App\Services\Generator\GeneratorResult;
 use App\Services\Generator\ScenarioParser;
+use App\Services\Generator\ScenarioSync;
+use App\Services\Generator\ScenarioUrlClient;
 use App\Services\RootCollection;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,35 +22,6 @@ use Illuminate\Support\Facades\Gate;
 class TestCaseController extends Controller
 {
     public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:256'],
-            'user_story' => ['required', 'string'],
-            'acceptance_criteria' => ['required', 'string'],
-            'base_url' => ['nullable', 'url'],
-            'collection_id' => ['nullable', 'integer'],
-        ], [
-            'name.required' => 'Field wajib diisi.',
-            'user_story.required' => 'Field wajib diisi.',
-            'acceptance_criteria.required' => 'Field wajib diisi.',
-        ]);
-
-        $user = $request->user();
-
-        $collection = $validated['collection_id'] ?? null
-            ? $user->collections()->findOrFail($validated['collection_id'])
-            : RootCollection::for($user);
-
-        $testCase = $collection->testCases()->create([
-            'name' => $validated['name'],
-        ]);
-
-        $this->applyStory($testCase, $validated);
-
-        return redirect()->route('test-cases.scenario-urls', $testCase);
-    }
-
-    public function storeDraft(Request $request): RedirectResponse
     {
         $bag = $request->input('source') === 'empty' ? 'createFirstTestCase' : 'createTestCase';
 
@@ -125,11 +97,17 @@ class TestCaseController extends Controller
             'acceptance_criteria.required' => 'Field wajib diisi.',
         ]);
 
-        $this->applyStory($testCase, $validated);
+        $notice = $this->applyStory($testCase, $validated);
 
-        return redirect()
-            ->route('test-cases.scenario-urls', $testCase)
+        $redirect = redirect()
+            ->route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'scenario',
+            ])
             ->with('status', 'Test case diperbarui.');
+
+        return $notice === null ? $redirect : $redirect->withErrors(['sync' => $notice]);
     }
 
     public function destroy(TestCase $testCase): RedirectResponse
@@ -145,14 +123,12 @@ class TestCaseController extends Controller
             ->with('status', 'Test case dihapus.');
     }
 
-    /**
-     * Apply the story fields and rebuild scenarios, preserving existing URLs
-     * for scenarios that keep their name.
-     *
-     * @param  array{name: string, user_story: string, acceptance_criteria: string, base_url?: string|null}  $validated
-     */
-    private function applyStory(TestCase $testCase, array $validated): void
+
+    private function applyStory(TestCase $testCase, array $validated): ?string
     {
+        $criteria = $validated['acceptance_criteria'];
+        $baseUrl = $validated['base_url'] ?? null;
+
         DB::transaction(function () use ($testCase, $validated): void {
             $testCase->update([
                 'name' => $validated['name'],
@@ -160,24 +136,40 @@ class TestCaseController extends Controller
                 'acceptance_criteria' => $validated['acceptance_criteria'],
                 'base_url' => $validated['base_url'] ?? null,
             ]);
-
-            $names = ScenarioParser::names($validated['acceptance_criteria'], $validated['name']);
-
-            foreach ($names as $name) {
-                $testCase->scenarios()->updateOrCreate(['name' => $name], []);
-            }
-
-            $testCase->scenarios()->whereNotIn('name', $names)->delete();
         });
+
+        if ($testCase->scenarios_synced_hash === ScenarioSync::fingerprint($criteria, $baseUrl)) {
+            return null;
+        }
+
+        $sync = new ScenarioSync(new ScenarioUrlClient(
+            url: (string) config('services.generator.url'),
+            key: (string) config('services.generator.key'),
+            timeout: (int) config('services.generator.scenario_timeout'),
+        ));
+
+        if ($sync->apply($testCase, $criteria, $baseUrl)) {
+            return null;
+        }
+
+        if ($testCase->scenarios()->doesntExist()) {
+            foreach (ScenarioParser::names($criteria, $validated['name']) as $name) {
+                $testCase->scenarios()->create(['name' => $name]);
+            }
+        }
+
+        return 'Sinkronisasi gagal, daftar skenario tidak diubah.';
     }
 
-    public function scenarioUrls(TestCase $testCase): View
+    public function scenarioUrls(TestCase $testCase): RedirectResponse
     {
         Gate::authorize('update', $testCase->collection);
 
-        $testCase->load('scenarios', 'authProfile');
-
-        return view('test-cases.scenario-urls', ['testCase' => $testCase]);
+        return redirect()->route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'scenario',
+        ]);
     }
 
     public function generate(Request $request, TestCase $testCase): RedirectResponse
@@ -187,16 +179,24 @@ class TestCaseController extends Controller
         $validated = $request->validate([
             'scenarios' => ['required', 'array', 'min:1'],
             'scenarios.*.scenario_id' => ['required', 'integer'],
+            'scenarios.*.name' => ['sometimes', 'required', 'string', 'max:256'],
             'scenarios.*.scenario_url' => ['required', 'url'],
         ], [
+            'scenarios.*.name.required' => 'Field wajib diisi.',
             'scenarios.*.scenario_url.required' => 'Field wajib diisi.',
             'scenarios.*.scenario_url.url' => 'Format URL tidak valid.',
         ]);
 
         foreach ($validated['scenarios'] as $row) {
+            $updates = ['scenario_url' => $row['scenario_url']];
+
+            if (array_key_exists('name', $row)) {
+                $updates['name'] = $row['name'];
+            }
+
             $testCase->scenarios()
                 ->whereKey($row['scenario_id'])
-                ->update(['scenario_url' => $row['scenario_url']]);
+                ->update($updates);
         }
 
         $result = $this->callService($testCase, $validated['scenarios']);
@@ -205,7 +205,11 @@ class TestCaseController extends Controller
             $this->recordFailure($testCase, $result);
 
             return redirect()
-                ->route('test-cases.scenario-urls', $testCase)
+                ->route('console', [
+                    'test_case' => $testCase->getKey(),
+                    'collection' => $testCase->collection_id,
+                    'tab' => 'scenario',
+                ])
                 ->withInput()
                 ->withErrors(['generate' => $result->copy]);
         }
@@ -213,35 +217,25 @@ class TestCaseController extends Controller
         $this->recordSuccess($testCase, $result->payload);
 
         return redirect()
-            ->route('test-cases.show', $testCase)
+            ->route('console', [
+                'test_case' => $testCase->getKey(),
+                'collection' => $testCase->collection_id,
+                'tab' => 'script',
+            ])
             ->with('status', 'Test case berhasil dibuat.');
     }
 
-    public function show(TestCase $testCase): View
+    public function show(TestCase $testCase): RedirectResponse
     {
         Gate::authorize('update', $testCase->collection);
 
-        $testCase->load('scenarios', 'llmOutput.generatedScript');
-
-        $meta = $testCase->llmOutput?->output;
-
-        return view('test-cases.show', [
-            'testCase' => $testCase,
-            'script' => $testCase->llmOutput?->generatedScript?->content,
-            'meta' => is_array($meta) ? $meta : null,
-            'statusCopy' => match ($testCase->status) {
-                TestCaseStatus::Pending => 'Menunggu generate.',
-                TestCaseStatus::Completed => 'Generate selesai.',
-                TestCaseStatus::Failed => 'Generate gagal.',
-            },
+        return redirect()->route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => $testCase->generatedScript ? 'script' : 'scenario',
         ]);
     }
 
-    /**
-     * Send the confirmed scenario URLs to the generator service.
-     *
-     * @param  array<int, array{scenario_id: int|string, scenario_url: string}>  $rows
-     */
     private function callService(TestCase $testCase, array $rows): GeneratorResult
     {
         $submittedUrls = collect($rows)->keyBy('scenario_id');
@@ -284,9 +278,6 @@ class TestCaseController extends Controller
         });
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     private function recordSuccess(TestCase $testCase, array $payload): void
     {
         $script = $payload['data']['script'];

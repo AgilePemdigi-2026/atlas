@@ -9,6 +9,7 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ConsoleController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScenarioController;
 use App\Http\Controllers\TestCaseController;
 use Illuminate\Support\Facades\Route;
 
@@ -78,11 +79,6 @@ Route::middleware('auth')->group(function () {
         'store',
     ])->name('test-cases.store');
 
-    Route::post('/test-cases/drafts', [
-        TestCaseController::class,
-        'storeDraft',
-    ])->name('test-cases.drafts');
-
     Route::get('/test-cases/{test_case}/scenario-urls', [
         TestCaseController::class,
         'scenarioUrls',
@@ -92,6 +88,9 @@ Route::middleware('auth')->group(function () {
         TestCaseController::class,
         'generate',
     ])->name('test-cases.scenario-urls.generate');
+
+    Route::patch('/scenarios/{scenario}', ScenarioController::class)
+        ->name('scenarios.update');
 
     Route::get('/test-cases/{test_case}', [
         TestCaseController::class,

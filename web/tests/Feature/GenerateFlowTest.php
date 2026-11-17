@@ -58,7 +58,11 @@ test('a successful generate persists output and script and completes the test ca
     $response = $this->actingAs($user)
         ->post(route('test-cases.scenario-urls.generate', $testCase), generatePayload($testCase));
 
-    $response->assertRedirect(route('test-cases.show', $testCase));
+    $response->assertRedirect(route('console', [
+        'test_case' => $testCase->getKey(),
+        'collection' => $testCase->collection_id,
+        'tab' => 'script',
+    ]));
     $testCase->refresh();
 
     expect($testCase->status->value)->toBe('completed')
@@ -87,7 +91,11 @@ test('a service failure maps to copy and marks failed', function () {
     $response = $this->actingAs($user)
         ->post(route('test-cases.scenario-urls.generate', $testCase), generatePayload($testCase));
 
-    $response->assertRedirect(route('test-cases.scenario-urls', $testCase));
+    $response->assertRedirect(route('console', [
+        'test_case' => $testCase->getKey(),
+        'collection' => $testCase->collection_id,
+        'tab' => 'scenario',
+    ]));
     $response->assertSessionHasErrors(['generate' => 'Proses generate gagal, layanan tidak tersedia.']);
     expect($testCase->fresh()->status->value)->toBe('failed')
         ->and($testCase->fresh()->llmOutput->validation_status->value)->toBe('invalid');

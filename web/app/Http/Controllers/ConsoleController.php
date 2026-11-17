@@ -29,9 +29,15 @@ class ConsoleController extends Controller
             ->flatMap(fn ($collection) => $collection->testCases)
             ->firstWhere('test_case_id', $request->integer('test_case'));
 
-        // Ambil generated script, auth profile F7, dan jumlah skenario.
-        $selected?->load(['generatedScript', 'authProfile'])
+        // Ambil generated script, auth profile F7, skenario, dan jumlah skenario.
+        $selected?->load(['generatedScript', 'authProfile', 'scenarios'])
             ->loadCount('scenarios');
+
+        $activeResultTab = $request->query('tab');
+
+        if (! in_array($activeResultTab, ['scenario', 'script'], true)) {
+            $activeResultTab = $selected?->generatedScript ? 'script' : 'scenario';
+        }
 
         // Tentukan Collection aktif dari Test Case atau query parameter.
         $requestedCollectionId = $selected?->collection_id
@@ -48,6 +54,7 @@ class ConsoleController extends Controller
             'collections' => $collections,
             'selected' => $selected,
             'activeCollectionId' => $activeCollection?->getKey(),
+            'activeResultTab' => $activeResultTab,
         ]);
     }
 

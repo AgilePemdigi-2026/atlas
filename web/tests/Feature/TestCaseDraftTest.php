@@ -28,7 +28,11 @@ test('a test case is stored as a pending draft with parsed scenarios', function 
         ->post(route('test-cases.store'), draftPayload(['collection_id' => $collection->getKey()]));
 
     $testCase = TestCase::query()->sole();
-    $response->assertRedirect(route('test-cases.scenario-urls', $testCase));
+    $response->assertRedirect(route('console', [
+        'test_case' => $testCase->getKey(),
+        'collection' => $testCase->collection_id,
+        'tab' => 'scenario',
+    ]));
     expect($testCase->status->value)->toBe('pending')
         ->and($testCase->collection_id)->toBe($collection->getKey())
         ->and($testCase->scenarios()->pluck('name')->all())->toBe(['Login berhasil']);

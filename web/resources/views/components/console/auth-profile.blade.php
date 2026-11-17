@@ -2,10 +2,7 @@
 
 @php
     $authProfile = $testCase->authProfile;
-    $credentials = array_fill_keys(
-        array_keys($authProfile?->credentials ?? []),
-        ''
-    );
+    $credentials = $authProfile?->credentials ?? [];
     if ($credentials === []) {
         $credentials = ['email' => ''];
     }
@@ -14,7 +11,6 @@
 <section class="flex flex-col gap-4 rounded-xl border border-edge bg-white p-5 dark:border-slate-800 dark:bg-night">
     <div class="flex flex-col gap-1">
         <h2 class="font-display text-sm/[1.55] font-semibold text-body dark:text-slate-100">Auth Profile</h2>
-        <p class="console-hint">Hanya dipakai untuk membuka halaman target yang terlindungi. Kredensial tidak masuk ke script.</p>
     </div>
 
     <form method="POST" action="{{ route('auth-profiles.upsert', $testCase) }}" data-auth-profile-form
@@ -43,16 +39,6 @@
 
             <div class="flex flex-col gap-2">
                 <span class="console-label">Credential</span>
-                <p class="console-hint">Selector boleh memakai <code>id:</code>, <code>name:</code>, <code>css:</code>, atau
-                    <code>xpath:</code>; tanpa prefix dicari lewat name lalu id.</p>
-
-                @if ($authProfile)
-                    <p class="console-hint text-amber-700 dark:text-amber-300">
-                        Auth Profile sudah tersimpan. Demi keamanan, nilai credentials
-                        tidak ditampilkan kembali. Untuk memperbarui profil,
-                        masukkan ulang semua nilai credentials.
-                    </p>
-                @endif
 
                 <div data-credential-rows class="flex flex-col gap-2">
                     @foreach ($credentials as $selector => $value)
@@ -60,7 +46,7 @@
                             <input data-credential-selector value="{{ $selector }}" placeholder="email"
                                 aria-label="Selector kredensial"
                                 class="console-field h-9 min-w-0 flex-1 text-xs">
-                            <input data-credential-value type="password" value="" autocomplete="new-password"
+                            <input data-credential-value type="text" value="{{ $value }}" autocomplete="off"
                                 placeholder="Masukkan nilai kredensial" aria-label="Nilai kredensial"
                                 class="console-field h-9 min-w-0 flex-1 text-xs">
                             <button type="button" data-remove-credential
@@ -181,12 +167,6 @@
                 if (!response.ok) {
                     setStatus(body.message || 'Gagal menyimpan Auth Profile.', true);
                     return;
-                }
-
-                if (useAuth()) {
-                    rows.querySelectorAll('[data-credential-value]').forEach(function (input) {
-                        input.value = '';
-                    });
                 }
 
                 setStatus(body.message || 'Pengaturan Auth Profile disimpan.');

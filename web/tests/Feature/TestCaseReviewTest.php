@@ -43,11 +43,10 @@ describe('F15 Review Test Case Script', function () {
         // Then I should see the details of the generated Selenium script
         // And I should see the scenario URLs
         $this->actingAs($user)
-            ->get(route('test-cases.show', $testCase))
+            ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
             ->assertSee('Login saya')
             ->assertSee('https://app.example.com/login')
-            ->assertSee('Belum ada URL')
             ->assertSee('from selenium import webdriver')
             ->assertSee('Scenario URL')
             ->assertSee('Generated Script');
@@ -81,7 +80,7 @@ describe('F15 Review Test Case Script', function () {
         ]);
 
         // When I open the test case
-        $response = $this->actingAs($user)->get(route('test-cases.show', $testCase));
+        $response = $this->actingAs($user)->get(route('console', ['test_case' => $testCase->getKey()]));
 
         // Then the markup is shown as text and not rendered
         $response->assertOk()

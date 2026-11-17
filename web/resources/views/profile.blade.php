@@ -78,7 +78,7 @@
                             @else
                                 @forelse ($testCases as $case)
                                     @php $style = $statusStyles[$case->status->value]; @endphp
-                                    <a href="{{ route('test-cases.show', $case) }}"
+                                    <a href="{{ route('console', ['test_case' => $case->getKey()]) }}"
                                         class="flex items-center gap-6 border-t border-line p-4 transition hover:bg-surface dark:border-slate-700 dark:hover:bg-white/5">
                                     <div class="flex min-w-0 flex-1 flex-col gap-1.5">
                                         <p class="text-sm/[1.55] font-semibold break-words text-body dark:text-white">{{ $case->name }}</p>
