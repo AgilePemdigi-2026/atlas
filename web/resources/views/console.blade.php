@@ -191,14 +191,25 @@
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($selected->scenarios as $index => $scenario)
-                                                                <tr class="border-t border-line align-middle dark:border-slate-700">
-                                                                    <td class="px-2 py-2">{{ $scenario->name }}</td>
+                                                                <tr data-scenario-row
+                                                                    data-save-url="{{ route('scenarios.update', $scenario) }}"
+                                                                    class="border-t border-line align-middle dark:border-slate-700">
+                                                                    <td class="px-2 py-2">
+                                                                        <input type="text" name="scenarios[{{ $index }}][name]" required maxlength="256"
+                                                                            value="{{ old("scenarios.$index.name", $scenario->name) }}"
+                                                                            data-scenario-name aria-label="Nama skenario {{ $scenario->name }}"
+                                                                            class="h-9 w-full rounded-md border border-transparent bg-transparent px-2 text-[13px] font-medium text-body outline-none transition hover:border-line focus:border-accent focus:bg-white focus:ring-2 focus:ring-accent/20 dark:text-slate-100 dark:hover:border-slate-600 dark:focus:border-indigo-300 dark:focus:bg-abyss">
+                                                                    </td>
                                                                     <td class="px-2 py-2">
                                                                         <input type="hidden" name="scenarios[{{ $index }}][scenario_id]" value="{{ $scenario->getKey() }}">
-                                                                        <input type="url" name="scenarios[{{ $index }}][scenario_url]" required
-                                                                            value="{{ old("scenarios.$index.scenario_url", $scenario->scenario_url ?? $selected->base_url) }}"
-                                                                            aria-label="URL awal {{ $scenario->name }}" placeholder="https://app.example.com/login"
-                                                                            class="h-9 w-full rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                                                                        <div class="flex items-center gap-2">
+                                                                            <input type="url" name="scenarios[{{ $index }}][scenario_url]" required
+                                                                                value="{{ old("scenarios.$index.scenario_url", $scenario->scenario_url ?? $selected->base_url) }}"
+                                                                                data-scenario-url aria-label="URL awal {{ $scenario->name }}" placeholder="https://app.example.com/login"
+                                                                                class="h-9 w-full rounded-md border border-line bg-white px-3 text-xs text-body dark:border-slate-600 dark:bg-abyss dark:text-slate-100">
+                                                                            <p data-scenario-status role="status"
+                                                                                class="hidden text-xs text-subtle dark:text-slate-400"></p>
+                                                                        </div>
                                                                     </td>
                                                                 </tr>
                                                             @endforeach
@@ -294,6 +305,88 @@
                     generateHint.classList.remove('hidden');
                 });
             }
+
+            var scenarioRows = document.querySelectorAll('[data-scenario-row]');
+            var scenarioToken = document.querySelector('[data-generate-form] input[name="_token"]');
+
+            scenarioRows.forEach(function (row) {
+                var nameInput = row.querySelector('[data-scenario-name]');
+                var urlInput = row.querySelector('[data-scenario-url]');
+                var status = row.querySelector('[data-scenario-status]');
+
+                if (!nameInput || !urlInput || !status || !scenarioToken) {
+                    return;
+                }
+
+                var saving = false;
+
+                function setStatus(message, error) {
+                    status.textContent = message;
+                    status.classList.toggle('hidden', message === '');
+                    status.classList.toggle('text-subtle', !error);
+                    status.classList.toggle('dark:text-slate-400', !error);
+                    status.classList.toggle('text-red-600', Boolean(error));
+                    status.classList.toggle('dark:text-red-400', Boolean(error));
+                }
+
+                function save() {
+                    if (saving) {
+                        return;
+                    }
+
+                    if (!nameInput.value.trim()) {
+                        setStatus('Field wajib diisi.', true);
+                        return;
+                    }
+
+                    saving = true;
+                    setStatus('Menyimpan …', false);
+
+                    fetch(row.dataset.saveUrl, {
+                        method: 'PATCH',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': scenarioToken.value,
+                        },
+                        body: JSON.stringify({
+                            name: nameInput.value,
+                            scenario_url: urlInput.value.trim() || null,
+                        }),
+                    }).then(async function (response) {
+                        var body = await response.json().catch(function () {
+                            return {};
+                        });
+
+                        if (!response.ok) {
+                            setStatus(body.message || 'Gagal menyimpan skenario.', true);
+                            return;
+                        }
+
+                        nameInput.defaultValue = nameInput.value;
+                        urlInput.defaultValue = urlInput.value;
+                        setStatus(body.message || 'Skenario disimpan.', false);
+                    }).catch(function () {
+                        setStatus('Gagal menyimpan skenario.', true);
+                    }).finally(function () {
+                        saving = false;
+                    });
+                }
+
+                [nameInput, urlInput].forEach(function (input) {
+                    input.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            save();
+                        } else if (event.key === 'Escape') {
+                            event.preventDefault();
+                            nameInput.value = nameInput.defaultValue;
+                            urlInput.value = urlInput.defaultValue;
+                            setStatus('', false);
+                        }
+                    });
+                });
+            });
 
             document.querySelectorAll('[data-create-collection]').forEach(function (button) {
                 button.addEventListener('click', function () {
