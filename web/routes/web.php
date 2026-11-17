@@ -77,11 +77,6 @@ Route::middleware('auth')->group(function () {
         'store',
     ])->name('test-cases.store');
 
-    Route::post('/test-cases/drafts', [
-        TestCaseController::class,
-        'storeDraft',
-    ])->name('test-cases.drafts');
-
     Route::get('/test-cases/{test_case}/scenario-urls', [
         TestCaseController::class,
         'scenarioUrls',
