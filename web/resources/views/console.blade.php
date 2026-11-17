@@ -23,7 +23,7 @@
                             <h2 class="font-display text-base font-semibold text-body dark:text-white">Belum ada test case.</h2>
                             <p class="console-hint mt-2">Buat test case pertama Anda untuk mengubah user story menjadi skrip Selenium.</p>
 
-                            <form method="POST" action="{{ route('test-cases.drafts') }}" class="mt-5 flex flex-col gap-2">
+                            <form method="POST" action="{{ route('test-cases.store') }}" class="mt-5 flex flex-col gap-2">
                                 @csrf
                                 <input type="hidden" name="source" value="empty">
                                 <div class="flex items-center gap-2">

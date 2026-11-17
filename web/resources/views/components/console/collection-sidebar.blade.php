@@ -131,7 +131,7 @@
                         <p class="px-2 py-1 text-[11px] text-subtle dark:text-slate-400">Belum ada test case.</p>
                     @endif
 
-                    <form method="POST" action="{{ route('test-cases.drafts') }}" data-draft-composer hidden class="flex items-center gap-1.5 py-1">
+                    <form method="POST" action="{{ route('test-cases.store') }}" data-draft-composer hidden class="flex items-center gap-1.5 py-1">
                         @csrf
                         <input type="hidden" name="collection_id" value="{{ $collection->getKey() }}">
                         <input name="name" type="text" required maxlength="256" placeholder="Nama test case" aria-label="Nama test case"
