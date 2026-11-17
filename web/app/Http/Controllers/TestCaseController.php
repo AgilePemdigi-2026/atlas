@@ -220,16 +220,24 @@ class TestCaseController extends Controller
         $validated = $request->validate([
             'scenarios' => ['required', 'array', 'min:1'],
             'scenarios.*.scenario_id' => ['required', 'integer'],
+            'scenarios.*.name' => ['sometimes', 'required', 'string', 'max:256'],
             'scenarios.*.scenario_url' => ['required', 'url'],
         ], [
+            'scenarios.*.name.required' => 'Field wajib diisi.',
             'scenarios.*.scenario_url.required' => 'Field wajib diisi.',
             'scenarios.*.scenario_url.url' => 'Format URL tidak valid.',
         ]);
 
         foreach ($validated['scenarios'] as $row) {
+            $updates = ['scenario_url' => $row['scenario_url']];
+
+            if (array_key_exists('name', $row)) {
+                $updates['name'] = $row['name'];
+            }
+
             $testCase->scenarios()
                 ->whereKey($row['scenario_id'])
-                ->update(['scenario_url' => $row['scenario_url']]);
+                ->update($updates);
         }
 
         $result = $this->callService($testCase, $validated['scenarios']);
