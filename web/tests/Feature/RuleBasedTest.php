@@ -71,7 +71,11 @@ describe('F12 Rule-based Script Generator', function () {
 
         // Then I should see a confirmation that the script was successfully generated
         // And I should still be on the "Test Case" page
-        $response->assertRedirect(route('test-cases.show', $testCase));
+        $response->assertRedirect(route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'script',
+        ]));
 
         // And the test case status is "completed"
         // And the script is saved
@@ -149,8 +153,9 @@ describe('F12 Rule-based Script Generator', function () {
         expect($testCase->fresh()->llmOutput->generatedScript->content)->toBe($script);
 
         $this->actingAs($user)
-            ->get(route('test-cases.show', $testCase))
+            ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
-            ->assertSee($script);
+            ->assertSee('from selenium import webdriver')
+            ->assertSee("driver.find_element('xpath', '//button').click()");
     });
 });

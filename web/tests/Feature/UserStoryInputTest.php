@@ -55,7 +55,11 @@ describe('F6 Input User Story', function () {
         // Then two scenario rows are created for the test case
         $testCase = TestCase::query()->sole();
 
-        $response->assertRedirect(route('test-cases.scenario-urls', $testCase));
+        $response->assertRedirect(route('console', [
+            'test_case' => $testCase->getKey(),
+            'collection' => $testCase->collection_id,
+            'tab' => 'scenario',
+        ]));
         expect($testCase->scenarios()->pluck('name')->all())
             ->toBe(['Login berhasil', 'Login gagal']);
     });
