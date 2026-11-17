@@ -11,6 +11,8 @@ use App\Services\Generator\GenerateRequest;
 use App\Services\Generator\GeneratorClient;
 use App\Services\Generator\GeneratorResult;
 use App\Services\Generator\ScenarioParser;
+use App\Services\Generator\ScenarioSync;
+use App\Services\Generator\ScenarioUrlClient;
 use App\Services\RootCollection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,13 +45,15 @@ class TestCaseController extends Controller
             'name' => $validated['name'],
         ]);
 
-        $this->applyStory($testCase, $validated);
+        $notice = $this->applyStory($testCase, $validated);
 
-        return redirect()->route('console', [
+        $redirect = redirect()->route('console', [
             'test_case' => $testCase->getKey(),
             'collection' => $testCase->collection_id,
             'tab' => 'scenario',
         ]);
+
+        return $notice === null ? $redirect : $redirect->withErrors(['sync' => $notice]);
     }
 
     public function storeDraft(Request $request): RedirectResponse
@@ -128,15 +132,17 @@ class TestCaseController extends Controller
             'acceptance_criteria.required' => 'Field wajib diisi.',
         ]);
 
-        $this->applyStory($testCase, $validated);
+        $notice = $this->applyStory($testCase, $validated);
 
-        return redirect()
+        $redirect = redirect()
             ->route('console', [
                 'test_case' => $testCase->getKey(),
                 'collection' => $testCase->collection_id,
                 'tab' => 'scenario',
             ])
             ->with('status', 'Test case diperbarui.');
+
+        return $notice === null ? $redirect : $redirect->withErrors(['sync' => $notice]);
     }
 
     public function destroy(TestCase $testCase): RedirectResponse
@@ -153,13 +159,17 @@ class TestCaseController extends Controller
     }
 
     /**
-     * Apply the story fields and rebuild scenarios, preserving existing URLs
-     * for scenarios that keep their name.
+     * Apply the story fields, then mirror the service's scenario inference.
+     * A failed sync never blocks the save: existing rows stay, and the
+     * fingerprint is left stale so the next save retries.
      *
      * @param  array{name: string, user_story: string, acceptance_criteria: string, base_url?: string|null}  $validated
      */
-    private function applyStory(TestCase $testCase, array $validated): void
+    private function applyStory(TestCase $testCase, array $validated): ?string
     {
+        $criteria = $validated['acceptance_criteria'];
+        $baseUrl = $validated['base_url'] ?? null;
+
         DB::transaction(function () use ($testCase, $validated): void {
             $testCase->update([
                 'name' => $validated['name'],
@@ -167,15 +177,29 @@ class TestCaseController extends Controller
                 'acceptance_criteria' => $validated['acceptance_criteria'],
                 'base_url' => $validated['base_url'] ?? null,
             ]);
-
-            $names = ScenarioParser::names($validated['acceptance_criteria'], $validated['name']);
-
-            foreach ($names as $name) {
-                $testCase->scenarios()->updateOrCreate(['name' => $name], []);
-            }
-
-            $testCase->scenarios()->whereNotIn('name', $names)->delete();
         });
+
+        if ($testCase->scenarios_synced_hash === ScenarioSync::fingerprint($criteria, $baseUrl)) {
+            return null;
+        }
+
+        $sync = new ScenarioSync(new ScenarioUrlClient(
+            url: (string) config('services.generator.url'),
+            key: (string) config('services.generator.key'),
+            timeout: (int) config('services.generator.scenario_timeout'),
+        ));
+
+        if ($sync->apply($testCase, $criteria, $baseUrl)) {
+            return null;
+        }
+
+        if ($testCase->scenarios()->doesntExist()) {
+            foreach (ScenarioParser::names($criteria, $validated['name']) as $name) {
+                $testCase->scenarios()->create(['name' => $name]);
+            }
+        }
+
+        return 'Sinkronisasi gagal, daftar skenario tidak diubah.';
     }
 
     public function scenarioUrls(TestCase $testCase): RedirectResponse

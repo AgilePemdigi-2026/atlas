@@ -147,7 +147,7 @@
 
                                     <div class="flex items-center justify-between gap-3 border-t border-edge pt-4 dark:border-slate-800">
                                         <span class="console-hint">Hasil perlu direview sebelum dijalankan.</span>
-                                        <button type="submit" class="console-btn-primary">Lanjutkan</button>
+                                        <button type="submit" class="console-btn-primary">{{ $selected->scenarios->isNotEmpty() ? 'Sinkronkan' : 'Lanjutkan' }}</button>
                                     </div>
                                 </form>
 
