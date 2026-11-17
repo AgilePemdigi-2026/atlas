@@ -22,6 +22,7 @@ return [
         'url' => env('GENERATOR_SERVICE_URL', 'http://127.0.0.1:8001'),
         'key' => env('GENERATOR_SERVICE_KEY'),
         'timeout' => (int) env('GENERATOR_SERVICE_TIMEOUT', 180),
+        'scenario_timeout' => (int) env('GENERATOR_SCENARIO_TIMEOUT', 30),
     ],
 
     'resend' => [
@@ -42,8 +43,8 @@ return [
     ],
 
     'google' => [
-    'client_id' => env('GOOGLE_CLIENT_ID'),
-    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect' => env('GOOGLE_REDIRECT_URI'),
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 ];
