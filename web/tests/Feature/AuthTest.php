@@ -143,3 +143,19 @@ test('deleting the account signs the user out and removes the row', function () 
     $this->assertGuest();
     expect(User::query()->whereKey($user->getKey())->exists())->toBeFalse();
 });
+
+test('Cancel keeps the account', function () {
+    // Given the confirmation modal is open
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->get(route('profile'));
+
+    // Then the delete form asks for confirmation
+    $response->assertOk()
+        ->assertSee('Delete Account')
+        ->assertSee("confirm('Hapus akun secara permanen?", false);
+
+    // When I cancel, no DELETE request is sent
+    // Then my account is unchanged
+    $this->assertAuthenticatedAs($user);
+    $this->assertModelExists($user);
+});

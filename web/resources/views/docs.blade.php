@@ -72,7 +72,7 @@
                 <nav aria-label="Documentation" class="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto px-6 py-8">
                     @foreach ($navigation as $group)
                         <div class="{{ $loop->first ? '' : 'mt-7' }}">
-                            <p class="font-typewriter text-[10px] font-semibold tracking-[.12em] text-subtle dark:text-slate-500">{{ strtoupper($group['label']) }}</p>
+                            <p class="font-typewriter text-[10px] font-semibold uppercase tracking-[.12em] text-subtle dark:text-slate-500">{{ $group['label'] }}</p>
                             <ul class="mt-3 flex flex-col gap-0.5">
                                 @foreach ($group['links'] as $link)
                                     <li>
@@ -95,7 +95,7 @@
                     <nav aria-label="Documentation" class="mt-4 flex flex-col gap-5 border-t border-line pt-4 dark:border-slate-700">
                         @foreach ($navigation as $group)
                             <div>
-                                <p class="font-typewriter text-[10px] font-semibold tracking-[.12em] text-subtle dark:text-slate-500">{{ strtoupper($group['label']) }}</p>
+                                <p class="font-typewriter text-[10px] font-semibold uppercase tracking-[.12em] text-subtle dark:text-slate-500">{{ $group['label'] }}</p>
                                 <ul class="mt-2 flex flex-col gap-1.5">
                                     @foreach ($group['links'] as $link)
                                         <li><a href="#{{ $link['id'] }}" class="text-[13px] text-subtle hover:text-[#236913] dark:text-slate-400 dark:hover:text-emerald-300">{{ $link['title'] }}</a></li>

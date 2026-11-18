@@ -41,12 +41,17 @@ describe('F8 Scenario URL Table', function () {
             'acceptance_criteria' => "Scenario: Bayar\nGiven saya di keranjang\n\nScenario: Gagal bayar\nWhen kartu ditolak",
         ];
 
-        // When I press the "Generate" button
-        $response = $this->actingAs($user)->post(route('test-cases.store'), $payload);
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => $payload['name']]);
 
-        // Then the system displays a table for entering scenario URLs
         $testCase = TestCase::query()->sole();
 
+        Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
+
+        // When I press the "Generate" button
+        $response = $this->actingAs($user)
+            ->patch(route('test-cases.update', $testCase), $payload);
+
+        // Then the system displays a table for entering scenario URLs
         $response->assertRedirect(route('console', [
             'test_case' => $testCase->getKey(),
             'collection' => $testCase->collection_id,

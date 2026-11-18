@@ -139,13 +139,19 @@ test('another user cannot generate on someone else test case', function () {
 test('the draft stores the acceptance criteria for the generate step', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->post(route('test-cases.store'), [
+    $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Login saya']);
+
+    $testCase = TestCase::query()->sole();
+
+    Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
+
+    $this->actingAs($user)->patch(route('test-cases.update', $testCase), [
         'name' => 'Login saya',
         'user_story' => 'Sebagai pengguna, saya ingin masuk.',
         'acceptance_criteria' => "Skenario: Login berhasil\nGiven saya di halaman login",
     ]);
 
-    expect(TestCase::query()->sole()->acceptance_criteria)
+    expect($testCase->fresh()->acceptance_criteria)
         ->toBe("Skenario: Login berhasil\nGiven saya di halaman login");
 });
 
