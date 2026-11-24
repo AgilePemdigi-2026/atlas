@@ -1,9 +1,8 @@
 @import 'tailwindcss';
-
+@import './pages/console-polish.css';
 @custom-variant dark (&:where(.dark, .dark *));
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
-
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
@@ -13,7 +12,6 @@
     --font-iosevka: 'Iosevka Charon Mono', 'Roboto Mono', ui-monospace, monospace;
     --font-dm: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
     --font-cousine: 'Cousine', ui-monospace, Consolas, monospace;
-
     --color-brand: #5fbb49;
     --color-ink: #0e2d07;
     --color-muted: #595959;
@@ -29,7 +27,6 @@
     --color-edge-strong: #d8dde9;
     --color-label: #475569;
 }
-
 @layer base {
     button:not(:disabled),
     summary,
@@ -37,7 +34,6 @@
         cursor: pointer;
     }
 }
-
 @layer components {
     .auth-bg {
         background:
@@ -47,7 +43,6 @@
             radial-gradient(ellipse at 17% 87%, rgba(215, 208, 255, .52), transparent 34%),
             linear-gradient(135deg, #fbfffc, #f8f7ff 50%, #fbfffb);
     }
-
     .dark .auth-bg {
         background:
             radial-gradient(ellipse at 11% 18%, rgba(76, 175, 65, .22), transparent 30%),
@@ -56,72 +51,56 @@
             radial-gradient(ellipse at 17% 87%, rgba(86, 80, 218, .25), transparent 34%),
             linear-gradient(135deg, #0b1020, #0f1226 50%, #0b1220);
     }
-
     .auth-dots {
         background-image: radial-gradient(circle, rgba(255, 255, 255, .85) 2px, transparent 2.5px);
         background-size: 16px 16px;
     }
-
     .auth-input {
         @apply h-12 w-full rounded-[11px] border border-[#E0ECDE] bg-white/70 pr-3 pl-11 text-[13px] text-[#1F3024] outline-none placeholder:text-[#5D7765] focus:border-[#30A956] focus:ring-2 focus:ring-[#30A956]/25 dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-400;
     }
-
-    /* Console (A2 workbench) primitives — light surfaces, hairline edges, indigo action. */
     .console-card {
         @apply rounded-[14px] border border-edge bg-white shadow-[0_1px_2px_rgba(16,24,40,.04),0_12px_32px_-16px_rgba(16,24,40,.18)] dark:border-slate-800 dark:bg-night;
     }
-
     .console-field {
         @apply h-10 w-full rounded-lg border border-edge bg-[#f8fafc] px-3 text-sm text-body transition outline-none placeholder:text-subtle focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-abyss dark:text-slate-100 dark:placeholder:text-slate-500;
     }
-
     .console-area {
         @apply w-full rounded-lg border border-edge bg-[#f8fafc] px-3 py-2.5 text-sm text-body transition outline-none placeholder:text-subtle focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-abyss dark:text-slate-100 dark:placeholder:text-slate-500;
     }
-
     .console-label {
         @apply font-display text-xs font-semibold text-label dark:text-slate-300;
     }
-
     .console-hint {
         @apply text-[11px]/[1.55] text-subtle dark:text-slate-400;
     }
-
     .console-btn-primary {
         @apply inline-flex h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white shadow-[0_6px_16px_-6px_rgba(75,80,200,.65)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_-6px_rgba(75,80,200,.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:translate-y-0 dark:bg-indigo-500 dark:hover:bg-indigo-400;
     }
-
     .console-btn-ghost {
         @apply inline-flex h-10 items-center justify-center rounded-lg border border-edge bg-white px-4 text-sm font-semibold text-body transition duration-200 hover:-translate-y-0.5 hover:border-edge-strong hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:translate-y-0 dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-white/5;
     }
-
     .console-panel {
         animation: atlas-rise 0.18s ease-out both;
     }
-
     .console-enter {
         animation: atlas-rise 0.3s ease-out both;
     }
 }
-
 @keyframes atlas-rise {
     from {
         opacity: 0;
         transform: translateY(6px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
-
 @media (prefers-reduced-motion: reduce) {
     .console-panel,
     .console-enter {
         animation: none;
     }
-
     *,
     *::before,
     *::after {

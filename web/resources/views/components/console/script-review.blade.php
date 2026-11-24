@@ -9,9 +9,9 @@
         $filename = \App\Http\Controllers\ConsoleController::scriptFilename($testCase);
         $lines = preg_split('/\R/', rtrim($script->content));
         $tones = [
-            'completed' => ['Skrip berhasil dibuat', '✓', 'border-[#D4EEDB] bg-[#EDF9F0] text-[#248940] dark:border-green-800 dark:bg-green-900/30 dark:text-green-300'],
-            'partial' => ['Skrip dibuat sebagian', '!', 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300'],
-            'failed' => ['Skrip gagal dibuat', '✕', 'border-red-200 bg-red-50 text-[#BA3D4A] dark:border-red-800 dark:bg-red-900/30 dark:text-red-300'],
+            'completed' => ['Script generated successfully', '✓', 'border-[#D4EEDB] bg-[#EDF9F0] text-[#248940] dark:border-green-800 dark:bg-green-900/30 dark:text-green-300'],
+            'partial' => ['Script partially generated', '!', 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300'],
+            'failed' => ['Script generation failed', '✕', 'border-red-200 bg-red-50 text-[#BA3D4A] dark:border-red-800 dark:bg-red-900/30 dark:text-red-300'],
         ];
         [$title, $icon, $tone] = $tones[$script->status->value];
     @endphp
@@ -21,9 +21,9 @@
             <span class="grid size-[22px] flex-none place-items-center rounded-full border border-current text-sm" aria-hidden="true">{{ $icon }}</span>
             <div class="flex flex-col gap-0.5">
                 <span class="text-[11px] font-bold">{{ $title }}</span>
-                <span class="text-[11px] opacity-80">{{ $testCase->scenarios_count }} skenario · {{ $testCase->name }}</span>
+                <span class="text-[11px] opacity-80">Scenario count: {{ $testCase->scenarios_count }} · {{ $testCase->name }}</span>
                 @if ($script->unresolved_step)
-                    <span class="text-[11px] opacity-80">Langkah belum terselesaikan: {{ $script->unresolved_step }}</span>
+                    <span class="text-[11px] opacity-80">Unresolved step: {{ $script->unresolved_step }}</span>
                 @endif
             </div>
         </div>
@@ -31,7 +31,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-col gap-1">
                 <span class="font-display text-[13px] font-bold text-body dark:text-slate-100">{{ $filename }}</span>
-                <span class="text-[11px] text-subtle dark:text-slate-400">Python 3 · Selenium 4 · Review sebelum dijalankan</span>
+                <span class="text-[11px] text-subtle dark:text-slate-400">Python 3 · Selenium 4 · Review before running</span>
             </div>
             <a href="{{ route('test-cases.script.download', $testCase) }}"
                 class="console-btn-primary h-9 px-4 text-xs">Download Script</a>
@@ -60,5 +60,5 @@
         </div>
     </div>
 @else
-    <p class="text-sm text-subtle dark:text-slate-400">Belum ada hasil test case.</p>
+    <p class="text-sm text-subtle dark:text-slate-400">No Test Case results yet.</p>
 @endif

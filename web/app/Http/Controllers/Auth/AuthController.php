@@ -23,23 +23,23 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ], [
-            'email.required' => 'Field wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Field wajib diisi.',
+            'email.required' => 'This field is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'This field is required.',
         ]);
 
         try {
             $authenticated = Auth::attempt($credentials, $request->boolean('remember'));
         } catch (\Throwable) {
             return back()
-                ->withErrors(['email' => 'Login tidak dapat diproses saat ini'])
+                ->withErrors(['email' => 'Login cannot be processed right now.'])
                 ->onlyInput('email');
         }
 
         if (! $authenticated) {
             $message = User::query()->where('email', $credentials['email'])->exists()
-                ? 'Email atau password salah.'
-                : 'Kredensial salah';
+                ? 'The email address or password is incorrect.'
+                : 'Invalid credentials.';
 
             return back()
                 ->withErrors(['email' => $message])
@@ -64,12 +64,12 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8'],
             // 'terms' => ['accepted'],
         ], [
-            'name.required' => 'Field wajib diisi.',
-            'email.required' => 'Field wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah terdaftar',
-            'password.required' => 'Field wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
+            'name.required' => 'This field is required.',
+            'email.required' => 'This field is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'password.required' => 'This field is required.',
+            'password.min' => 'Password must be at least 8 characters.',
             // 'terms.accepted' => 'Field wajib diisi.',
         ]);
 
@@ -77,11 +77,11 @@ class AuthController extends Controller
             User::create(collect($data)->except('terms')->all());
         } catch (QueryException) {
             return back()
-                ->withErrors(['email' => 'Pendaftaran tidak dapat diproses saat ini'])
+                ->withErrors(['email' => 'Registration cannot be processed right now.'])
                 ->onlyInput('name', 'email');
         }
 
-        return redirect()->route('login')->with('status', 'Akun anda berhasil terdaftar');
+        return redirect()->route('login')->with('status', 'Your account has been created successfully.');
     }
 
     public function logout(Request $request): RedirectResponse

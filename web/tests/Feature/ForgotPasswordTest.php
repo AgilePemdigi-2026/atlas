@@ -27,7 +27,7 @@ describe('F4 Forgot Password', function () {
         // Given I am on the reset password page (post the reset request first)
         $this->post(route('password.email'), ['email' => $user->email])
             ->assertRedirect()
-            ->assertSessionHas('status', 'Link reset password berhasil diproses. Silakan cek email.');
+            ->assertSessionHas('status', 'Password reset link sent. Please check your email.');
         // When I submit my registered email
         // Then a reset link is sent to that email
         Notification::assertSentTo(

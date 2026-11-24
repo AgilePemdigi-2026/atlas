@@ -65,7 +65,7 @@ describe('F7 Auth Profile Config', function () {
             ])
             // Then the auth profile is stored for the test case
             ->assertOk()
-            ->assertJson(['message' => 'Auth Profile berhasil disimpan.'])
+            ->assertJson(['message' => 'Auth Profile saved successfully.'])
             ->assertJsonPath('data.has_credentials', true);
 
         expect(AuthProfile::query()
@@ -247,10 +247,10 @@ describe('F7 Auth Profile Config', function () {
             ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
             ->assertSee('Auth Profile')
-            ->assertSee('No auth')
+            ->assertSee('No Auth')
             ->assertSee('Login URL')
-            ->assertSee('Tambah kredensial')
-            ->assertSee('Hapus');
+            ->assertSee('Add Credentials')
+            ->assertSee('Delete');
     });
 
     test('The scenario url page renders the auth profile form', function () {
@@ -261,9 +261,9 @@ describe('F7 Auth Profile Config', function () {
             ->get(route('console', ['test_case' => $testCase->getKey()]))
             ->assertOk()
             ->assertSee('Auth Profile')
-            ->assertSee('No auth')
+            ->assertSee('No Auth')
             ->assertSee('Login URL')
-            ->assertSee('Tambah kredensial');
+            ->assertSee('Add Credentials');
     });
 
     test('saved credentials are shown in the console HTML', function () {

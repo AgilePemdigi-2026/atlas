@@ -225,7 +225,7 @@ def run_demo(driver: webdriver.Chrome) -> None:
     fill(driver, visible(driver, "#password"), DEMO_PASSWORD)
     beat()
     click(driver, By.CSS_SELECTOR, "form button[type='submit']")
-    wait_text(driver, "Akun anda berhasil terdaftar")
+    wait_text(driver, "Your account has been created successfully.")
     beat()
 
     print("[DEMO] 3/5 Sign in and open the console", flush=True)
@@ -237,7 +237,7 @@ def run_demo(driver: webdriver.Chrome) -> None:
     driver.execute_script("arguments[0].form.requestSubmit()", password)
     WebDriverWait(driver, WAIT).until(EC.url_contains("/console"))
     wait_text(driver, "Test Scenario")
-    wait_text(driver, "Belum ada test case.")
+    wait_text(driver, "No test cases yet.")
     beat()
 
     print("[DEMO] 4/5 Create a collection and a test case", flush=True)
@@ -250,7 +250,7 @@ def run_demo(driver: webdriver.Chrome) -> None:
     wait_text(driver, "Toko Online")
     beat()
 
-    click(driver, By.CSS_SELECTOR, "button[aria-label='Opsi Toko Online']")
+    click(driver, By.CSS_SELECTOR, "button[aria-label='Options for Toko Online']")
     click(
         driver,
         By.CSS_SELECTOR,
@@ -267,7 +267,7 @@ def run_demo(driver: webdriver.Chrome) -> None:
     fill(driver, visible(driver, "#acceptance-criteria"), ACCEPTANCE)
     fill(driver, visible(driver, "#base-url"), BASE_URL)
     beat()
-    click(driver, By.XPATH, "//button[normalize-space()='Lanjutkan']")
+    click(driver, By.XPATH, "//button[normalize-space()='Continue']")
     WebDriverWait(driver, WAIT).until(
         lambda page: len(
             page.find_elements(By.CSS_SELECTOR, "[data-scenario-row]")
@@ -283,7 +283,7 @@ def run_demo(driver: webdriver.Chrome) -> None:
         fill(driver, element, url)
     beat()
     click(driver, By.CSS_SELECTOR, "[data-generate-button]")
-    wait_text(driver, "Skrip berhasil dibuat")
+    wait_text(driver, "Script generated successfully")
     wait_text(driver, "webdriver.Chrome")
     wait_text(driver, "Download Script")
     beat()
