@@ -123,7 +123,6 @@ class TestCaseController extends Controller
             ->with('status', 'Test case dihapus.');
     }
 
-
     private function applyStory(TestCase $testCase, array $validated): ?string
     {
         $criteria = $validated['acceptance_criteria'];
@@ -258,6 +257,8 @@ class TestCaseController extends Controller
             authProfile: $testCase->authProfile === null ? null : [
                 'login_url' => $testCase->authProfile->login_url,
                 'credentials' => $testCase->authProfile->credentials ?? [],
+                'submit_selector' => $testCase->authProfile->submit_selector,
+                'success_indicator' => $testCase->authProfile->success_indicator,
             ],
         ));
     }

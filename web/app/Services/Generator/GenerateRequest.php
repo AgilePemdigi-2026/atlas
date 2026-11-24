@@ -6,7 +6,7 @@ final readonly class GenerateRequest
 {
     /**
      * @param  array<int, array{name: string, scenario_url: string}>  $scenarios
-     * @param  array{login_url: string|null, credentials: array<string, string>}|null  $authProfile
+     * @param  array{login_url: string|null, credentials: array<string, string>, submit_selector: ?string, success_indicator: ?string}|null  $authProfile
      */
     public function __construct(
         public int $testCaseId,

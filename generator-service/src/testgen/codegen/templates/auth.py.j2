@@ -3,6 +3,9 @@
 # never stored in the script: set these environment variables before running it.
 {{ credential_docs }}
 
+LOGIN_TIMEOUT = 10
+
+
 def atlas_login_value(name):
     """Read one credential value from the environment."""
     value = os.environ.get(name)
@@ -14,16 +17,8 @@ def atlas_login_value(name):
 
 
 def atlas_login_field(driver, strategy, target):
-    """Find one credential field, using the same selector rules as the generator."""
-    from selenium.common.exceptions import NoSuchElementException
-
-    if strategy == "name_or_id":
-        for by in (By.NAME, By.ID):
-            try:
-                return driver.find_element(by, target)
-            except NoSuchElementException:
-                continue
-        raise SystemExit(f"Login field not found: {target}")
+    """Wait explicitly for one credential field to become visible."""
+    from selenium.webdriver.support import expected_conditions as EC
 
     strategies = {
         "id": By.ID,
@@ -31,22 +26,82 @@ def atlas_login_field(driver, strategy, target):
         "css": By.CSS_SELECTOR,
         "xpath": By.XPATH,
     }
-    return driver.find_element(strategies[strategy], target)
+    if strategy == "name_or_id":
+        for by in (By.NAME, By.ID):
+            try:
+                return WebDriverWait(driver, LOGIN_TIMEOUT).until(
+                    EC.visibility_of_element_located((by, target))
+                )
+            except Exception:
+                continue
+        raise SystemExit(f"Login field not found: {target}")
+    return WebDriverWait(driver, LOGIN_TIMEOUT).until(
+        EC.visibility_of_element_located((strategies[strategy], target))
+    )
+
+
+def atlas_login_submit(driver):
+    """Click the configured submit button, falling back to Enter."""
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.support import expected_conditions as EC
+
+    submit_strategy = {{ submit_strategy }}
+    submit_target = {{ submit_target }}
+    strategies = {
+        "id": By.ID,
+        "name": By.NAME,
+        "css": By.CSS_SELECTOR,
+        "xpath": By.XPATH,
+    }
+    if submit_strategy is not None:
+        try:
+            button = WebDriverWait(driver, LOGIN_TIMEOUT).until(
+                EC.element_to_be_clickable((strategies[submit_strategy], submit_target))
+            )
+            button.click()
+            return None
+        except Exception:
+            raise SystemExit(f"Submit button not found: {submit_target}")
+    return Keys.ENTER
 
 
 def atlas_login(driver):
     """Log in to the target inside each scenario run."""
-    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.support import expected_conditions as EC
 
     driver.get({{ login_url }})
 {{ fill_lines }}
-    try:
-        WebDriverWait(driver, 5).until_not(
-            lambda d: d.current_url.startswith({{ login_url }})
-            and bool(d.find_elements(By.CSS_SELECTOR, "input[type='password']"))
-        )
-    except Exception:
-        raise SystemExit(
-            "Login failed: the target still shows a password field. "
-            "Check the credentials and the Login URL."
-        )
+    enter_key = atlas_login_submit(driver)
+    if enter_key is not None:
+        element.send_keys(enter_key)
+    indicator_strategy = {{ indicator_strategy }}
+    indicator_target = {{ indicator_target }}
+    strategies = {
+        "id": By.ID,
+        "name": By.NAME,
+        "css": By.CSS_SELECTOR,
+        "xpath": By.XPATH,
+    }
+    if indicator_strategy is not None:
+        try:
+            WebDriverWait(driver, LOGIN_TIMEOUT).until(
+                EC.visibility_of_element_located(
+                    (strategies[indicator_strategy], indicator_target)
+                )
+            )
+        except Exception:
+            raise SystemExit(
+                "Login failed: the logged-in page did not appear. "
+                "Check the credentials and the Login URL."
+            )
+    else:
+        try:
+            WebDriverWait(driver, LOGIN_TIMEOUT).until_not(
+                lambda d: d.current_url.startswith({{ login_url }})
+                and bool(d.find_elements(By.CSS_SELECTOR, "input[type='password']"))
+            )
+        except Exception:
+            raise SystemExit(
+                "Login failed: the target still shows a password field. "
+                "Check the credentials and the Login URL."
+            )

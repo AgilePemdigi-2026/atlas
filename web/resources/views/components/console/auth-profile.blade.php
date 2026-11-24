@@ -37,6 +37,18 @@
                     placeholder="https://app.example.com/login" class="console-field">
             </div>
 
+            <div class="flex flex-col gap-1.5">
+                <label for="submit-selector" class="console-label">Submit Selector (opsional)</label>
+                <input id="submit-selector" name="submit_selector" type="text" value="{{ $authProfile?->submit_selector }}"
+                    placeholder="css:button[type=submit]" class="console-field">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label for="success-indicator" class="console-label">Success Indicator (opsional)</label>
+                <input id="success-indicator" name="success_indicator" type="text" value="{{ $authProfile?->success_indicator }}"
+                    placeholder="id:dashboard" class="console-field">
+            </div>
+
             <div class="flex flex-col gap-2">
                 <span class="console-label">Credential</span>
 
@@ -154,8 +166,16 @@
                     return;
                 }
 
+                var submitSelector = form.querySelector('[name="submit_selector"]').value.trim();
+                var successIndicator = form.querySelector('[name="success_indicator"]').value.trim();
+
                 options.headers['Content-Type'] = 'application/json';
-                options.body = JSON.stringify({ login_url: loginUrl, credentials: credentials });
+                options.body = JSON.stringify({
+                    login_url: loginUrl,
+                    credentials: credentials,
+                    submit_selector: submitSelector || null,
+                    success_indicator: successIndicator || null,
+                });
             }
 
             try {

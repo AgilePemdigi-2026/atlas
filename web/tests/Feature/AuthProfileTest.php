@@ -196,6 +196,8 @@ describe('F7 Auth Profile Config', function () {
             ->putJson(route('auth-profiles.upsert', $testCase->getKey()), [
                 'login_url' => 'https://app.example.com/login',
                 'credentials' => ['id:email' => 'qa@example.com', 'password' => 's3cr3t'],
+                'submit_selector' => 'css:button[type=submit]',
+                'success_indicator' => 'id:dashboard',
             ])->assertOk();
 
         fakeGenerateOk();
@@ -215,7 +217,9 @@ describe('F7 Auth Profile Config', function () {
                 && $authProfile['credentials'] === [
                     'id:email' => 'qa@example.com',
                     'password' => 's3cr3t',
-                ];
+                ]
+                && $authProfile['submit_selector'] === 'css:button[type=submit]'
+                && $authProfile['success_indicator'] === 'id:dashboard';
         });
     });
 

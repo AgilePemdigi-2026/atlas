@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['credentials', 'login_url'])]
+#[Fillable(['credentials', 'login_url', 'submit_selector', 'success_indicator'])]
 #[Hidden(['credentials'])]
 class AuthProfile extends Model
 {
@@ -17,6 +17,8 @@ class AuthProfile extends Model
     {
         return [
             'credentials' => 'encrypted:array',
+            'submit_selector' => 'string',
+            'success_indicator' => 'string',
         ];
     }
 
