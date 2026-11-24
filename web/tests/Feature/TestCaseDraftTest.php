@@ -90,8 +90,8 @@ test('the required fields are enforced', function () {
             'acceptance_criteria' => '',
         ]))
         ->assertSessionHasErrors([
-            'user_story' => 'Field wajib diisi.',
-            'acceptance_criteria' => 'Field wajib diisi.',
+            'user_story' => 'This field is required.',
+            'acceptance_criteria' => 'This field is required.',
         ], null, 'updateTestCase');
 
     expect($testCase->scenarios()->doesntExist())->toBeTrue();
@@ -106,7 +106,7 @@ test('the console shows the user story form for a selected draft', function () {
         ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
         ->assertSee(route('test-cases.update', $testCase), false)
-        ->assertSee('Lanjutkan')
+        ->assertSee('Continue')
         ->assertSee('Acceptance criteria')
         ->assertDontSee('Isi tab User Story dipasang di tahap 2.');
 });

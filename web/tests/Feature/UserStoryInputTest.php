@@ -38,10 +38,10 @@ describe('F6 Input User Story', function () {
             ->actingAs($user)
             ->patch(route('test-cases.update', $testCase), $payload);
 
-        // Then I should see the error message "Field wajib diisi"
+        // Then I should see the error message "This field is required."
         $response->assertSessionHasErrors([
-            'user_story' => 'Field wajib diisi.',
-            'acceptance_criteria' => 'Field wajib diisi.',
+            'user_story' => 'This field is required.',
+            'acceptance_criteria' => 'This field is required.',
         ], null, 'updateTestCase');
         expect($testCase->scenarios()->doesntExist())->toBeTrue();
     });

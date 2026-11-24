@@ -52,7 +52,7 @@ class ResetPasswordController extends Controller
 
         if ($status === Password::PasswordReset) {
             return redirect()->route('login')
-                ->with('status', 'Password berhasil diubah. Silakan login.');
+                ->with('status', 'Your password has been updated. Please sign in.');
         }
 
         return back()->withErrors([

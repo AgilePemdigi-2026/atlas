@@ -11,7 +11,7 @@
     <aside class="flex w-full flex-col gap-4 border-b border-edge bg-white p-4 min-[900px]:sticky min-[900px]:top-[72px] min-[900px]:max-h-[calc(100vh-72px)] min-[900px]:w-[280px] min-[900px]:overflow-y-auto min-[900px]:border-b-0 min-[1100px]:top-[88px] min-[1100px]:max-h-[calc(100vh-88px)] dark:border-slate-800 dark:bg-night">
     <div class="flex items-center justify-between gap-2">
         <h2 class="font-display text-sm font-semibold text-body dark:text-slate-100">Test Scenario</h2>
-        <button type="button" data-new-collection aria-label="Collection baru"
+        <button type="button" data-new-collection aria-label="New Collection"
             class="grid size-8 place-items-center rounded-lg border border-edge text-subtle transition hover:border-edge-strong hover:text-accent dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-indigo-300">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         </button>
@@ -21,7 +21,7 @@
         {{ $errors->createCollection->any() ? '' : 'hidden' }}
         class="flex items-center gap-1.5">
         @csrf
-        <input name="name" type="text" value="{{ old('name') }}" required maxlength="256" placeholder="Nama collection" aria-label="Nama collection"
+        <input name="name" type="text" value="{{ old('name') }}" required maxlength="256" placeholder="Collection Name" aria-label="Collection Name"
             class="h-8 min-w-0 flex-1 rounded-lg border border-edge bg-[#f8fafc] px-2.5 text-xs text-body outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-abyss dark:text-slate-100">
     </form>
 
@@ -38,7 +38,7 @@
 
             <div class="group/branch flex flex-col gap-1" data-branch>
                 <div class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px]/[1.55] font-semibold text-body transition hover:bg-surface dark:text-slate-100 dark:hover:bg-white/5">
-                    <button type="button" data-branch-toggle aria-expanded="{{ $isOpen ? 'true' : 'false' }}" aria-controls="branch-{{ $collection->getKey() }}" aria-label="Buka atau tutup {{ $collection->name }}"
+                    <button type="button" data-branch-toggle aria-expanded="{{ $isOpen ? 'true' : 'false' }}" aria-controls="branch-{{ $collection->getKey() }}" aria-label="Open or close {{ $collection->name }}"
                         class="grid size-5 flex-none place-items-center rounded text-subtle transition hover:text-accent dark:text-slate-400 dark:hover:text-indigo-300">
                         <svg data-chevron class="size-3.5 flex-none transition-transform {{ $isOpen ? 'rotate-90' : '' }}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="m6 4 4 4-4 4" />
@@ -56,27 +56,27 @@
                     <form method="POST" action="{{ route('collections.update', $collection) }}" data-rename hidden class="min-w-0 flex-1">
                         @csrf
                         @method('PATCH')
-                        <input name="name" type="text" value="{{ $collection->name }}" required maxlength="256" aria-label="Nama collection"
+                        <input name="name" type="text" value="{{ $collection->name }}" required maxlength="256" aria-label="Collection Name"
                             class="h-8 w-full rounded-lg border border-edge bg-[#f8fafc] px-2.5 text-xs font-normal text-body outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-abyss dark:text-slate-100">
                     </form>
                     <span class="flex-none text-[11px] font-medium text-subtle dark:text-slate-400">{{ $collection->testCases->count() }}</span>
                     <span class="relative flex-none" data-menu>
-                        <button type="button" data-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-label="Opsi {{ $collection->name }}"
+                        <button type="button" data-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-label="Options for {{ $collection->name }}"
                             class="grid size-6 place-items-center rounded-md text-subtle opacity-100 transition min-[900px]:opacity-0 min-[900px]:group-hover/branch:opacity-100 min-[900px]:group-focus-within/branch:opacity-100 hover:bg-surface hover:text-accent dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-indigo-300">
                             <svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
                         </button>
-                        <span data-menu-panel role="menu" aria-label="Opsi {{ $collection->name }}" hidden
+                        <span data-menu-panel role="menu" aria-label="Options for {{ $collection->name }}" hidden
                             class="absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-lg border border-edge bg-white p-1 shadow-[0_8px_24px_-12px_rgba(16,24,40,.25)] dark:border-slate-700 dark:bg-night">
                             <button type="button" role="menuitem" data-action="rename"
-                                class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-body transition hover:bg-surface dark:text-slate-200 dark:hover:bg-white/5">Ubah nama</button>
+                                class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-body transition hover:bg-surface dark:text-slate-200 dark:hover:bg-white/5">Rename</button>
                             <button type="button" role="menuitem" data-action="new-test-case"
-                                class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-body transition hover:bg-surface dark:text-slate-200 dark:hover:bg-white/5">Test case baru</button>
+                                class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-body transition hover:bg-surface dark:text-slate-200 dark:hover:bg-white/5">New Test Case</button>
                             <div class="my-1 h-px bg-edge dark:bg-slate-700" role="separator"></div>
                             <button type="button" role="menuitem" data-action="delete"
                                 data-delete-url="{{ route('collections.destroy', $collection) }}"
                                 data-delete-name="{{ $collection->name }}"
-                                data-delete-message="Collection ini beserta seluruh test case di dalamnya akan dihapus."
-                                class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-[#BA3D4A] transition hover:bg-surface dark:text-red-300 dark:hover:bg-white/5">Hapus collection</button>
+                                data-delete-message="This Collection and all of its Test Cases will be deleted."
+                                class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-[#BA3D4A] transition hover:bg-surface dark:text-red-300 dark:hover:bg-white/5">Delete Collection</button>
                         </span>
                     </span>
                 </div>
@@ -104,47 +104,47 @@
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="rename" value="1">
-                                <input name="name" type="text" value="{{ $testCase->name }}" required maxlength="256" aria-label="Nama test case"
+                                <input name="name" type="text" value="{{ $testCase->name }}" required maxlength="256" aria-label="Test Case Name"
                                     class="h-8 w-full rounded-lg border border-edge bg-[#f8fafc] px-2.5 text-xs text-body outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-abyss dark:text-slate-100">
                             </form>
                             <span class="relative flex-none" data-menu>
-                                <button type="button" data-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-label="Opsi {{ $testCase->name }}"
+                                <button type="button" data-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-label="Options for {{ $testCase->name }}"
                                     class="grid size-6 place-items-center rounded-md text-subtle opacity-100 transition min-[900px]:opacity-0 min-[900px]:group-hover/leaf:opacity-100 min-[900px]:group-focus-within/leaf:opacity-100 hover:bg-surface hover:text-accent dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-indigo-300">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
                                 </button>
-                                <span data-menu-panel role="menu" aria-label="Opsi {{ $testCase->name }}" hidden
+                                <span data-menu-panel role="menu" aria-label="Options for {{ $testCase->name }}" hidden
                                     class="absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-lg border border-edge bg-white p-1 shadow-[0_8px_24px_-12px_rgba(16,24,40,.25)] dark:border-slate-700 dark:bg-night">
                                     <button type="button" role="menuitem" data-action="rename"
-                                        class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-body transition hover:bg-surface dark:text-slate-200 dark:hover:bg-white/5">Ubah nama</button>
+                                        class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-body transition hover:bg-surface dark:text-slate-200 dark:hover:bg-white/5">Rename</button>
                                     <div class="my-1 h-px bg-edge dark:bg-slate-700" role="separator"></div>
                                     <button type="button" role="menuitem" data-action="delete"
                                         data-delete-url="{{ route('test-cases.destroy', $testCase) }}"
                                         data-delete-name="{{ $testCase->name }}"
-                                        data-delete-message="Test case ini beserta skenario, auth profile, dan hasil generate di dalamnya akan dihapus."
-                                        class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-[#BA3D4A] transition hover:bg-surface dark:text-red-300 dark:hover:bg-white/5">Hapus test case</button>
+                                        data-delete-message="This Test Case and its scenarios, Auth Profile, and generated results will be deleted."
+                                        class="w-full rounded-md px-2 py-1.5 text-left text-xs font-medium text-[#BA3D4A] transition hover:bg-surface dark:text-red-300 dark:hover:bg-white/5">Delete Test Case</button>
                                 </span>
                             </span>
                         </div>
                     @endforeach
 
                     @if ($collection->testCases->isEmpty())
-                        <p class="px-2 py-1 text-[11px] text-subtle dark:text-slate-400">Belum ada test case.</p>
+                        <p class="px-2 py-1 text-[11px] text-subtle dark:text-slate-400">No test cases yet.</p>
                     @endif
 
                     <form method="POST" action="{{ route('test-cases.store') }}" data-draft-composer hidden class="flex items-center gap-1.5 py-1">
                         @csrf
                         <input type="hidden" name="collection_id" value="{{ $collection->getKey() }}">
-                        <input name="name" type="text" required maxlength="256" placeholder="Nama test case" aria-label="Nama test case"
+                        <input name="name" type="text" required maxlength="256" placeholder="Test Case Name" aria-label="Test Case Name"
                             class="h-8 min-w-0 flex-1 rounded-lg border border-edge bg-[#f8fafc] px-2.5 text-xs text-body outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-slate-700 dark:bg-abyss dark:text-slate-100">
                     </form>
                 </div>
             </div>
         @empty
-            <p class="px-1.5 py-1 text-[11px] text-subtle dark:text-slate-400">Belum ada collection.</p>
+            <p class="px-1.5 py-1 text-[11px] text-subtle dark:text-slate-400">No collections yet.</p>
         @endforelse
     </div>
 
-    <p class="text-[11px]/[1.55] text-subtle dark:text-slate-400">Pilih test case untuk melihat cerita dan hasil sebelumnya.</p>
+    <p class="text-[11px]/[1.55] text-subtle dark:text-slate-400">Select a test case to view its history and previous results.</p>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -314,7 +314,7 @@
                     return;
                 }
 
-                deleteTitle.textContent = 'Hapus "' + item.dataset.deleteName + '"?';
+                deleteTitle.textContent = 'Delete "' + item.dataset.deleteName + '"?';
                 deleteCopy.textContent = item.dataset.deleteMessage;
                 deleteForm.dataset.action = item.dataset.deleteUrl;
                 deleteReturnFocus = trigger;
@@ -588,13 +588,13 @@
     <div data-delete-modal hidden class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
         <div role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-message"
             class="w-full max-w-sm rounded-2xl border border-edge bg-white p-5 shadow-[0_16px_40px_-16px_rgba(16,24,40,.3)] dark:border-slate-700 dark:bg-night">
-            <h2 id="delete-dialog-title" class="text-sm font-semibold text-body dark:text-white">Hapus item?</h2>
+            <h2 id="delete-dialog-title" class="text-sm font-semibold text-body dark:text-white">Delete item?</h2>
             <p id="delete-dialog-message" data-delete-copy class="mt-2 text-xs/[1.55] text-subtle dark:text-slate-400"></p>
             <div class="mt-5 flex justify-end gap-2">
                 <button type="button" data-delete-cancel
-                    class="h-8 rounded-lg border border-edge bg-white px-3 text-xs font-semibold text-body transition hover:bg-surface dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-white/5">Batal</button>
+                    class="h-8 rounded-lg border border-edge bg-white px-3 text-xs font-semibold text-body transition hover:bg-surface dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-white/5">Cancel</button>
                 <button type="button" data-delete-confirm
-                    class="h-8 rounded-lg bg-[#BA3D4A] px-3 text-xs font-semibold text-white transition hover:opacity-90">Hapus</button>
+                    class="h-8 rounded-lg bg-[#BA3D4A] px-3 text-xs font-semibold text-white transition hover:opacity-90">Delete</button>
             </div>
         </div>
     </div>

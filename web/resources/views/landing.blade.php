@@ -59,7 +59,7 @@
                 <div class="flex flex-col gap-4 rounded-[25px] bg-white p-5 dark:bg-abyss">
                     <div class="text-xs/[1.55] font-semibold text-[#4958BB] dark:text-indigo-300">USER STORY</div>
                     <h3 class="text-xl/6 tracking-[-.02em] text-[#202638] dark:text-white">Generate Test Case Script</h3>
-                    <p class="font-mono text-xs/[1.55] text-[#202638] dark:text-slate-200">Scenario: Successful Script Generation<br>Given I am logged in and on the "Test Case" page<br>And I fill in the User Story / Acceptance Criteria and optional Base URL<br>When I press the "Generate" button<br>Then I should see a confirmation that the script was successfully generated<br>And I should still in “Test Case” page</p>
+                    <p class="font-mono text-xs/[1.55] text-[#202638] dark:text-slate-200">Scenario: Successful Script Generation<br>Given I am logged in and on the "Test Case" page<br>And I fill in the User Story / Acceptance Criteria and optional Base URL<br>When I press the "Generate" button<br>Then I should see a confirmation that the script was successfully generated<br>And I should still be on the "Test Case" page</p>
                     <a href="#signup" class="grid h-11 place-items-center rounded-md bg-[#4958BB] text-sm font-semibold text-white shadow-[inset_0_4px_10px_rgba(0,0,0,.23)] transition hover:brightness-110">Generate Test</a>
                 </div>
             </div>

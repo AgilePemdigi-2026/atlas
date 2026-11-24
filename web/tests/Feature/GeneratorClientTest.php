@@ -64,7 +64,7 @@ test('an auth-layer body does not leak detail and maps to service copy', functio
 
     $result = sampleGeneratorClient()->send(sampleGenerateRequest());
 
-    expect($result->copy)->toBe('Proses generate gagal, layanan tidak tersedia.');
+    expect($result->copy)->toBe('Test generation failed because the service is unavailable.');
 });
 
 test('a connection failure maps to service copy', function () {
@@ -74,5 +74,5 @@ test('a connection failure maps to service copy', function () {
     $result = sampleGeneratorClient()->send(sampleGenerateRequest());
 
     expect($result->ok)->toBeFalse()
-        ->and($result->copy)->toBe('Proses generate gagal, layanan tidak tersedia.');
+        ->and($result->copy)->toBe('Test generation failed because the service is unavailable.');
 });

@@ -48,7 +48,7 @@ test('the owner sees the script and scenario urls on the console', function () {
 test('a draft without output tells the user the script is not ready', function () {
     $user = User::factory()->create();
     $testCase = Collection::factory()->for($user)->create()->testCases()->create([
-        'name' => 'Belum digenerate',
+        'name' => 'Not generated yet',
         'user_story' => 'Sebagai pengguna, saya ingin masuk.',
         'status' => 'pending',
     ]);
@@ -56,7 +56,7 @@ test('a draft without output tells the user the script is not ready', function (
     $this->actingAs($user)
         ->get(route('console', ['test_case' => $testCase->getKey()]))
         ->assertOk()
-        ->assertSee('Belum ada hasil test case.');
+        ->assertSee('No Test Case results yet.');
 });
 
 test('the console opens the requested result tab', function () {

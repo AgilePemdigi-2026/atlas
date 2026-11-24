@@ -96,7 +96,7 @@ test('a service failure maps to copy and marks failed', function () {
         'collection' => $testCase->collection_id,
         'tab' => 'scenario',
     ]));
-    $response->assertSessionHasErrors(['generate' => 'Proses generate gagal, layanan tidak tersedia.']);
+    $response->assertSessionHasErrors(['generate' => 'Test generation failed because the service is unavailable.']);
     expect($testCase->fresh()->status->value)->toBe('failed')
         ->and($testCase->fresh()->llmOutput->validation_status->value)->toBe('invalid');
 });

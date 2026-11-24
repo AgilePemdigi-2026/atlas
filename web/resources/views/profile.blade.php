@@ -62,19 +62,19 @@
 
                     <div class="flex flex-col gap-2">
                         <h2 class="text-2xl/[1.2] text-body dark:text-white">Test History</h2>
-                        <p class="text-sm/[1.55] text-subtle dark:text-slate-400">Riwayat hasil generate skrip Anda. Completed berarti skrip berhasil dibuat, bukan hasil eksekusi pengujian.</p>
+                        <p class="text-sm/[1.55] text-subtle dark:text-slate-400">A history of your generated scripts. Completed means the script was generated successfully, not that the test was executed.</p>
                     </div>
 
                     <div class="overflow-x-auto rounded-md border border-line dark:border-slate-700">
                         <div class="min-w-[560px]">
                             <div class="flex items-start gap-6 bg-surface p-4 text-xs/[1.55] font-semibold text-body dark:bg-abyss dark:text-slate-100">
-                                <div class="min-w-0 flex-1">Test-case name</div>
+                                <div class="min-w-0 flex-1">Test Case Name</div>
                                 <div class="w-[110px] flex-none">Status</div>
-                                <div class="w-[210px] flex-none">Dibuat</div>
+                                <div class="w-[210px] flex-none">Created</div>
                             </div>
 
                             @if ($historyError)
-                                <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Data tidak dapat dimuat saat ini</p>
+                                <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Unable to load data right now.</p>
                             @else
                                 @forelse ($testCases as $case)
                                     @php $style = $statusStyles[$case->status->value]; @endphp
@@ -82,18 +82,18 @@
                                         class="flex items-center gap-6 border-t border-line p-4 transition hover:bg-surface dark:border-slate-700 dark:hover:bg-white/5">
                                     <div class="flex min-w-0 flex-1 flex-col gap-1.5">
                                         <p class="text-sm/[1.55] font-semibold break-words text-body dark:text-white">{{ $case->name }}</p>
-                                        <p class="truncate text-xs/[1.55] text-subtle dark:text-slate-400">{{ $case->scenarios_count }} skenario{{ $case->base_url ? ' · ' . $case->base_url : '' }}</p>
+                                        <p class="truncate text-xs/[1.55] text-subtle dark:text-slate-400">Scenario count: {{ $case->scenarios_count }}{{ $case->base_url ? ' · ' . $case->base_url : '' }}</p>
                                     </div>
                                     <div class="w-[110px] flex-none">
                                         <span class="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium {{ $style['badge'] }}">
                                             <span class="size-[5px] rounded-full {{ $style['dot'] }}"></span>{{ $style['label'] }}
                                         </span>
                                     </div>
-                                    <div class="w-[210px] flex-none font-mono text-[11px]/[1.55] text-subtle dark:text-slate-400">{{ $case->created_at->timezone('Asia/Jakarta')->locale('id')->translatedFormat('d M Y · H.i') }}</div>
+                                    <div class="w-[210px] flex-none font-mono text-[11px]/[1.55] text-subtle dark:text-slate-400">{{ $case->created_at->timezone('Asia/Jakarta')->locale('en')->translatedFormat('d M Y · H.i') }}</div>
                                 </div>
                                     </a>
                                 @empty
-                                    <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">Belum ada riwayat test case.</p>
+                                    <p class="border-t border-line p-6 text-center text-sm text-subtle dark:border-slate-700 dark:text-slate-400">No Test Case history yet.</p>
                                 @endforelse
                             @endif
                         </div>
@@ -101,25 +101,25 @@
 
                     @if ($testCases !== null && $testCases->total() > 0)
                         <div class="flex flex-col gap-3 min-[700px]:flex-row min-[700px]:items-center min-[700px]:justify-between">
-                            <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Menampilkan {{ $testCases->firstItem() }}–{{ $testCases->lastItem() }} dari {{ $testCases->total() }} hasil</p>
+                            <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Showing {{ $testCases->firstItem() }}–{{ $testCases->lastItem() }} of {{ $testCases->total() }} results</p>
 
-                            <nav aria-label="Halaman riwayat" class="flex gap-2">
+                            <nav aria-label="Test history pages" class="flex gap-2">
                                 @if ($testCases->onFirstPage())
                                     <span class="{{ $pageOff }}" aria-disabled="true">‹</span>
                                 @else
-                                    <a href="{{ $testCases->previousPageUrl() }}" aria-label="Halaman sebelumnya" class="{{ $pageLink }}">‹</a>
+                                    <a href="{{ $testCases->previousPageUrl() }}" aria-label="Previous page" class="{{ $pageLink }}">‹</a>
                                 @endif
 
                                 @foreach ($pageUrls as $page => $url)
                                     @if ($page === $current)
                                         <span class="{{ $pageOn }}" aria-current="page">{{ $page }}</span>
                                     @else
-                                        <a href="{{ $url }}" aria-label="Halaman {{ $page }}" class="{{ $pageLink }}">{{ $page }}</a>
+                                        <a href="{{ $url }}" aria-label="Page {{ $page }}" class="{{ $pageLink }}">{{ $page }}</a>
                                     @endif
                                 @endforeach
 
                                 @if ($testCases->hasMorePages())
-                                    <a href="{{ $testCases->nextPageUrl() }}" aria-label="Halaman berikutnya" class="{{ $pageLink }}">›</a>
+                                    <a href="{{ $testCases->nextPageUrl() }}" aria-label="Next page" class="{{ $pageLink }}">›</a>
                                 @else
                                     <span class="{{ $pageOff }}" aria-disabled="true">›</span>
                                 @endif
@@ -138,8 +138,8 @@
                         ];
 
                         $notifications = [
-                            ['id' => 'notify-success', 'title' => 'Skrip berhasil dibuat', 'text' => 'Pemberitahuan saat hasil siap direview.', 'on' => true],
-                            ['id' => 'notify-failed', 'title' => 'Generate gagal', 'text' => 'Pemberitahuan jika proses tidak selesai.', 'on' => false],
+                            ['id' => 'notify-success', 'title' => 'Script generated successfully', 'text' => 'Notification when results are ready for review.', 'on' => true],
+                            ['id' => 'notify-failed', 'title' => 'Generation failed', 'text' => 'Notification if generation does not complete.', 'on' => false],
                         ];
                     @endphp
 
@@ -174,7 +174,7 @@
                                 @endforeach
                             </div>
 
-                            <button type="submit" class="h-11 w-full rounded-md bg-accent px-5 text-sm font-semibold text-white hover:opacity-95 min-[700px]:w-[200px]">Simpan perubahan</button>
+                            <button type="submit" class="h-11 w-full rounded-md bg-accent px-5 text-sm font-semibold text-white hover:opacity-95 min-[700px]:w-[200px]">Save Changes</button>
                         </form>
                     </div>
 
@@ -199,10 +199,10 @@
                         <h2 class="text-xl/6 text-body dark:text-white">API / Integrations</h2>
 
                         <div class="flex flex-col gap-2">
-                            <label for="script-format" class="text-sm/[1.55] font-semibold text-body dark:text-slate-100">Format skrip</label>
+                            <label for="script-format" class="text-sm/[1.55] font-semibold text-body dark:text-slate-100">Script Format</label>
                             <input id="script-format" type="text" value="Selenium 4 · Python 3" readonly
                                 class="h-11 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-body outline-none dark:border-slate-600 dark:bg-abyss dark:text-slate-200">
-                            <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Unduh skrip dari Console untuk dijalankan di lingkungan pengujian Anda.</p>
+                            <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Download the script from the Console to run it in your testing environment.</p>
                         </div>
                     </div>
 
@@ -211,10 +211,10 @@
 
                         <div class="flex flex-col gap-5 rounded-md border border-[#EBC1C7] bg-[#FFF1F2] p-5 min-[700px]:flex-row min-[700px]:items-center dark:border-red-900/60 dark:bg-red-950/30">
                             <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-                                <p class="text-sm/[1.55] font-semibold text-[#BA3D4A] dark:text-red-300">Tindakan ini permanen.</p>
-                                <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Akun, profil auth, dan seluruh riwayat test case akan dihapus. Data tidak dapat dipulihkan.</p>
+                                <p class="text-sm/[1.55] font-semibold text-[#BA3D4A] dark:text-red-300">This action is permanent.</p>
+                                <p class="text-xs/[1.55] text-subtle dark:text-slate-400">Your account, Auth Profile, and all Test Case history will be deleted. This data cannot be recovered.</p>
                             </div>
-                            <form method="POST" action="{{ route('profile.destroy') }}" onsubmit="return confirm('Hapus akun secara permanen? Seluruh data akan hilang dan tidak dapat dipulihkan.')" class="w-full flex-none min-[700px]:w-[180px]">
+                            <form method="POST" action="{{ route('profile.destroy') }}" onsubmit="return confirm('Permanently delete your account? All data will be lost and cannot be recovered.')" class="w-full flex-none min-[700px]:w-[180px]">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="h-11 w-full rounded-md border border-[#BA3D4A] bg-white text-sm font-semibold text-[#BA3D4A] hover:bg-[#FFF1F2] dark:border-red-400 dark:bg-transparent dark:text-red-300 dark:hover:bg-red-950/40">Delete Account</button>
