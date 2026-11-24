@@ -29,7 +29,7 @@ class TestCaseController extends Controller
             'name' => ['required', 'string', 'max:256'],
             'collection_id' => ['nullable', 'integer'],
         ], [
-            'name.required' => 'Field wajib diisi.',
+            'name.required' => 'This field is required.',
         ]);
 
         $user = $request->user();
@@ -48,7 +48,7 @@ class TestCaseController extends Controller
                 'test_case' => $testCase->getKey(),
                 'focus' => 1,
             ])
-            ->with('status', 'Test case berhasil dibuat.');
+            ->with('status', 'Test Case created successfully.');
     }
 
     public function update(Request $request, TestCase $testCase): RedirectResponse
@@ -59,7 +59,7 @@ class TestCaseController extends Controller
             $validated = $request->validateWithBag('renameTestCase', [
                 'name' => ['required', 'string', 'max:256'],
             ], [
-                'name.required' => 'Field wajib diisi.',
+                'name.required' => 'This field is required.',
             ]);
 
             $testCase->update($validated);
@@ -69,21 +69,21 @@ class TestCaseController extends Controller
                     'collection' => $testCase->collection_id,
                     'test_case' => $testCase->getKey(),
                 ])
-                ->with('status', 'Nama test case diperbarui.');
+                ->with('status', 'Test Case name updated.');
         }
 
         if (! $request->has('user_story')) {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:256'],
             ], [
-                'name.required' => 'Field wajib diisi.',
+                'name.required' => 'This field is required.',
             ]);
 
             $testCase->update($validated);
 
             return redirect()
                 ->route('console', ['test_case' => $testCase->getKey()])
-                ->with('status', 'Nama test case diperbarui.');
+                ->with('status', 'Test Case name updated.');
         }
 
         $validated = $request->validateWithBag('updateTestCase', [
@@ -92,9 +92,9 @@ class TestCaseController extends Controller
             'acceptance_criteria' => ['required', 'string'],
             'base_url' => ['nullable', 'url'],
         ], [
-            'name.required' => 'Field wajib diisi.',
-            'user_story.required' => 'Field wajib diisi.',
-            'acceptance_criteria.required' => 'Field wajib diisi.',
+            'name.required' => 'This field is required.',
+            'user_story.required' => 'This field is required.',
+            'acceptance_criteria.required' => 'This field is required.',
         ]);
 
         $notice = $this->applyStory($testCase, $validated);
@@ -105,7 +105,7 @@ class TestCaseController extends Controller
                 'collection' => $testCase->collection_id,
                 'tab' => 'scenario',
             ])
-            ->with('status', 'Test case diperbarui.');
+            ->with('status', 'Test Case updated.');
 
         return $notice === null ? $redirect : $redirect->withErrors(['sync' => $notice]);
     }
@@ -120,7 +120,7 @@ class TestCaseController extends Controller
 
         return redirect()
             ->route('console', ['collection' => $collectionId])
-            ->with('status', 'Test case dihapus.');
+            ->with('status', 'Test Case deleted.');
     }
 
 
@@ -158,7 +158,7 @@ class TestCaseController extends Controller
             }
         }
 
-        return 'Sinkronisasi gagal, daftar skenario tidak diubah.';
+        return 'Synchronization failed. The scenario list remains unchanged.';
     }
 
     public function scenarioUrls(TestCase $testCase): RedirectResponse
@@ -182,9 +182,9 @@ class TestCaseController extends Controller
             'scenarios.*.name' => ['sometimes', 'required', 'string', 'max:256'],
             'scenarios.*.scenario_url' => ['required', 'url'],
         ], [
-            'scenarios.*.name.required' => 'Field wajib diisi.',
-            'scenarios.*.scenario_url.required' => 'Field wajib diisi.',
-            'scenarios.*.scenario_url.url' => 'Format URL tidak valid.',
+            'scenarios.*.name.required' => 'This field is required.',
+            'scenarios.*.scenario_url.required' => 'This field is required.',
+            'scenarios.*.scenario_url.url' => 'Please enter a valid URL.',
         ]);
 
         foreach ($validated['scenarios'] as $row) {
@@ -222,7 +222,7 @@ class TestCaseController extends Controller
                 'collection' => $testCase->collection_id,
                 'tab' => 'script',
             ])
-            ->with('status', 'Test case berhasil dibuat.');
+            ->with('status', 'Test Case created successfully.');
     }
 
     public function show(TestCase $testCase): RedirectResponse

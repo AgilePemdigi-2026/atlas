@@ -65,7 +65,7 @@ describe('F8 Scenario URL Table', function () {
             ->assertSee('Gagal bayar')
             ->assertSee('name="scenarios[0][scenario_url]"', false)
             ->assertSee('name="scenarios[1][scenario_url]"', false)
-            ->assertSee('Lanjut &amp; Generate', false);
+            ->assertSee('Continue &amp; Generate', false);
     });
 
     test('Confirm pre-filled scenario URLs', function () {
@@ -103,7 +103,7 @@ describe('F8 Scenario URL Table', function () {
                 scenarioUrlPayload($testCase, ['bukan-url', 'https://app.example.com/login']),
             )
             ->assertOk()
-            ->assertSee('Format URL tidak valid.');
+            ->assertSee('Please enter a valid URL.');
     });
 
     test('Reject an invalid scenario URL', function () {
@@ -118,9 +118,9 @@ describe('F8 Scenario URL Table', function () {
             scenarioUrlPayload($testCase, ['', 'https://app.example.com/login']),
         );
 
-        // Then I should see "Field wajib diisi."
+        // Then I should see "This field is required."
         $response->assertSessionHasErrors([
-            'scenarios.0.scenario_url' => 'Field wajib diisi.',
+            'scenarios.0.scenario_url' => 'This field is required.',
         ]);
 
         // When I submit a row with a malformed URL
@@ -129,9 +129,9 @@ describe('F8 Scenario URL Table', function () {
             scenarioUrlPayload($testCase, ['bukan-url', 'https://app.example.com/login']),
         );
 
-        // Then I should see "Format URL tidak valid."
+        // Then I should see "Please enter a valid URL."
         $response->assertSessionHasErrors([
-            'scenarios.0.scenario_url' => 'Format URL tidak valid.',
+            'scenarios.0.scenario_url' => 'Please enter a valid URL.',
         ]);
 
         // And the service is never called

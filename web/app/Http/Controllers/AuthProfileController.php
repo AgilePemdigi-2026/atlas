@@ -36,7 +36,7 @@ class AuthProfileController extends Controller
         );
 
         return response()->json([
-            'message' => 'Auth Profile berhasil disimpan.',
+            'message' => 'Auth Profile saved successfully.',
             'data' => [
                 'auth_profile_id' => $profile->getKey(),
                 'test_case_id' => $testCase->getKey(),
@@ -54,7 +54,7 @@ class AuthProfileController extends Controller
         $testCase->authProfile()->delete();
 
         return response()->json([
-            'message' => 'Auth Profile dihapus. Test Case sekarang menggunakan No Auth.',
+            'message' => 'Auth Profile removed. This Test Case now uses No Auth.',
         ]);
     }
 }

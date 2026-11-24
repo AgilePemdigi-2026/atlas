@@ -5,6 +5,7 @@ namespace App\Services\Generator;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 final class GeneratorClient
 {
@@ -15,8 +16,9 @@ final class GeneratorClient
     ) {}
 
     /**
-     * One call to `POST /v1/generate`. Never retries: the service owns the retry
-     * loop and reports it through `meta.attempts`.
+     * One call to POST /v1/generate.
+     * Never retries: the service owns the retry loop
+     * and reports it through meta.attempts.
      */
     public function send(GenerateRequest $request): GeneratorResult
     {
@@ -27,8 +29,19 @@ final class GeneratorClient
             ])
                 ->connectTimeout(10)
                 ->timeout($this->timeout)
-                ->post(rtrim($this->url, '/').'/v1/generate', $request->toPayload());
-        } catch (ConnectionException) {
+                ->post(
+                    rtrim($this->url, '/') . '/v1/generate',
+                    $request->toPayload()
+                );
+
+        } catch (ConnectionException $exception) {
+
+            Log::error('ATLAS generator connection failed', [
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+                'endpoint_host' => parse_url($this->url, PHP_URL_HOST),
+            ]);
+
             return new GeneratorResult(
                 ok: false,
                 payload: null,
@@ -43,7 +56,10 @@ final class GeneratorClient
     private function interpret(Response $response): GeneratorResult
     {
         $body = $response->json();
-        $body = is_array($body) ? $body : ['detail' => $response->body()];
+
+        $body = is_array($body)
+            ? $body
+            : ['detail' => $response->body()];
 
         $code = $body['error']['code'] ?? null;
         $script = $body['data']['script'] ?? null;
@@ -53,11 +69,28 @@ final class GeneratorClient
             && is_string($script)
             && $script !== '';
 
+        if (! $ok) {
+            Log::warning(
+                'ATLAS generator returned an unsuccessful response',
+                [
+                    'http_status' => $response->status(),
+                    'error_code' => is_string($code) ? $code : null,
+                    'response_status' => $body['status'] ?? null,
+                    'has_script' => is_string($script) && $script !== '',
+                ]
+            );
+        }
+
         return new GeneratorResult(
             ok: $ok,
             payload: $ok ? $body : null,
             error: $ok ? null : $body,
-            copy: $ok ? '' : ErrorCopy::for(is_string($code) ? $code : '', $response->status()),
+            copy: $ok
+                ? ''
+                : ErrorCopy::for(
+                    is_string($code) ? $code : '',
+                    $response->status()
+                ),
         );
     }
 }

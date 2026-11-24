@@ -40,7 +40,7 @@
                         class="auth-input @if (!empty($field['toggle'])) pr-11 @endif @error($field['name']) border-red-500 @enderror"
                     >
                     @if (!empty($field['toggle']))
-                        <button type="button" aria-label="Tampilkan atau sembunyikan password"
+                        <button type="button" aria-label="Show or hide password"
                             onclick="const i = document.getElementById('{{ $field['name'] }}'); i.type = i.type === 'password' ? 'text' : 'password'"
                             class="absolute top-1/2 right-3 grid size-8 -translate-y-1/2 place-items-center text-[#38714D] dark:text-emerald-300">
                             <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>

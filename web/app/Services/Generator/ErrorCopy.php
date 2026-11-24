@@ -4,21 +4,21 @@ namespace App\Services\Generator;
 
 final class ErrorCopy
 {
-    private const SERVICE_UNAVAILABLE = 'Proses generate gagal, layanan tidak tersedia.';
+    private const SERVICE_UNAVAILABLE = 'Test generation failed because the service is unavailable.';
 
-    private const GENERIC_FAILURE = 'Gagal menghasilkan script. Coba lagi atau periksa isian skenario Anda.';
+    private const GENERIC_FAILURE = 'Failed to generate the script. Try again or review your scenario details.';
 
-    private const AUTH_FAILED = 'Gagal login. Periksa kredensial atau Login URL.';
+    private const AUTH_FAILED = 'Login failed. Check your credentials or Login URL.';
 
     /**
-     * Machine-facing service error codes mapped to frozen Indonesian copy.
+     * Machine-facing service error codes mapped to user-facing copy.
      *
      * @var array<string, string>
      */
     private const MAP = [
-        'invalid_input' => 'Field wajib diisi.',
-        'missing_field' => 'Field wajib diisi.',
-        'invalid_url' => 'Format URL tidak valid.',
+        'invalid_input' => 'This field is required.',
+        'missing_field' => 'This field is required.',
+        'invalid_url' => 'Please enter a valid URL.',
         'auth_failed' => self::AUTH_FAILED,
         'llm_timeout' => self::SERVICE_UNAVAILABLE,
         'llm_unavailable' => self::SERVICE_UNAVAILABLE,
@@ -39,7 +39,7 @@ final class ErrorCopy
         }
 
         if ($code === 'invalid_url' && $status !== 422) {
-            return 'URL tidak dapat diakses.';
+            return 'The URL could not be reached.';
         }
 
         return self::MAP[$code] ?? self::SERVICE_UNAVAILABLE;

@@ -48,10 +48,10 @@ describe('F2 Login', function () {
         // When I press the "Login" button
         $response = $this->from(route('login'))->post(route('login'), $payload);
 
-        // Then I should see the error message "Field wajib diisi"
+        // Then I should see the error message "This field is required."
         $response->assertSessionHasErrors([
-            'email' => 'Field wajib diisi.',
-            'password' => 'Field wajib diisi.',
+            'email' => 'This field is required.',
+            'password' => 'This field is required.',
         ]);
 
         // And I should remain on the "/login" page
@@ -70,8 +70,8 @@ describe('F2 Login', function () {
         // When I press the "Login" button
         $response = $this->from(route('login'))->post(route('login'), $payload);
 
-        // Then I should see the error message "Email atau password salah"
-        $response->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+        // Then I should see the error message "The email address or password is incorrect."
+        $response->assertSessionHasErrors(['email' => 'The email address or password is incorrect.']);
 
         // And I should remain on the "/login" page
         $response->assertRedirect(route('login'));
@@ -85,8 +85,8 @@ describe('F2 Login', function () {
         // When I press the "Login" button
         $response = $this->from(route('login'))->post(route('login'), loginInput());
 
-        // Then I should see the error message "Kredensial salah"
-        $response->assertSessionHasErrors(['email' => 'Kredensial salah']);
+        // Then I should see the error message "Invalid credentials."
+        $response->assertSessionHasErrors(['email' => 'Invalid credentials.']);
 
         // And I should remain on the "/login" page
         $response->assertRedirect(route('login'));
@@ -104,8 +104,8 @@ describe('F2 Login', function () {
         // When I press the "Login" button
         $response = $this->from(route('login'))->post(route('login'), loginInput());
 
-        // Then I should see the error message "Login tidak dapat diproses saat ini"
-        $response->assertSessionHasErrors(['email' => 'Login tidak dapat diproses saat ini']);
+        // Then I should see the error message "Login cannot be processed right now."
+        $response->assertSessionHasErrors(['email' => 'Login cannot be processed right now.']);
 
         // And I should remain on the "/login" page
         $response->assertRedirect(route('login'));

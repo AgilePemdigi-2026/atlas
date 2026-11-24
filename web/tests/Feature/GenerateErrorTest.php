@@ -56,13 +56,13 @@ describe('F13 Error Handling for Generate', function () {
 
         $this->actingAs($user)
             ->post(route('test-cases.scenario-urls.generate', $testCase), failedGeneratePayload($testCase))
-            // Then I should see the error message "URL tidak dapat diakses"
+            // Then I should see the error message "The URL could not be reached."
             ->assertRedirect(route('console', [
                 'test_case' => $testCase->getKey(),
                 'collection' => $testCase->collection_id,
                 'tab' => 'scenario',
             ]))
-            ->assertSessionHasErrors(['generate' => 'URL tidak dapat diakses.']);
+            ->assertSessionHasErrors(['generate' => 'The URL could not be reached.']);
         // And the test case status is "failed"
         expect($testCase->fresh()->status->value)->toBe('failed');
     });
@@ -82,13 +82,13 @@ describe('F13 Error Handling for Generate', function () {
 
         $this->actingAs($user)
             ->post(route('test-cases.scenario-urls.generate', $testCase), failedGeneratePayload($testCase))
-            // Then I should see the error message "Proses generate gagal, layanan tidak tersedia"
+            // Then I should see the error message "Test generation failed because the service is unavailable."
             ->assertRedirect(route('console', [
                 'test_case' => $testCase->getKey(),
                 'collection' => $testCase->collection_id,
                 'tab' => 'scenario',
             ]))
-            ->assertSessionHasErrors(['generate' => 'Proses generate gagal, layanan tidak tersedia.']);
+            ->assertSessionHasErrors(['generate' => 'Test generation failed because the service is unavailable.']);
         // And the test case status is "failed"
         expect($testCase->fresh()->status->value)->toBe('failed');
     });
@@ -113,7 +113,7 @@ describe('F13 Error Handling for Generate', function () {
                 'collection' => $testCase->collection_id,
                 'tab' => 'scenario',
             ]))
-            ->assertSessionHasErrors(['generate' => 'Gagal menghasilkan script. Coba lagi atau periksa isian skenario Anda.']);
+            ->assertSessionHasErrors(['generate' => 'Failed to generate the script. Try again or review your scenario details.']);
         // And the test case status is "failed"
         expect($testCase->fresh()->status->value)->toBe('failed');
     });
@@ -131,13 +131,13 @@ describe('F13 Error Handling for Generate', function () {
 
         $this->actingAs($user)
             ->post(route('test-cases.scenario-urls.generate', $testCase), failedGeneratePayload($testCase))
-            // Then I should see the error message "Gagal login. Periksa kredensial atau Login URL."
+            // Then I should see the error message "Login failed. Check your credentials or Login URL."
             ->assertRedirect(route('console', [
                 'test_case' => $testCase->getKey(),
                 'collection' => $testCase->collection_id,
                 'tab' => 'scenario',
             ]))
-            ->assertSessionHasErrors(['generate' => 'Gagal login. Periksa kredensial atau Login URL.']);
+            ->assertSessionHasErrors(['generate' => 'Login failed. Check your credentials or Login URL.']);
         // And the test case status is "failed"
         expect($testCase->fresh()->status->value)->toBe('failed');
     });
