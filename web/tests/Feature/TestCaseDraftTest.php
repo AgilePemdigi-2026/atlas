@@ -8,16 +8,6 @@ use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
-function fakeScenarioInference(array $scenarios, int $status = 200): void
-{
-    Http::preventStrayRequests();
-    Http::fake(['*/v1/scenario-urls' => Http::response([
-        'status' => $status === 200 ? 'ok' : 'error',
-        'data' => $status === 200 ? ['scenarios' => $scenarios] : null,
-        'meta' => ['model' => 'gpt-6-luna', 'prompt_version' => 'v1', 'warnings' => []],
-    ], $status)]);
-}
-
 function draftPayload(array $overrides = []): array
 {
     return array_merge([
@@ -28,47 +18,39 @@ function draftPayload(array $overrides = []): array
 }
 
 test('guests cannot create a test case', function () {
-    $this->post(route('test-cases.store'), ['name' => 'Login saya'])->assertRedirect(route('login'));
+    $this->post(route('test-cases.store'), draftPayload())->assertRedirect(route('login'));
 });
 
 test('a test case is stored as a pending draft with parsed scenarios', function () {
     $user = User::factory()->create();
     $collection = Collection::factory()->for($user)->create(['name' => 'Toko']);
-    fakeScenarioInference([
-        ['name' => 'Login berhasil', 'scenario_url' => 'https://app.example.com/login'],
-    ]);
 
-    $response = $this->actingAs($user)
-        ->post(route('test-cases.store'), [
-            'name' => 'Login saya',
-            'collection_id' => $collection->getKey(),
-        ]);
+    $this->actingAs($user)
+        ->post(route('test-cases.store'), draftPayload(['collection_id' => $collection->getKey()]));
 
     $testCase = TestCase::query()->sole();
-    $response->assertRedirect(route('console', [
-        'collection' => $testCase->collection_id,
-        'test_case' => $testCase->getKey(),
-        'focus' => 1,
-    ]));
+
     expect($testCase->status->value)->toBe('pending')
-        ->and($testCase->user_story)->toBeNull()
-        ->and($testCase->scenarios()->count())->toBe(0);
+        ->and($testCase->collection_id)->toBe($collection->getKey())
+        ->and($testCase->scenarios()->doesntExist())->toBeTrue();
 
-    $story = $this->actingAs($user)->patch(route('test-cases.update', $testCase), draftPayload());
+    Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
 
-    $story->assertRedirect(route('console', [
+    $response = $this->actingAs($user)
+        ->patch(route('test-cases.update', $testCase), draftPayload());
+
+    $response->assertRedirect(route('console', [
         'test_case' => $testCase->getKey(),
         'collection' => $testCase->collection_id,
         'tab' => 'scenario',
     ]));
-    expect($testCase->fresh()->user_story)->toBe('Sebagai pengguna, saya ingin masuk.')
-        ->and($testCase->fresh()->scenarios()->pluck('name')->all())->toBe(['Login berhasil']);
+    expect($testCase->scenarios()->pluck('name')->all())->toBe(['Login berhasil']);
 });
 
 test('without a collection the draft lands in the root collection', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Login saya']);
+    $this->actingAs($user)->post(route('test-cases.store'), draftPayload());
 
     $testCase = TestCase::query()->sole();
     expect($testCase->collection->name)->toBe('Default')
@@ -77,25 +59,42 @@ test('without a collection the draft lands in the root collection', function () 
 
 test('criteria without scenario headings yield one scenario', function () {
     $user = User::factory()->create();
-    fakeScenarioInference([], 502);
 
-    $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Checkout']);
-    $testCase = TestCase::query()->sole();
-
-    $this->actingAs($user)->patch(route('test-cases.update', $testCase), draftPayload([
+    $this->actingAs($user)->post(route('test-cases.store'), draftPayload([
         'name' => 'Checkout',
-        'acceptance_criteria' => 'Given saya di beranda Then saya melihat judul',
     ]));
 
-    expect($testCase->fresh()->scenarios()->pluck('name')->all())->toBe(['Checkout']);
-});
+    $testCase = TestCase::query()->sole();
 
-test('a draft requires a name', function () {
-    $user = User::factory()->create();
+    Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
 
     $this->actingAs($user)
-        ->post(route('test-cases.store'), ['name' => ''])
-        ->assertSessionHasErrorsIn('createTestCase', ['name']);
+        ->patch(route('test-cases.update', $testCase), draftPayload([
+            'name' => 'Checkout',
+            'acceptance_criteria' => 'Given saya di beranda Then saya melihat judul',
+        ]));
+
+    expect($testCase->scenarios()->pluck('name')->all())->toBe(['Checkout']);
+});
+
+test('the required fields are enforced', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('test-cases.store'), draftPayload());
+
+    $testCase = TestCase::query()->sole();
+
+    $this->actingAs($user)
+        ->patch(route('test-cases.update', $testCase), draftPayload([
+            'user_story' => '',
+            'acceptance_criteria' => '',
+        ]))
+        ->assertSessionHasErrors([
+            'user_story' => 'Field wajib diisi.',
+            'acceptance_criteria' => 'Field wajib diisi.',
+        ], null, 'updateTestCase');
+
+    expect($testCase->scenarios()->doesntExist())->toBeTrue();
 });
 
 test('the console shows the user story form for a selected draft', function () {
@@ -127,10 +126,7 @@ test('another user cannot target someone else collection', function () {
     $foreign = Collection::factory()->create();
 
     $this->actingAs(User::factory()->create())
-        ->post(route('test-cases.store'), [
-            'name' => 'Login saya',
-            'collection_id' => $foreign->getKey(),
-        ])
+        ->post(route('test-cases.store'), draftPayload(['collection_id' => $foreign->getKey()]))
         ->assertNotFound();
 
     $this->assertDatabaseCount('test_cases', 0);

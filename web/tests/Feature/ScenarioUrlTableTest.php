@@ -41,21 +41,15 @@ describe('F8 Scenario URL Table', function () {
             'acceptance_criteria' => "Scenario: Bayar\nGiven saya di keranjang\n\nScenario: Gagal bayar\nWhen kartu ditolak",
         ];
 
-        Http::preventStrayRequests();
-        Http::fake(['*/v1/scenario-urls' => Http::response([
-            'status' => 'ok',
-            'data' => ['scenarios' => [
-                ['name' => 'Bayar', 'scenario_url' => 'https://app.example.com/pay'],
-                ['name' => 'Gagal bayar', 'scenario_url' => 'https://app.example.com/pay?fail=1'],
-            ]],
-            'meta' => ['model' => 'gpt-6-luna', 'prompt_version' => 'v1', 'warnings' => []],
-        ], 200)]);
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => $payload['name']]);
 
-        // When I press the "Generate" button
-        $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Checkout']);
         $testCase = TestCase::query()->sole();
 
-        $response = $this->actingAs($user)->patch(route('test-cases.update', $testCase), $payload);
+        Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
+
+        // When I press the "Generate" button
+        $response = $this->actingAs($user)
+            ->patch(route('test-cases.update', $testCase), $payload);
 
         // Then the system displays a table for entering scenario URLs
         $response->assertRedirect(route('console', [

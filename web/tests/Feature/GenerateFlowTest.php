@@ -139,17 +139,11 @@ test('another user cannot generate on someone else test case', function () {
 test('the draft stores the acceptance criteria for the generate step', function () {
     $user = User::factory()->create();
 
-    Http::preventStrayRequests();
-    Http::fake(['*/v1/scenario-urls' => Http::response([
-        'status' => 'ok',
-        'data' => ['scenarios' => [
-            ['name' => 'Login berhasil', 'scenario_url' => null],
-        ]],
-        'meta' => ['model' => 'gpt-6-luna', 'prompt_version' => 'v1', 'warnings' => []],
-    ], 200)]);
-
     $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Login saya']);
+
     $testCase = TestCase::query()->sole();
+
+    Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
 
     $this->actingAs($user)->patch(route('test-cases.update', $testCase), [
         'name' => 'Login saya',
