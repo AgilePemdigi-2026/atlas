@@ -4,6 +4,7 @@ use App\Models\Collection;
 use App\Models\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -22,6 +23,10 @@ describe('F6 Input User Story', function () {
         $user = User::factory()->create();
         $this->actingAs($user)->get(route('console'))->assertOk();
 
+        // And the test case shell exists
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Login saya']);
+        $testCase = TestCase::query()->sole();
+
         // And I leave the User Story field blank
         $payload = storyInput([
             'user_story' => '',
@@ -29,14 +34,15 @@ describe('F6 Input User Story', function () {
         ]);
 
         // When I press the "Generate" button
-        $response = $this->from(route('console'))->post(route('test-cases.store'), $payload);
+        $response = $this->from(route('console'))
+            ->patch(route('test-cases.update', $testCase), $payload);
 
         // Then I should see the error message "Field wajib diisi"
-        $response->assertSessionHasErrors([
+        $response->assertSessionHasErrorsIn('updateTestCase', [
             'user_story' => 'Field wajib diisi.',
             'acceptance_criteria' => 'Field wajib diisi.',
         ]);
-        expect(TestCase::query()->count())->toBe(0);
+        expect($testCase->fresh()->user_story)->toBeNull();
     });
 
     test('Story with several scenarios is split', function () {
@@ -49,12 +55,26 @@ describe('F6 Input User Story', function () {
             'acceptance_criteria' => "Scenario: Login berhasil\nGiven saya di halaman login\n\nScenario: Login gagal\nWhen password salah",
         ]);
 
-        // When I press the "Generate" button
-        $response = $this->actingAs($user)->post(route('test-cases.store'), $payload);
+        Http::preventStrayRequests();
+        Http::fake(['*/v1/scenario-urls' => Http::response([
+            'status' => 'ok',
+            'data' => ['scenarios' => [
+                ['name' => 'Login berhasil', 'scenario_url' => 'https://app.example.com/login'],
+                ['name' => 'Login gagal', 'scenario_url' => 'https://app.example.com/login?fail=1'],
+            ]],
+            'meta' => ['model' => 'gpt-6-luna', 'prompt_version' => 'v1', 'warnings' => []],
+        ], 200)]);
 
-        // Then two scenario rows are created for the test case
+        // When I submit the story
+        $this->actingAs($user)->post(route('test-cases.store'), [
+            'name' => 'Login saya',
+            'collection_id' => $collection->getKey(),
+        ]);
         $testCase = TestCase::query()->sole();
 
+        $response = $this->actingAs($user)->patch(route('test-cases.update', $testCase), $payload);
+
+        // Then two scenario rows are created for the test case
         $response->assertRedirect(route('console', [
             'test_case' => $testCase->getKey(),
             'collection' => $testCase->collection_id,
@@ -73,35 +93,51 @@ describe('F6 Input User Story', function () {
             'acceptance_criteria' => 'Given saya di beranda Then saya melihat judul',
         ]);
 
-        // When I press the "Generate" button
-        $this->actingAs($user)->post(route('test-cases.store'), $payload);
+        Http::preventStrayRequests();
+        Http::fake(['*/v1/scenario-urls' => Http::response([
+            'status' => 'error',
+            'data' => null,
+            'meta' => ['model' => 'gpt-6-luna', 'prompt_version' => 'v1', 'warnings' => []],
+            'error' => ['code' => 'llm_unavailable', 'message' => 'down'],
+        ], 502)]);
+
+        // When I submit the story
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Checkout']);
+        $testCase = TestCase::query()->sole();
+
+        $this->actingAs($user)->patch(route('test-cases.update', $testCase), $payload);
 
         // Then one scenario row is created
-        expect(TestCase::query()->sole()->scenarios()->pluck('name')->all())
+        expect($testCase->fresh()->scenarios()->pluck('name')->all())
             ->toBe(['Checkout']);
     });
 
     test('Guest cannot create a test case', function () {
         // Given I am not logged in
 
-        // When I submit a story
-        $response = $this->post(route('test-cases.store'), storyInput());
+        // When I create a test case
+        $response = $this->post(route('test-cases.store'), ['name' => 'Login saya']);
 
         // Then I am redirected to the "/login" page
         $response->assertRedirect(route('login'));
-        expect(TestCase::query()->count())->toBe(0);
+        $count = TestCase::query()->count();
+        expect($count)->toBe(0);
     });
 
     test('Another user cannot target someone else collection', function () {
         // Given a collection belongs to another user
         $foreign = Collection::factory()->create();
 
-        // When I submit a story into that collection
+        // When I create a test case into that collection
         $response = $this->actingAs(User::factory()->create())
-            ->post(route('test-cases.store'), storyInput(['collection_id' => $foreign->getKey()]));
+            ->post(route('test-cases.store'), [
+                'name' => 'Login saya',
+                'collection_id' => $foreign->getKey(),
+            ]);
 
         // Then the request is forbidden
         $response->assertNotFound();
-        expect(TestCase::query()->count())->toBe(0);
+        $count = TestCase::query()->count();
+        expect($count)->toBe(0);
     });
 });

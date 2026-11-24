@@ -104,7 +104,7 @@ class _Scenario:
 
 @dataclass(frozen=True)
 class AuthSpec:
-    """Where the generated script must log in before it runs the scenarios.
+    """Where the generated script must log in inside each scenario run.
 
     Carries the login URL and the credential *selectors* only. The credential
     values never reach the generator: the script reads them from environment
@@ -501,7 +501,7 @@ def _render_step(
 
 def _render_main(scenarios: list[_Scenario], auth_login: bool = False) -> str:
     names = "\n".join(
-        f"                {scenario.function_name}," for scenario in scenarios
+        f"            {scenario.function_name}," for scenario in scenarios
     )
 
     return _ENV.get_template("main.py.j2").render(

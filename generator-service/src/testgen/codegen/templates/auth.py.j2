@@ -1,5 +1,5 @@
 # --- Auth Profile (ATLAS) ---
-# This script logs in before it runs the scenarios. The credential values are
+# This script logs in inside each scenario. The credential values are
 # never stored in the script: set these environment variables before running it.
 {{ credential_docs }}
 
@@ -35,7 +35,7 @@ def atlas_login_field(driver, strategy, target):
 
 
 def atlas_login(driver):
-    """Log in to the target before the scenarios run."""
+    """Log in to the target inside each scenario run."""
     from selenium.webdriver.common.keys import Keys
 
     driver.get({{ login_url }})
