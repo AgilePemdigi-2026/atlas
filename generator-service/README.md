@@ -1,9 +1,9 @@
 # generator-service
 
 Python service for ATLAS. LLM extraction (F10/F11 incl. retry), DOM extraction
-(F9), rule-based Selenium codegen (F12), and the error envelope (F13) are
-implemented. `POST /v1/generate` returns both the parsed scenarios and the
-generated script in one synchronous call.
+(F9), rule-based Selenium codegen (F12), scenario URL inference (F8), and the
+error envelope (F13) are implemented. `POST /v1/generate` returns both the
+parsed scenarios and the generated script in one synchronous call.
 
 ## Layout
 
@@ -15,7 +15,7 @@ src/testgen/
 ├── main.py                # FastAPI app factory
 ├── config.py              # pydantic-settings
 ├── errors.py              # typed exceptions + error codes
-├── api/                   # routers (health, /v1/generate) + service-key auth
+├── api/                   # routers (health, /v1/generate, /v1/scenario-urls) + auth
 ├── schemas/               # request / response envelopes
 ├── dom/                   # tiered DOM extraction (F9)
 ├── llm/                   # Kenari client + extraction/retry loop (F10/F11)
@@ -116,7 +116,8 @@ The artifact is deterministic: no timestamps, versions, paths, or random IDs.
 ```
 
 When run directly, the script uses headless Chrome unless `HEADLESS=false`,
-one driver for all scenarios, continues after `AssertionError`, stops on
+a fresh driver per scenario (so scenarios cannot leak session state into
+each other), continues after `AssertionError`, stops on
 unexpected exceptions, and exits `1` if anything failed. Generated scripts
 target Python 3.10+ and Selenium >=4.6.
 
@@ -176,11 +177,40 @@ F12 revalidates downstream before codegen, rejecting bad JSON with
 `ConversionError` (enveloped as 502). F10 envelopes carry the same
 `{code, message, step_index, field}` shape so F13 maps one format.
 
+## F8: Scenario URL inference
+
+`POST /v1/scenario-urls` splits acceptance criteria into scenarios and infers
+the page each one starts on. Laravel calls it when a test case's criteria or
+base URL changes; the result pre-fills the Scenario URL table.
+
+```json
+{
+  "acceptance_criteria": "Skenario: Login berhasil ...",
+  "base_url": "https://target.example.com",
+  "test_case_name": "Login saya"
+}
+```
+
+The response uses the same envelope as `/v1/generate` but without `script`:
+
+```json
+{
+  "status": "ok",
+  "data": {"scenarios": [{"name": "Login berhasil", "scenario_url": "https://target.example.com/login"}]},
+  "meta": {"model": "gpt-6-luna", "prompt_version": "v1", "warnings": []}
+}
+```
+
+The route reuses `LLM_MODEL`, never fetches a page, and never receives an auth
+profile. It is advisory: any error, timeout, or malformed response leaves the
+caller's scenario table unchanged.
+
 ## F7: Auth Profile
 
 When the request carries an `auth_profile`, the service logs in to the target
-before extracting the DOM, and the generated script logs in before it runs the
-scenarios.
+before extracting the DOM, and the generated script logs in inside each
+scenario's run (a fresh driver per scenario, so an earlier scenario's
+session cannot break a later one).
 
 The credential **values** never reach the generated script. The script carries
 only the login URL and the field selectors; the values are read from
@@ -198,7 +228,24 @@ non-alphanumeric runs replaced by `_` (`id:email` -> `ATLAS_AUTH_ID_EMAIL`).
 Two selectors that slug to the same name get `_2`, `_3` suffixes.
 
 Selector rules match the DOM extraction: `id:`, `name:`, `css:`, and `xpath:`
-name their strategy; a plain key is looked up by name and then by id.
+name their strategy; a plain key is looked up by name and then by id, each
+with an explicit wait for the field to become visible.
+
+Two optional fields refine the login:
+
+- `submit_selector` — an explicit selector (must carry a prefix) for the form's
+  submit button. The login clicks it via an explicit clickable wait; when
+  absent it falls back to Enter on the final credential field.
+- `success_indicator` — an explicit selector (must carry a prefix) for an
+  element that only appears when logged in. The login waits for it; when
+  absent it falls back to the password-field heuristic (still on the login
+  URL with a password field visible means rejection).
+
+Both the DOM-extraction login and the generated script wait for visible
+fields (`visibility_of_element_located`) and use one named `LOGIN_TIMEOUT`
+constant (10s). A malformed `auth_profile` (missing login URL or
+credentials, non-http URL, empty selector/value, unknown strategy prefix)
+is rejected at the request boundary with 422.
 
 If the target rejects the login, the service returns the `auth_failed` error
 code (502) and the web side shows "Gagal login. Periksa kredensial atau Login

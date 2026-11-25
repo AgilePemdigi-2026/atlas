@@ -30,7 +30,7 @@ class GoogleAuthController extends Controller
         ) {
             return redirect()->route('login')
                 ->withErrors([
-                    'email' => 'Email Google belum terverifikasi.',
+                    'email' => 'Your Google email address has not been verified.',
                 ]);
         }
 

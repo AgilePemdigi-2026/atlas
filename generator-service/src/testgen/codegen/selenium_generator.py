@@ -104,7 +104,7 @@ class _Scenario:
 
 @dataclass(frozen=True)
 class AuthSpec:
-    """Where the generated script must log in before it runs the scenarios.
+    """Where the generated script must log in inside each scenario run.
 
     Carries the login URL and the credential *selectors* only. The credential
     values never reach the generator: the script reads them from environment
@@ -113,6 +113,8 @@ class AuthSpec:
 
     login_url: str
     selectors: tuple[str, ...]
+    submit_selector: str | None = None
+    success_indicator: str | None = None
 
 
 def _env_var_name(selector: str, taken: set[str]) -> str:
@@ -401,14 +403,27 @@ def _render_auth(auth: AuthSpec) -> str:
             f"    element.send_keys(atlas_login_value({_py_string(variable)}))"
         )
 
-    # The last field submits the form, the same way the DOM extraction does.
-    if fills:
-        fills.append("    element.send_keys(Keys.ENTER)")
+    submit_parts = (
+        _locator_parts(auth.submit_selector) if auth.submit_selector else (None, None)
+    )
+    indicator_parts = (
+        _locator_parts(auth.success_indicator)
+        if auth.success_indicator
+        else (None, None)
+    )
 
     return _ENV.get_template("auth.py.j2").render(
         credential_docs="\n".join(docs),
         login_url=_py_string(auth.login_url),
         fill_lines="\n".join(fills),
+        submit_strategy=_py_string(submit_parts[0]) if submit_parts[0] else "None",
+        submit_target=_py_string(submit_parts[1]) if submit_parts[1] else "None",
+        indicator_strategy=(
+            _py_string(indicator_parts[0]) if indicator_parts[0] else "None"
+        ),
+        indicator_target=_py_string(indicator_parts[1])
+        if indicator_parts[1]
+        else "None",
     )
 
 
@@ -501,7 +516,7 @@ def _render_step(
 
 def _render_main(scenarios: list[_Scenario], auth_login: bool = False) -> str:
     names = "\n".join(
-        f"                {scenario.function_name}," for scenario in scenarios
+        f"            {scenario.function_name}," for scenario in scenarios
     )
 
     return _ENV.get_template("main.py.j2").render(

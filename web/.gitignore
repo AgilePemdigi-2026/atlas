@@ -23,6 +23,8 @@
 /storage/pail
 /vendor
 _ide_helper.php
+/database/demo.sqlite
+/tests/Demo/screenshots
 Homestead.json
 Homestead.yaml
 Thumbs.db

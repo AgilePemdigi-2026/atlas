@@ -56,11 +56,15 @@ def _auth_spec(profile: AuthProfileInput | None) -> AuthSpec | None:
 
     Only the login URL and the field selectors cross over: the credential
     values stay on the Laravel side and never reach the generated script.
+    Schema validation already guarantees login_url and credentials are
+    either both present or both absent.
     """
-    if profile is None or not profile.login_url or not profile.credentials:
+    if profile is None:
         return None
 
     return AuthSpec(
-        login_url=profile.login_url,
+        login_url=profile.login_url or "",
         selectors=tuple(profile.credentials.keys()),
+        submit_selector=profile.submit_selector,
+        success_indicator=profile.success_indicator,
     )

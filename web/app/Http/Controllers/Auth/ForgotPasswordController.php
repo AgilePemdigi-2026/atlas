@@ -22,7 +22,7 @@ class ForgotPasswordController extends Controller
         if ($status === Password::ResetLinkSent) {
             return back()->with(
                 'status',
-                'Link reset password berhasil diproses. Silakan cek email.'
+                'Password reset link sent. Please check your email.'
             );
         }
 

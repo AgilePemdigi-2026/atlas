@@ -75,7 +75,7 @@ test('Successful Script Generation against the live service', function () {
     And I fill in "Email address" with "ristulop@gmail.com"
     And I fill in "Password" with "ristulristul"
     When I press the "Create account" button
-    Then I should see the message "Akun anda berhasil terdaftar"
+    Then I should see the message "Your account has been created successfully."
     GHERKIN;
 
     // And I fill in the User Story / Acceptance Criteria and optional Base URL

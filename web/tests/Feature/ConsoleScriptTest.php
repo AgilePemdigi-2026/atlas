@@ -46,7 +46,7 @@ it('shows an empty message when the test case has no script', function () {
     $this->actingAs($user)
         ->get(route('console', ['test_case' => $testCase->test_case_id]))
         ->assertOk()
-        ->assertSee('Belum ada hasil test case');
+        ->assertSee('No Test Case results yet.');
 });
 
 it('lets the owner download the script', function () {

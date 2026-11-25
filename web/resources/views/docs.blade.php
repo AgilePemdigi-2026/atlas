@@ -21,7 +21,7 @@
                 'label' => 'Configuration',
                 'links' => [
                     ['id' => 'base-url', 'title' => 'Base URL & scenario URLs'],
-                    ['id' => 'auth-profile', 'title' => 'Auth profile'],
+                    ['id' => 'auth-profile', 'title' => 'Auth Profile'],
                 ],
             ],
             [
@@ -39,7 +39,7 @@
     <div class="min-h-screen bg-white font-dm text-body dark:bg-abyss dark:text-slate-200">
         <header class="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-night/95">
             <div class="mx-auto flex h-16 max-w-[1440px] items-center gap-4 px-5 min-[1100px]:px-8">
-                <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2.5" aria-label="ATLAS – halaman utama">
+                <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2.5" aria-label="ATLAS – Home">
                     <svg class="size-7 text-[#4CAF41]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $logo !!}</svg>
                     <span class="font-typewriter text-xl font-semibold text-[#0E2D07] dark:text-white">ATLAS</span>
                 </a>
@@ -72,7 +72,7 @@
                 <nav aria-label="Documentation" class="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto px-6 py-8">
                     @foreach ($navigation as $group)
                         <div class="{{ $loop->first ? '' : 'mt-7' }}">
-                            <p class="font-typewriter text-[10px] font-semibold tracking-[.12em] text-subtle dark:text-slate-500">{{ strtoupper($group['label']) }}</p>
+                            <p class="font-typewriter text-[10px] font-semibold uppercase tracking-[.12em] text-subtle dark:text-slate-500">{{ $group['label'] }}</p>
                             <ul class="mt-3 flex flex-col gap-0.5">
                                 @foreach ($group['links'] as $link)
                                     <li>
@@ -95,7 +95,7 @@
                     <nav aria-label="Documentation" class="mt-4 flex flex-col gap-5 border-t border-line pt-4 dark:border-slate-700">
                         @foreach ($navigation as $group)
                             <div>
-                                <p class="font-typewriter text-[10px] font-semibold tracking-[.12em] text-subtle dark:text-slate-500">{{ strtoupper($group['label']) }}</p>
+                                <p class="font-typewriter text-[10px] font-semibold uppercase tracking-[.12em] text-subtle dark:text-slate-500">{{ $group['label'] }}</p>
                                 <ul class="mt-2 flex flex-col gap-1.5">
                                     @foreach ($group['links'] as $link)
                                         <li><a href="#{{ $link['id'] }}" class="text-[13px] text-subtle hover:text-[#236913] dark:text-slate-400 dark:hover:text-emerald-300">{{ $link['title'] }}</a></li>
@@ -217,8 +217,8 @@
 
                         <section id="auth-profile" class="mt-12 scroll-mt-24">
                             <h2 class="group font-display text-[24px]/[1.3] font-bold tracking-[-.01em] text-[#1E2534] dark:text-white">
-                                Auth profile
-                                <a href="#auth-profile" class="ml-1 text-[#B9DDB3] opacity-0 transition group-hover:opacity-100 dark:text-emerald-700" aria-label="Link to Auth profile">#</a>
+                                Auth Profile
+                                <a href="#auth-profile" class="ml-1 text-[#B9DDB3] opacity-0 transition group-hover:opacity-100 dark:text-emerald-700" aria-label="Link to Auth Profile">#</a>
                             </h2>
                             <p class="mt-3 text-[15px]/[1.75] text-[#5F6675] dark:text-slate-300">Open the Config tab and choose <span class="font-semibold text-body dark:text-white">Auth</span> when the target application requires a login. Add the Login URL and one credential row per field.</p>
 

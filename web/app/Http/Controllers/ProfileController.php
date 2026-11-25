@@ -52,7 +52,7 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('profile')->with('status', 'Perubahan berhasil disimpan.');
+        return redirect()->route('profile')->with('status', 'Changes saved successfully.');
     }
 
     public function destroy(Request $request): RedirectResponse

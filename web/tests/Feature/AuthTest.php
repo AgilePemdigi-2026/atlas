@@ -23,20 +23,20 @@ test('guests can open the login and register pages', function () {
 test('registering stores the account and redirects to login', function () {
     $this->post(route('register'), registerPayload())
         ->assertRedirect(route('login'))
-        ->assertSessionHas('status', 'Akun anda berhasil terdaftar');
+        ->assertSessionHas('status', 'Your account has been created successfully.');
 
     expect(User::query()->where('email', 'baru@example.com')->exists())->toBeTrue();
 });
 
-test('registration reports missing fields in indonesian', function () {
+test('registration reports missing fields in English', function () {
     $this->post(route('register'), registerPayload([
         'name' => '',
         'email' => '',
         'password' => '',
     ]))->assertSessionHasErrors([
-        'name' => 'Field wajib diisi.',
-        'email' => 'Field wajib diisi.',
-        'password' => 'Field wajib diisi.',
+        'name' => 'This field is required.',
+        'email' => 'This field is required.',
+        'password' => 'This field is required.',
     ]);
 });
 
@@ -44,7 +44,7 @@ test('registration rejects a duplicate email', function () {
     User::factory()->create(['email' => 'dipakai@example.com']);
 
     $this->post(route('register'), registerPayload(['email' => 'dipakai@example.com']))
-        ->assertSessionHasErrors(['email' => 'Email sudah terdaftar']);
+        ->assertSessionHasErrors(['email' => 'This email address is already registered.']);
 });
 
 test('registration rejects a malformed email and a short password', function () {
@@ -52,8 +52,8 @@ test('registration rejects a malformed email and a short password', function () 
         'email' => 'bukan-email',
         'password' => 'pendek',
     ]))->assertSessionHasErrors([
-        'email' => 'Format email tidak valid.',
-        'password' => 'Password minimal 8 karakter.',
+        'email' => 'Please enter a valid email address.',
+        'password' => 'Password must be at least 8 characters.',
     ]);
 });
 
@@ -79,7 +79,7 @@ test('logging in starts a session and redirects to the console', function () {
     $this->assertAuthenticatedAs($user);
 });
 
-test('invalid credentials report the frozen indonesian copy', function () {
+test('invalid credentials report the expected message', function () {
     User::factory()->create(['email' => 'masuk@example.com']);
 
     $this->from(route('login'))
@@ -88,16 +88,16 @@ test('invalid credentials report the frozen indonesian copy', function () {
             'password' => 'salah-password',
         ])
         ->assertRedirect(route('login'))
-        ->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+        ->assertSessionHasErrors(['email' => 'The email address or password is incorrect.']);
 
     $this->assertGuest();
 });
 
-test('login requires both fields in indonesian', function () {
+test('login requires both fields', function () {
     $this->post(route('login'), ['email' => '', 'password' => ''])
         ->assertSessionHasErrors([
-            'email' => 'Field wajib diisi.',
-            'password' => 'Field wajib diisi.',
+            'email' => 'This field is required.',
+            'password' => 'This field is required.',
         ]);
 });
 
@@ -119,7 +119,7 @@ test('a user can update their profile inside the settings tab', function () {
     $this->actingAs($user)
         ->patch(route('profile.update'), ['name' => 'Nama Baru', 'email' => 'baru@example.com'])
         ->assertRedirect(route('profile'))
-        ->assertSessionHas('status', 'Perubahan berhasil disimpan.');
+        ->assertSessionHas('status', 'Changes saved successfully.');
 
     expect($user->fresh()->name)->toBe('Nama Baru');
 });
@@ -142,4 +142,20 @@ test('deleting the account signs the user out and removes the row', function () 
 
     $this->assertGuest();
     expect(User::query()->whereKey($user->getKey())->exists())->toBeFalse();
+});
+
+test('Cancel keeps the account', function () {
+    // Given the confirmation modal is open
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->get(route('profile'));
+
+    // Then the delete form asks for confirmation
+    $response->assertOk()
+        ->assertSee('Delete Account')
+        ->assertSee("confirm('Permanently delete your account?", false);
+
+    // When I cancel, no DELETE request is sent
+    // Then my account is unchanged
+    $this->assertAuthenticatedAs($user);
+    $this->assertModelExists($user);
 });

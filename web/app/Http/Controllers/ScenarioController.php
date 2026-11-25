@@ -17,14 +17,14 @@ class ScenarioController extends Controller
             'name' => ['required', 'string', 'max:256'],
             'scenario_url' => ['nullable', 'url'],
         ], [
-            'name.required' => 'Field wajib diisi.',
-            'scenario_url.url' => 'Format URL tidak valid.',
+            'name.required' => 'This field is required.',
+            'scenario_url.url' => 'Please enter a valid URL.',
         ]);
 
         $scenario->update($validated);
 
         return response()->json([
-            'message' => 'Skenario disimpan.',
+            'message' => 'Scenario saved successfully.',
         ]);
     }
 }

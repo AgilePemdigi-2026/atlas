@@ -17,7 +17,7 @@ describe('F18 Profile Settings', function () {
                 'email' => 'baru@example.com',
             ])
             ->assertRedirect(route('profile'))
-            ->assertSessionHas('status', 'Perubahan berhasil disimpan.');
+            ->assertSessionHas('status', 'Changes saved successfully.');
         // Then the new information is saved
         expect($user->fresh()->name)->toBe('Nama Baru')
             ->and($user->fresh()->email)->toBe('baru@example.com');

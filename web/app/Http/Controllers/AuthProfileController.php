@@ -25,6 +25,8 @@ class AuthProfileController extends Controller
             'login_url' => ['required', 'url:http,https', 'max:2048'],
             'credentials' => ['required', 'array', 'min:1'],
             'credentials.*' => ['required', 'string', 'max:2048'],
+            'submit_selector' => ['nullable', 'string', 'max:2048'],
+            'success_indicator' => ['nullable', 'string', 'max:2048'],
         ]);
 
         $profile = $testCase->authProfile()->updateOrCreate(
@@ -32,11 +34,13 @@ class AuthProfileController extends Controller
             [
                 'login_url' => $data['login_url'],
                 'credentials' => $data['credentials'],
+                'submit_selector' => $data['submit_selector'] ?? null,
+                'success_indicator' => $data['success_indicator'] ?? null,
             ]
         );
 
         return response()->json([
-            'message' => 'Auth Profile berhasil disimpan.',
+            'message' => 'Auth Profile saved successfully.',
             'data' => [
                 'auth_profile_id' => $profile->getKey(),
                 'test_case_id' => $testCase->getKey(),
@@ -54,7 +58,7 @@ class AuthProfileController extends Controller
         $testCase->authProfile()->delete();
 
         return response()->json([
-            'message' => 'Auth Profile dihapus. Test Case sekarang menggunakan No Auth.',
+            'message' => 'Auth Profile removed. This Test Case now uses No Auth.',
         ]);
     }
 }

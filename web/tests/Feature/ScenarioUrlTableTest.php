@@ -41,12 +41,17 @@ describe('F8 Scenario URL Table', function () {
             'acceptance_criteria' => "Scenario: Bayar\nGiven saya di keranjang\n\nScenario: Gagal bayar\nWhen kartu ditolak",
         ];
 
-        // When I press the "Generate" button
-        $response = $this->actingAs($user)->post(route('test-cases.store'), $payload);
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => $payload['name']]);
 
-        // Then the system displays a table for entering scenario URLs
         $testCase = TestCase::query()->sole();
 
+        Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
+
+        // When I press the "Generate" button
+        $response = $this->actingAs($user)
+            ->patch(route('test-cases.update', $testCase), $payload);
+
+        // Then the system displays a table for entering scenario URLs
         $response->assertRedirect(route('console', [
             'test_case' => $testCase->getKey(),
             'collection' => $testCase->collection_id,
@@ -60,7 +65,7 @@ describe('F8 Scenario URL Table', function () {
             ->assertSee('Gagal bayar')
             ->assertSee('name="scenarios[0][scenario_url]"', false)
             ->assertSee('name="scenarios[1][scenario_url]"', false)
-            ->assertSee('Lanjut &amp; Generate', false);
+            ->assertSee('Continue &amp; Generate', false);
     });
 
     test('Confirm pre-filled scenario URLs', function () {
@@ -98,7 +103,7 @@ describe('F8 Scenario URL Table', function () {
                 scenarioUrlPayload($testCase, ['bukan-url', 'https://app.example.com/login']),
             )
             ->assertOk()
-            ->assertSee('Format URL tidak valid.');
+            ->assertSee('Please enter a valid URL.');
     });
 
     test('Reject an invalid scenario URL', function () {
@@ -113,9 +118,9 @@ describe('F8 Scenario URL Table', function () {
             scenarioUrlPayload($testCase, ['', 'https://app.example.com/login']),
         );
 
-        // Then I should see "Field wajib diisi."
+        // Then I should see "This field is required."
         $response->assertSessionHasErrors([
-            'scenarios.0.scenario_url' => 'Field wajib diisi.',
+            'scenarios.0.scenario_url' => 'This field is required.',
         ]);
 
         // When I submit a row with a malformed URL
@@ -124,9 +129,9 @@ describe('F8 Scenario URL Table', function () {
             scenarioUrlPayload($testCase, ['bukan-url', 'https://app.example.com/login']),
         );
 
-        // Then I should see "Format URL tidak valid."
+        // Then I should see "Please enter a valid URL."
         $response->assertSessionHasErrors([
-            'scenarios.0.scenario_url' => 'Format URL tidak valid.',
+            'scenarios.0.scenario_url' => 'Please enter a valid URL.',
         ]);
 
         // And the service is never called

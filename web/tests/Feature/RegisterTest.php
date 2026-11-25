@@ -30,8 +30,8 @@ describe('F1 Register', function () {
         // When I press the "Register" button
         $response = $this->post(route('register'), $payload);
 
-        // Then I should see the message "Akun anda berhasil terdaftar"
-        $response->assertSessionHas('status', 'Akun anda berhasil terdaftar');
+        // Then I should see the message "Your account has been created successfully."
+        $response->assertSessionHas('status', 'Your account has been created successfully.');
 
         // And I should be redirected to the "/login" page
         $response->assertRedirect(route('login'));
@@ -54,11 +54,11 @@ describe('F1 Register', function () {
         // When I press the "Register" button
         $response = $this->from(route('register'))->post(route('register'), $payload);
 
-        // Then I should see the error message "Field wajib diisi"
+        // Then I should see the error message "This field is required."
         $response->assertSessionHasErrors([
-            'name' => 'Field wajib diisi.',
-            'email' => 'Field wajib diisi.',
-            'password' => 'Field wajib diisi.',
+            'name' => 'This field is required.',
+            'email' => 'This field is required.',
+            'password' => 'This field is required.',
         ]);
 
         // And I should remain on the "/register" page
@@ -76,8 +76,8 @@ describe('F1 Register', function () {
         // When I press the "Register" button
         $response = $this->from(route('register'))->post(route('register'), $payload);
 
-        // Then I should see the error message "Email sudah terdaftar"
-        $response->assertSessionHasErrors(['email' => 'Email sudah terdaftar']);
+        // Then I should see the error message "This email address is already registered."
+        $response->assertSessionHasErrors(['email' => 'This email address is already registered.']);
 
         // And I should remain on the "/register" page
         $response->assertRedirect(route('register'));
@@ -101,8 +101,8 @@ describe('F1 Register', function () {
 
         // Then I should see an error message corresponding to the invalid field
         $response->assertSessionHasErrors([
-            'email' => 'Format email tidak valid.',
-            'password' => 'Password minimal 8 karakter.',
+            'email' => 'Please enter a valid email address.',
+            'password' => 'Password must be at least 8 characters.',
         ]);
 
         // And I should remain on the "/register" page
@@ -119,8 +119,8 @@ describe('F1 Register', function () {
             // When I press the "Register" button with valid data
             $response = $this->from(route('register'))->post(route('register'), registerInput());
 
-            // Then I should see the error message "Pendaftaran tidak dapat diproses saat ini"
-            $response->assertSessionHasErrors(['email' => 'Pendaftaran tidak dapat diproses saat ini']);
+            // Then I should see the error message "Registration cannot be processed right now."
+            $response->assertSessionHasErrors(['email' => 'Registration cannot be processed right now.']);
         } finally {
             User::flushEventListeners();
         }

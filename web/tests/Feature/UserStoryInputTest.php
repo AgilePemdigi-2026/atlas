@@ -4,6 +4,7 @@ use App\Models\Collection;
 use App\Models\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -20,7 +21,11 @@ describe('F6 Input User Story', function () {
     test('Failed Generate (missing user story)', function () {
         // Given I am on the "Test Case" page
         $user = User::factory()->create();
-        $this->actingAs($user)->get(route('console'))->assertOk();
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => 'Login saya']);
+
+        $testCase = TestCase::query()->sole();
+        $console = route('console', ['test_case' => $testCase->getKey()]);
+        $this->actingAs($user)->get($console)->assertOk();
 
         // And I leave the User Story field blank
         $payload = storyInput([
@@ -29,14 +34,16 @@ describe('F6 Input User Story', function () {
         ]);
 
         // When I press the "Generate" button
-        $response = $this->from(route('console'))->post(route('test-cases.store'), $payload);
+        $response = $this->from($console)
+            ->actingAs($user)
+            ->patch(route('test-cases.update', $testCase), $payload);
 
-        // Then I should see the error message "Field wajib diisi"
+        // Then I should see the error message "This field is required."
         $response->assertSessionHasErrors([
-            'user_story' => 'Field wajib diisi.',
-            'acceptance_criteria' => 'Field wajib diisi.',
-        ]);
-        expect(TestCase::query()->count())->toBe(0);
+            'user_story' => 'This field is required.',
+            'acceptance_criteria' => 'This field is required.',
+        ], null, 'updateTestCase');
+        expect($testCase->scenarios()->doesntExist())->toBeTrue();
     });
 
     test('Story with several scenarios is split', function () {
@@ -49,12 +56,20 @@ describe('F6 Input User Story', function () {
             'acceptance_criteria' => "Scenario: Login berhasil\nGiven saya di halaman login\n\nScenario: Login gagal\nWhen password salah",
         ]);
 
-        // When I press the "Generate" button
-        $response = $this->actingAs($user)->post(route('test-cases.store'), $payload);
+        $this->actingAs($user)->post(route('test-cases.store'), [
+            'name' => $payload['name'],
+            'collection_id' => $collection->getKey(),
+        ]);
 
-        // Then two scenario rows are created for the test case
         $testCase = TestCase::query()->sole();
 
+        Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
+
+        // When I press the "Generate" button
+        $response = $this->actingAs($user)
+            ->patch(route('test-cases.update', $testCase), $payload);
+
+        // Then two scenario rows are created for the test case
         $response->assertRedirect(route('console', [
             'test_case' => $testCase->getKey(),
             'collection' => $testCase->collection_id,
@@ -73,11 +88,18 @@ describe('F6 Input User Story', function () {
             'acceptance_criteria' => 'Given saya di beranda Then saya melihat judul',
         ]);
 
+        $this->actingAs($user)->post(route('test-cases.store'), ['name' => $payload['name']]);
+
+        $testCase = TestCase::query()->sole();
+
+        Http::fake(['*/v1/scenario-urls' => Http::response(['status' => 'error'], 500)]);
+
         // When I press the "Generate" button
-        $this->actingAs($user)->post(route('test-cases.store'), $payload);
+        $this->actingAs($user)
+            ->patch(route('test-cases.update', $testCase), $payload);
 
         // Then one scenario row is created
-        expect(TestCase::query()->sole()->scenarios()->pluck('name')->all())
+        expect($testCase->scenarios()->pluck('name')->all())
             ->toBe(['Checkout']);
     });
 

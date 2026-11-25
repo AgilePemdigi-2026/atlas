@@ -18,11 +18,11 @@ describe('F17 Test History', function () {
         // Given I am on the "Test Case" page
         // And no test case history has been created yet
         $user = historyOwner();
-        // Then I should see the message "Belum ada riwayat test case" (check code)
+        // Then I should see the message "No Test Case history yet."
         $this->actingAs($user)
             ->get(route('profile'))
             ->assertOk()
-            ->assertSee('Belum ada riwayat test case.');
+            ->assertSee('No Test Case history yet.');
     });
 
     test('Test history is paginated', function () {
@@ -47,7 +47,7 @@ describe('F17 Test History', function () {
         $this->actingAs(User::factory()->create())
             ->get(route('profile'))
             ->assertOk()
-            ->assertSee('Belum ada riwayat test case.');
+            ->assertSee('No Test Case history yet.');
     });
 
     test('Guest cannot open test history', function () {
@@ -65,11 +65,11 @@ describe('F17 Test History', function () {
         Schema::drop('test_cases');
 
         // When I open the Profile "Test History" tab
-        // Then I should see the message "Data tidak dapat dimuat saat ini"
+        // Then I should see the message "Unable to load data right now."
         $this->actingAs($user)
             ->get(route('profile'))
             ->assertOk()
-            ->assertSee('Data tidak dapat dimuat saat ini');
+            ->assertSee('Unable to load data right now.');
     });
 
     test('Selecting a row opens the test case detail', function () {

@@ -25,6 +25,16 @@ describe('F3 Logout', function () {
         $this->get(route('home'))->assertOk()->assertSee('Log in')->assertDontSee('Log out');
     });
 
+    test('Guest cannot log out', function () {
+        // Given I am not logged in
+        // When I send a logout request
+        $response = $this->post(route('logout'));
+
+        // Then I should be redirected to the "/login" page
+        $response->assertRedirect(route('login'));
+        $this->assertGuest();
+    });
+
     test('Authenticated users see console, profile, and log out instead of log in', function () {
         // Given I am logged in
         $user = User::factory()->create();

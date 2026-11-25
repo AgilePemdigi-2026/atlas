@@ -21,6 +21,24 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Docker
+
+One stack serves both environments; Compose automatically layers `compose.override.yaml` over `compose.yaml` when both are present.
+
+```bash
+# Production: compose.yaml (pgsql via DB_URL, built Vite assets, no bind mounts)
+docker compose up --build -d
+
+# Local: compose.yaml + compose.override.yaml (SQLite, bind mounts, debug on)
+docker compose up --build
+```
+
+Production reads its configuration from a root `.env` next to `compose.yaml`: `APP_KEY`, `APP_URL`, `DB_URL`, `SERVICE_API_KEY`, `KENARI_API_KEY`, and the `GOOGLE_*` OAuth values. Local configuration comes from `web/.env`, which the override mounts read-only; variables the override leaves unset (`APP_KEY`, `GENERATOR_SERVICE_KEY`, …) fall back to it instead of the container environment.
+
+Locally the app is at <http://127.0.0.1:8000> and the generator at <http://127.0.0.1:18001>. In production both services only `expose` their ports to the Compose network, so put a reverse proxy in front of `web:8000`.
+
+`GENERATOR_SCENARIO_TIMEOUT` (seconds, default `30`) bounds the advisory `POST /v1/scenario-urls` call made when a story is saved. It is deliberately far below `GENERATOR_SERVICE_TIMEOUT` (`180`) so slow inference never blocks the save — on timeout the existing scenario table is left unchanged. Set it in the root `.env` for production or in `web/.env` locally.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

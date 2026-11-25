@@ -19,7 +19,7 @@ class CollectionController extends Controller
 
         return redirect()
             ->route('console', ['collection' => $collection->getKey()])
-            ->with('status', 'Collection berhasil dibuat.');
+            ->with('status', 'Collection created successfully.');
     }
 
     public function update(Request $request, Collection $collection): RedirectResponse
@@ -34,7 +34,7 @@ class CollectionController extends Controller
 
         return redirect()
             ->route('console', ['collection' => $collection->getKey()])
-            ->with('status', 'Nama collection diperbarui.');
+            ->with('status', 'Collection name updated.');
     }
 
     public function destroy(Collection $collection): RedirectResponse
@@ -52,6 +52,6 @@ class CollectionController extends Controller
 
         return redirect()
             ->route('console', $remaining ? ['collection' => $remaining->getKey()] : [])
-            ->with('status', 'Collection dihapus.');
+            ->with('status', 'Collection deleted.');
     }
 }

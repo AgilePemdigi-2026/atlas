@@ -138,6 +138,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - This project uses Pest. Create tests with `php artisan make:test --pest {name}`.
 - Do not include the test suite directory in `{name}`. Use `SomeFeatureTest`, not `Feature/SomeFeatureTest`.
 - Read the `testing-best-practices` skill for guidance on coverage, naming, structure, dependency isolation, and review.
+- Initially, commit behavior tests only — tests derived from user scenarios (happy path, failure, edge). Keep unit/component tests local until the behavior is stable.
 - Do not delete tests or test files without approval. They are part of the application.
 
 ## Running Tests
